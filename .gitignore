@@ -1,0 +1,9 @@
+# Bỏ qua thư mục cấu hình tạm của Visual Studio
+.vs/
+
+# Bỏ qua các file biên dịch Python
+__pycache__/
+*.pyc
+
+# Bỏ qua các file cấu hình người dùng
+*.user
