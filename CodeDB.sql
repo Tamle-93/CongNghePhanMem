@@ -1,0 +1,1 @@
+--code này dùng cho postgres nha

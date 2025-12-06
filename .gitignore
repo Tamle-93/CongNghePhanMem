@@ -7,3 +7,5 @@ __pycache__/
 
 # Bỏ qua các file cấu hình người dùng
 *.user
+#giấu file
+.env
