@@ -50,21 +50,21 @@ def get_connection():
 # Alias để tương thích với code cũ
 create_connection = get_connection
 
-def test_connection():
-    """Test kết nối database"""
-    conn = get_connection()
-    if conn:
-        try:
-            cursor = conn.cursor()
-            cursor.execute("SELECT version();")
-            db_version = cursor.fetchone()
-            print(f"PostgreSQL version: {db_version[0]}")
-            cursor.close()
-            conn.close()
-            return True
-        except Exception as e:
-            print(f"Lỗi test connection: {e}")
-            return False
-    return False
+# def test_connection():
+#     """Test kết nối database"""
+#     conn = get_connection()
+#     if conn:
+#         try:
+#             cursor = conn.cursor()
+#             cursor.execute("SELECT version();")
+#             db_version = cursor.fetchone()
+#             print(f"PostgreSQL version: {db_version[0]}")
+#             cursor.close()
+#             conn.close()
+#             return True
+#         except Exception as e:
+#             print(f"Lỗi test connection: {e}")
+#             return False
+#     return False
 
 
