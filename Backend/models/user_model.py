@@ -246,7 +246,46 @@ class UserModel:
                 conn.close()
 
     def update_password(self, user_id: int, new_password_hash: str) -> bool:
-        pass
+        """
+        Cập nhật mật khẩu user
+        
+        Args:
+            user_id: ID của user
+            new_password_hash: Mật khẩu mới đã hash
+        
+        Returns:
+            True nếu thành công, False nếu thất bại
+        """
+        conn = None
+        try:
+            conn = get_connection()
+            if not conn:
+                raise Exception("Cannot connect to database")
+            
+            cursor = conn.cursor()
+            
+            query = """
+                UPDATE Users
+                SET PasswordHash = %s
+                WHERE Id = %s AND IsDeleted = FALSE
+            """
+            
+            cursor.execute(query, (new_password_hash, user_id))
+            conn.commit()
+            
+            row_count = cursor.rowcount
+            cursor.close()
+            
+            return row_count > 0
+            
+        except Exception as e:
+            if conn:
+                conn.rollback()
+            raise Exception(f"Database error: {str(e)}")
+            
+        finally:
+            if conn:
+                conn.close()
 
     def soft_delete_user(self, user_id: int) -> bool:
         pass
