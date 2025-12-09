@@ -288,20 +288,208 @@ class UserModel:
                 conn.close()
 
     def soft_delete_user(self, user_id: int) -> bool:
-        pass
-
+        """
+        Xóa mềm user (đánh dấu IsDeleted = TRUE)
+        
+        Args:
+            user_id: ID của user cần xóa
+        
+        Returns:
+            True nếu thành công, False nếu thất bại
+        """
+        conn = None
+        try:
+            conn = get_connection()
+            if not conn:
+                raise Exception("Cannot connect to database")
+            
+            cursor = conn.cursor()
+            
+            query = """
+                UPDATE Users
+                SET IsDeleted = TRUE
+                WHERE Id = %s
+            """
+            
+            cursor.execute(query, (user_id,))
+            conn.commit()
+            
+            row_count = cursor.rowcount
+            cursor.close()
+            
+            return row_count > 0
+            
+        except Exception as e:
+            if conn:
+                conn.rollback()
+            raise Exception(f"Database error: {str(e)}")
+            
+        finally:
+            if conn:
+                conn.close()
+    
     def get_all_users(self, role: Optional[str] = None, 
                      limit: int = 100, offset: int = 0) -> List[Dict[str, Any]]:
-        pass
-
+        """
+        Lấy danh sách tất cả users (phân trang)
+        
+        Args:
+            role: Lọc theo vai trò (optional)
+            limit: Số lượng record tối đa
+            offset: Vị trí bắt đầu
+        
+        Returns:
+            List các Dict chứa thông tin users
+        """
+        conn = None
+        try:
+            conn = get_connection()
+            if not conn:
+                raise Exception("Cannot connect to database")
+            
+            cursor = conn.cursor(cursor_factory=RealDictCursor)
+            
+            if role:
+                query = """
+                    SELECT Id, Username, FullName, Email, Role, CreatedDate
+                    FROM Users
+                    WHERE IsDeleted = FALSE AND Role = %s
+                    ORDER BY CreatedDate DESC
+                    LIMIT %s OFFSET %s
+                """
+                cursor.execute(query, (role, limit, offset))
+            else:
+                query = """
+                    SELECT Id, Username, FullName, Email, Role, CreatedDate
+                    FROM Users
+                    WHERE IsDeleted = FALSE
+                    ORDER BY CreatedDate DESC
+                    LIMIT %s OFFSET %s
+                """
+                cursor.execute(query, (limit, offset))
+            
+            users = cursor.fetchall()
+            cursor.close()
+            
+            return [dict(user) for user in users]
+            
+        except Exception as e:
+            raise Exception(f"Database error: {str(e)}")
+            
+        finally:
+            if conn:
+                conn.close()
+    
     def check_username_exists(self, username: str) -> bool:
-        pass
-
+        """
+        Kiểm tra username đã tồn tại chưa
+        
+        Args:
+            username: Tên đăng nhập cần kiểm tra
+        
+        Returns:
+            True nếu đã tồn tại, False nếu chưa
+        """
+        conn = None
+        try:
+            conn = get_connection()
+            if not conn:
+                raise Exception("Cannot connect to database")
+            
+            cursor = conn.cursor()
+            
+            query = """
+                SELECT COUNT(*) FROM Users
+                WHERE Username = %s AND IsDeleted = FALSE
+            """
+            
+            cursor.execute(query, (username,))
+            count = cursor.fetchone()[0]
+            cursor.close()
+            
+            return count > 0
+            
+        except Exception as e:
+            raise Exception(f"Database error: {str(e)}")
+            
+        finally:
+            if conn:
+                conn.close()
+    
     def check_email_exists(self, email: str) -> bool:
-        pass
-
+        """
+        Kiểm tra email đã tồn tại chưa
+        
+        Args:
+            email: Email cần kiểm tra
+        
+        Returns:
+            True nếu đã tồn tại, False nếu chưa
+        """
+        conn = None
+        try:
+            conn = get_connection()
+            if not conn:
+                raise Exception("Cannot connect to database")
+            
+            cursor = conn.cursor()
+            
+            query = """
+                SELECT COUNT(*) FROM Users
+                WHERE Email = %s AND IsDeleted = FALSE
+            """
+            
+            cursor.execute(query, (email,))
+            count = cursor.fetchone()[0]
+            cursor.close()
+            
+            return count > 0
+            
+        except Exception as e:
+            raise Exception(f"Database error: {str(e)}")
+            
+        finally:
+            if conn:
+                conn.close()
+    
     def get_users_by_role(self, role: str) -> List[Dict[str, Any]]:
-        pass
+        """
+        Lấy danh sách users theo vai trò cụ thể (không phân trang)
+        Hữu ích cho việc lấy danh sách Reviewers, Chairs, etc.
+        
+        Args:
+            role: Vai trò cần tìm (Author, Reviewer, Chair, Admin)
+        
+        Returns:
+            List các Dict chứa thông tin users
+        """
+        conn = None
+        try:
+            conn = get_connection()
+            if not conn:
+                raise Exception("Cannot connect to database")
+            
+            cursor = conn.cursor(cursor_factory=RealDictCursor)
+            
+            query = """
+                SELECT Id, Username, FullName, Email, Role, CreatedDate
+                FROM Users
+                WHERE IsDeleted = FALSE AND Role = %s
+                ORDER BY FullName ASC
+            """
+            
+            cursor.execute(query, (role,))
+            users = cursor.fetchall()
+            cursor.close()
+            
+            return [dict(user) for user in users]
+            
+        except Exception as e:
+            raise Exception(f"Database error: {str(e)}")
+            
+        finally:
+            if conn:
+                conn.close()
 
 
 
