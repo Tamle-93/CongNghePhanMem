@@ -258,3 +258,79 @@ def validate_password(password: str) -> List[str]:
         errors.append("Mật khẩu phải có ít nhất 1 ký tự đặc biệt (!@#$%^&*...)")
     
     return errors
+
+def validate_email(email: str) -> List[str]:
+    """
+    Kiểm tra email hợp lệ
+    
+    Rules:
+        - Đúng định dạng: username@domain.tld
+        - Không chứa khoảng trắng
+        - Domain phải có dấu chấm
+    
+    Returns:
+        List các lỗi (rỗng nếu hợp lệ)
+    
+    Example:
+        >>> errors = validate_email("invalid-email")
+        >>> print(errors)  # ["Email không đúng định dạng"]
+        >>> errors = validate_email("user@example.com")
+        >>> print(errors)  # []
+    """
+    errors = []
+    
+    if not email:
+        errors.append("Email không được để trống")
+        return errors
+    
+    email = email.strip()
+    
+    # Regex chuẩn cho email
+    email_regex = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+    
+    if not re.match(email_regex, email):
+        errors.append("Email không đúng định dạng")
+    
+    if len(email) > 255:
+        errors.append("Email không được vượt quá 255 ký tự")
+    
+    return errors
+
+
+def validate_fullname(fullname: str) -> List[str]:
+    """
+    Kiểm tra họ tên hợp lệ
+    
+    Rules:
+        - Độ dài: 2-100 ký tự
+        - Không chứa số
+        - Không chứa ký tự đặc biệt (trừ khoảng trắng và dấu tiếng Việt)
+    
+    Returns:
+        List các lỗi (rỗng nếu hợp lệ)
+    
+    Example:
+        >>> errors = validate_fullname("Nguyễn Văn A")
+        >>> print(errors)  # []
+        >>> errors = validate_fullname("A")
+        >>> print(errors)  # ["Họ tên phải có ít nhất 2 ký tự"]
+    """
+    errors = []
+    
+    if not fullname:
+        errors.append("Họ tên không được để trống")
+        return errors
+    
+    fullname = fullname.strip()
+    
+    if len(fullname) < 2:
+        errors.append("Họ tên phải có ít nhất 2 ký tự")
+    
+    if len(fullname) > 100:
+        errors.append("Họ tên không được vượt quá 100 ký tự")
+    
+    # Cho phép chữ cái (bao gồm tiếng Việt), khoảng trắng
+    if not re.match(r'^[a-zA-ZÀ-ỹ\s]+$', fullname):
+        errors.append("Họ tên chỉ được chứa chữ cái và khoảng trắng")
+    
+    return errors
