@@ -334,3 +334,10 @@ def validate_fullname(fullname: str) -> List[str]:
         errors.append("Họ tên chỉ được chứa chữ cái và khoảng trắng")
     
     return errors
+
+
+def require_auth(func):
+    pass
+
+def require_role(required_roles: List[str]):
+    pass
