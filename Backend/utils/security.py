@@ -142,3 +142,119 @@ def decode_token(token: str) -> Optional[Dict]:
     except jwt.InvalidTokenError as e:
         print(f"Token không hợp lệ: {e}")
         return None
+    
+def extract_token_from_header(auth_header: str) -> Optional[str]:
+    """
+    Trích xuất token từ header Authorization
+    
+    Args:
+        auth_header: Header Authorization (format: "Bearer <token>")
+    
+    Returns:
+        str: Token string nếu hợp lệ
+        None: Nếu format không đúng
+    
+    Example:
+        >>> header = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        >>> token = extract_token_from_header(header)
+        >>> print(token)  # eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+    """
+    if not auth_header:
+        return None
+    
+    parts = auth_header.split()
+    
+    if len(parts) != 2 or parts[0].lower() != "bearer":
+        return None
+    
+    return parts[1]
+
+
+# ============= VALIDATION =============
+
+def validate_username(username: str) -> List[str]:
+    """
+    Kiểm tra username hợp lệ
+    
+    Rules:
+        - Độ dài: 4-20 ký tự
+        - Chỉ chứa: chữ cái (a-z, A-Z), số (0-9), dấu gạch dưới (_)
+        - Không chứa khoảng trắng
+        - Không bắt đầu bằng số
+    
+    Returns:
+        List các lỗi (rỗng nếu hợp lệ)
+    
+    Example:
+        >>> errors = validate_username("abc")
+        >>> print(errors)  # ["Username phải có ít nhất 4 ký tự"]
+        >>> errors = validate_username("john_doe123")
+        >>> print(errors)  # []
+    """
+    errors = []
+    
+    if not username:
+        errors.append("Username không được để trống")
+        return errors
+    
+    username = username.strip()
+    
+    if len(username) < 4:
+        errors.append("Username phải có ít nhất 4 ký tự")
+    
+    if len(username) > 20:
+        errors.append("Username không được vượt quá 20 ký tự")
+    
+    if not re.match(r'^[a-zA-Z0-9_]+$', username):
+        errors.append("Username chỉ được chứa chữ cái, số và dấu gạch dưới (_)")
+    
+    if username and username[0].isdigit():
+        errors.append("Username không được bắt đầu bằng số")
+    
+    return errors
+
+def validate_password(password: str) -> List[str]:
+    """
+    Kiểm tra mật khẩu có đủ mạnh không
+    
+    Rules:
+        - Độ dài: Ít nhất 8 ký tự
+        - Phải có ít nhất 1 chữ hoa
+        - Phải có ít nhất 1 chữ thường
+        - Phải có ít nhất 1 số
+        - Phải có ít nhất 1 ký tự đặc biệt (!@#$%^&*...)
+    
+    Returns:
+        List các lỗi (rỗng nếu hợp lệ)
+    
+    Example:
+        >>> errors = validate_password("abc123")
+        >>> print(errors)  # ["Mật khẩu phải có ít nhất 8 ký tự", ...]
+        >>> errors = validate_password("MyPass123!")
+        >>> print(errors)  # []
+    """
+    errors = []
+    
+    if not password:
+        errors.append("Mật khẩu không được để trống")
+        return errors
+    
+    if len(password) < 8:
+        errors.append("Mật khẩu phải có ít nhất 8 ký tự")
+    
+    if len(password) > 128:
+        errors.append("Mật khẩu không được vượt quá 128 ký tự")
+    
+    if not re.search(r'[A-Z]', password):
+        errors.append("Mật khẩu phải có ít nhất 1 chữ hoa")
+    
+    if not re.search(r'[a-z]', password):
+        errors.append("Mật khẩu phải có ít nhất 1 chữ thường")
+    
+    if not re.search(r'[0-9]', password):
+        errors.append("Mật khẩu phải có ít nhất 1 số")
+    
+    if not re.search(r'[!@#$%^&*()_+\-=\[\]{};:\'",.<>?/\\|`~]', password):
+        errors.append("Mật khẩu phải có ít nhất 1 ký tự đặc biệt (!@#$%^&*...)")
+    
+    return errors
