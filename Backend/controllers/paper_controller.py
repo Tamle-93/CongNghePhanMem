@@ -28,7 +28,7 @@ async def get_my_papers(current_user: dict = Depends(get_current_user)):
     papers = db.query(Paper).filter(Paper.author_id == current_user["id"]).all()
     return {"papers": papers}
 
-# Xem chi tiết 1 bài báo
+# Xem chi tiết bài báo
 @router.get("/{paper_id}")
 async def get_paper_detail(
     paper_id: int,
