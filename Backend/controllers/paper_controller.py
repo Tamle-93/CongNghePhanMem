@@ -9,7 +9,7 @@ from fastapi.responses import JSONResponse
 
 router = APIRouter(prefix="/papers", tags=["Papers"])
 
-#  CREATE PAPER
+# Nộp bài 
 @router.post("/create")
 async def create_paper(
     title: str = Form(...),
@@ -18,34 +18,17 @@ async def create_paper(
     pdf_file: UploadFile = File(...),
     current_user: dict = Depends(get_current_user)
 ):
-    # Validate file
+    #Xử lí dữ liệu
     if pdf_file.content_type != "application/pdf":
         raise HTTPException(status_code=400, detail="File must be a PDF")
 
-    saved_path = save_pdf_file(pdf_file)
-
-    new_paper = Paper(
-        title=title,
-        abstract=abstract,
-        conference_id=conference_id,
-        author_id=current_user["id"],
-        pdf_path=saved_path,
-        status="submitted"
-    )
-
-    db.add(new_paper)
-    db.commit()
-    db.refresh(new_paper)
-
-    return {"message": "Paper submitted successfully", "paper": new_paper}
-
-#  GET MY PAPERS
+    saved_path = save_pdf_file(pdf_filetôi
 @router.get("/mine")
 async def get_my_papers(current_user: dict = Depends(get_current_user)):
     papers = db.query(Paper).filter(Paper.author_id == current_user["id"]).all()
     return {"papers": papers}
 
-#  GET PAPER DETAIL
+# Xem chi tiết 1 bài báo
 @router.get("/{paper_id}")
 async def get_paper_detail(
     paper_id: int,
@@ -60,7 +43,7 @@ async def get_paper_detail(
 
     return {"paper": paper}
 
-#  UPDATE PAPER
+# Chỉnh sửa bài báobáo
 @router.put("/update/{paper_id}")
 async def update_paper(
     paper_id: int,
@@ -95,7 +78,7 @@ async def update_paper(
 
     return {"message": "Paper updated successfully", "paper": paper}
 
-#  DELETE PAPER
+#  Xóa bài 
 @router.delete("/delete/{paper_id}")
 async def delete_paper(
     paper_id: int,
