@@ -337,7 +337,95 @@ def validate_fullname(fullname: str) -> List[str]:
 
 
 def require_auth(func):
-    pass
+    """
+    Decorator để bảo vệ các API endpoint (yêu cầu token hợp lệ)
+    
+    Usage:
+        @require_auth
+        def protected_endpoint():
+            user_info = request.user_info  # Lấy thông tin user từ token
+            ...
+    """
+    from functools import wraps
+    from flask import request, jsonify
+    from utils.response import error_response
+    
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        auth_header = request.headers.get('Authorization')
+        
+        if not auth_header:
+            return jsonify(error_response(
+                message="Thiếu token xác thực",
+                code=401
+            )), 401
+        
+        token = extract_token_from_header(auth_header)
+        
+        if not token:
+            return jsonify(error_response(
+                message="Token không hợp lệ",
+                code=401
+            )), 401
+        
+        user_info = decode_token(token)
+        
+        if not user_info:
+            return jsonify(error_response(
+                message="Token không hợp lệ hoặc đã hết hạn",
+                code=401
+            )), 401
+        
+        # Gắn user_info vào request để dùng trong controller
+        request.user_info = user_info
+        
+        return func(*args, **kwargs)
+    
+    return wrapper
+
 
 def require_role(required_roles: List[str]):
-    pass
+    """
+    Decorator để kiểm tra quyền truy cập theo role
+    
+    Args:
+        required_roles: List các role được phép (ví dụ: ["Admin", "Chair"])
+    
+    Usage:
+        @require_auth
+        @require_role(["Admin"])
+        def admin_only_endpoint():
+            ...
+    """
+    from functools import wraps
+    from flask import request, jsonify
+    from utils.response import error_response
+    
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            user_info = getattr(request, 'user_info', None)
+            
+            if not user_info:
+                return jsonify(error_response(
+                    message="Chưa xác thực",
+                    code=401
+                )), 401
+            
+            user_role = user_info.get('role')
+            
+            if user_role not in required_roles:
+                return jsonify(error_response(
+                    message="Bạn không có quyền truy cập",
+                    code=403
+                )), 403
+            
+            return func(*args, **kwargs)
+        
+        return wrapper
+    
+    return decorator
+
+
+# from config.security import *
+
