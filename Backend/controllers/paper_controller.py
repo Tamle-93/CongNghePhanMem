@@ -9,7 +9,7 @@ from fastapi.responses import JSONResponse
 
 router = APIRouter(prefix="/papers", tags=["Papers"])
 
-# Nộp bài 
+# Nộp bài báo 
 @router.post("/create")
 async def create_paper(
     title: str = Form(...),
@@ -18,7 +18,7 @@ async def create_paper(
     pdf_file: UploadFile = File(...),
     current_user: dict = Depends(get_current_user)
 ):
-    #Xử lí dữ liệu
+    # Xử lí dữ liệu
     if pdf_file.content_type != "application/pdf":
         raise HTTPException(status_code=400, detail="File must be a PDF")
 
@@ -43,7 +43,7 @@ async def get_paper_detail(
 
     return {"paper": paper}
 
-# Chỉnh sửa bài báobáo
+# Chỉnh sửa bài báo
 @router.put("/update/{paper_id}")
 async def update_paper(
     paper_id: int,
@@ -51,34 +51,7 @@ async def update_paper(
     pdf_file: Optional[UploadFile] = File(None),
     current_user: dict = Depends(get_current_user)
 ):
-    paper = db.query(Paper).filter(Paper.id == paper_id).first()
-
-    if not paper:
-        raise HTTPException(status_code=404, detail="Paper not found")
-
-    if paper.author_id != current_user["id"]:
-        raise HTTPException(status_code=403, detail="Permission denied")
-
-    # Update metadata
-    if data.title:
-        paper.title = data.title
-    if data.abstract:
-        paper.abstract = data.abstract
-
-    # Update file nếu user upload PDF mới
-    if pdf_file:
-        if pdf_file.content_type != "application/pdf":
-            raise HTTPException(status_code=400, detail="File must be PDF")
-
-        new_path = save_pdf_file(pdf_file)
-        paper.pdf_path = new_path
-
-    db.commit()
-    db.refresh(paper)
-
-    return {"message": "Paper updated successfully", "paper": paper}
-
-#  Xóa bài 
+    báo
 @router.delete("/delete/{paper_id}")
 async def delete_paper(
     paper_id: int,
