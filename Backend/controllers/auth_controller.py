@@ -348,5 +348,73 @@ class AuthController:
                 code=500,
                 details=str(e)
             )), 500
+    @require_auth
+    def get_current_user(self):
+        """
+        Endpoint: GET /auth/me
+        Headers: Authorization: Bearer <token>
+        
+        Returns:
+            200: Thông tin user hiện tại
+            401: Token không hợp lệ
+            404: Không tìm thấy user
+            500: Server error
+        """
+        try:
+            # 1. Lấy user_id từ token (đã được verify bởi @require_auth)
+            user_info = request.user_info
+            user_id = user_info['user_id']
+            
+            # 2. Lấy thông tin user từ database
+            user = self.user_model.get_user_by_id(user_id)
+            
+            if not user:
+                return jsonify(error_response(
+                    message="Không tìm thấy người dùng",
+                    code=404
+                )), 404
+            
+            # 3. Xóa thông tin nhạy cảm
+            user.pop('passwordhash', None)
+            user.pop('PasswordHash', None)
+            
+            # 4. Trả về response thành công
+            return jsonify(success_response(
+                data=user,
+                message="Lấy thông tin người dùng thành công"
+            )), 200
+            
+        except Exception as e:
+            return jsonify(error_response(
+                message="Lỗi hệ thống",
+                code=500,
+                details=str(e)
+            )), 500
     
+    def logout(self):
+        """
+        Endpoint: POST /auth/logout
+        Headers: Authorization: Bearer <token>
+        
+        NOTE: JWT là stateless, nên logout chỉ là hướng dẫn client xóa token.
+        Server không cần làm gì (trừ khi dùng token blacklist - không implement ở đây).
+        
+        Returns:
+            200: Đăng xuất thành công
+        """
+        try:
+            # Trong JWT stateless, server không cần làm gì
+            # Client sẽ tự xóa token ở localStorage/cookie
+            
+            return jsonify(success_response(
+                data=None,
+                message="Đăng xuất thành công"
+            )), 200
+            
+        except Exception as e:
+            return jsonify(error_response(
+                message="Lỗi hệ thống",
+                code=500,
+                details=str(e)
+            )), 500
     
