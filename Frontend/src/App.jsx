@@ -1,5 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import LoginPage from './pages/LoginPage';
+import LoginPage from './pages/Loginpage';
 import RegisterPage from './pages/RegisterPage'; // Đảm bảo bạn đã tạo file này (tôi đã gửi code ở tin nhắn trước)
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import AuthorDashboard from './pages/AuthorDashboard';

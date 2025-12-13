@@ -22,7 +22,7 @@ async def create_paper(
     if pdf_file.content_type != "application/pdf":
         raise HTTPException(status_code=400, detail="File must be a PDF")
 
-    saved_path = save_pdf_file(pdf_filetôi
+    saved_path = save_pdf_file(pdf_filetôi)
 @router.get("/mine")
 async def get_my_papers(current_user: dict = Depends(get_current_user)):
     papers = db.query(Paper).filter(Paper.author_id == current_user["id"]).all()
@@ -51,7 +51,7 @@ async def update_paper(
     pdf_file: Optional[UploadFile] = File(None),
     current_user: dict = Depends(get_current_user)
 ):
-    báo
+    
 @router.delete("/delete/{paper_id}")
 async def delete_paper(
     paper_id: int,
