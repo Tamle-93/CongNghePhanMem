@@ -197,14 +197,14 @@ class AuthController:
                 )), 401
             
             # 5. Generate JWT token
-            user_id = user.get('id') or user.get('Id')
+            user_id = user.get('id') or user.get('Id')  # ← ĐÃ LÀ STRING UUID
             user_role = user.get('role') or user.get('Role')
-            
+        
             token = generate_token(
-                user_id=user_id,
-                username=username,
-                role=user_role
-            )
+            user_id=user_id,  # ← Truyền string UUID (không cần str())
+            username=username,
+            role=user_role
+        )
             
             # 6. Xóa thông tin nhạy cảm
             user.pop('passwordhash', None)
