@@ -1,0 +1,245 @@
+/* File: Frontend/src/pages/AuthPages.css */
+/* CSS chung cho Login, Register, Forgot Password */
+
+.auth-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 20px;
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 480px;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+  overflow: visible;
+}
+
+.auth-card.register-card {
+  max-width: 600px;
+}
+
+.auth-card .ant-card-body {
+  padding: 48px 40px;
+}
+
+/* Logo */
+.auth-logo {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 24px;
+  background: linear-gradient(135deg, #1890ff 0%, #096dd9 100%);
+  border-radius: 50%;
+  box-shadow: 0 8px 20px rgba(24, 144, 255, 0.3);
+}
+
+.auth-logo .anticon {
+  font-size: 40px;
+  color: white;
+}
+
+/* Title */
+.auth-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: #262626;
+  text-align: center;
+  margin: 0 0 8px 0;
+}
+
+.auth-subtitle {
+  font-size: 14px;
+  color: #8c8c8c;
+  text-align: center;
+  margin: 0 0 32px 0;
+}
+
+/* Form */
+.auth-form {
+  margin-top: 24px;
+}
+
+.auth-form .ant-form-item-label > label {
+  font-weight: 500;
+  color: #262626;
+}
+
+.auth-form .ant-input-affix-wrapper,
+.auth-form .ant-input-password {
+  border-radius: 8px;
+  padding: 10px 12px;
+  border: 1px solid #d9d9d9;
+  transition: all 0.3s;
+}
+
+.auth-form .ant-input-affix-wrapper:hover,
+.auth-form .ant-input-password:hover {
+  border-color: #1890ff;
+}
+
+.auth-form .ant-input-affix-wrapper-focused,
+.auth-form .ant-input-password:focus,
+.auth-form .ant-input-password-focused {
+  border-color: #1890ff;
+  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.1);
+}
+
+.auth-form .ant-select-selector {
+  border-radius: 8px !important;
+  padding: 4px 12px !important;
+  height: auto !important;
+  min-height: 48px;
+  border: 1px solid #d9d9d9 !important;
+}
+
+.auth-form .ant-select-focused .ant-select-selector {
+  border-color: #1890ff !important;
+  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.1) !important;
+}
+
+/* Error styling */
+.auth-form .ant-form-item-has-error .ant-input-affix-wrapper,
+.auth-form .ant-form-item-has-error .ant-input-password,
+.auth-form .ant-form-item-has-error .ant-select-selector {
+  border-color: #ff4d4f !important;
+}
+
+.auth-form .ant-form-item-explain-error {
+  color: #ff4d4f;
+  font-size: 13px;
+  margin-top: 4px;
+}
+
+/* Demo Section */
+.demo-section {
+  background: #f5f5f5;
+  padding: 16px;
+  border-radius: 8px;
+  margin-bottom: 24px;
+  border: 1px dashed #d9d9d9;
+}
+
+.demo-label {
+  font-size: 13px;
+  color: #595959;
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+.demo-section .ant-form-item {
+  margin-bottom: 0;
+}
+
+/* Step Labels */
+.step-label {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1890ff;
+  margin-bottom: 16px;
+}
+
+.step-hint {
+  font-size: 13px;
+  color: #8c8c8c;
+  margin-bottom: 16px;
+  font-style: italic;
+}
+
+/* Steps */
+.register-steps {
+  margin: 24px 0;
+}
+
+.register-steps .ant-steps-item-title {
+  font-size: 14px !important;
+}
+
+/* Button */
+.auth-button {
+  height: 48px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  background: linear-gradient(135deg, #1890ff 0%, #096dd9 100%);
+  border: none;
+  box-shadow: 0 4px 12px rgba(24, 144, 255, 0.3);
+  transition: all 0.3s ease;
+  margin-top: 8px;
+}
+
+.auth-button:hover {
+  background: linear-gradient(135deg, #40a9ff 0%, #1890ff 100%);
+  box-shadow: 0 6px 16px rgba(24, 144, 255, 0.4);
+  transform: translateY(-2px);
+}
+
+.auth-button:active {
+  transform: translateY(0);
+}
+
+/* Footer */
+.auth-footer {
+  text-align: center;
+  margin-top: 16px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.auth-footer .ant-btn-link {
+  color: #1890ff;
+  font-size: 14px;
+  padding: 0;
+}
+
+.auth-footer .ant-btn-link:hover {
+  color: #40a9ff;
+}
+
+.auth-divider {
+  margin: 0 8px;
+  color: #d9d9d9;
+  font-size: 14px;
+}
+
+/* Responsive */
+@media (max-width: 576px) {
+  .auth-card .ant-card-body {
+    padding: 32px 24px;
+  }
+
+  .auth-title {
+    font-size: 24px;
+  }
+
+  .auth-subtitle {
+    font-size: 13px;
+  }
+
+  .auth-button {
+    height: 44px;
+    font-size: 15px;
+  }
+}
+
+/* Animation */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.auth-card {
+  animation: fadeInUp 0.5s ease;
+}

@@ -1,22 +1,29 @@
+// File: Frontend/src/App.jsx
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import LoginPage from './pages/Loginpage';
+<<<<<<< HEAD
 import RegisterPage from './pages/RegisterPage'; // Đảm bảo bạn đã tạo file này (tôi đã gửi code ở tin nhắn trước)
+=======
+import RegisterPage from './pages/RegisterPage';
+>>>>>>> 641d0bdd6feb48ea2a6ce2b5ec91624bafcdb5cc
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
-import AuthorDashboard from './pages/AuthorDashboard';
+
 function App() {
   return (
     <Router>
       <Routes>
-        {/* Đường dẫn mặc định -> Chuyển về Login */}
+        {/* Redirect root to login */}
         <Route path="/" element={<Navigate to="/login" replace />} />
         
-        {/* Đây là lý do tại sao Link hoạt động: Bạn phải định nghĩa nó ở đây */}
+        {/* Auth routes */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-        <Route path="/author-dashboard" element={<AuthorDashboard />} />
-        {/* Trang Quên mật khẩu (Tạm thời để trống text) */}
-        <Route path="/forgot-password" element={<div style={{textAlign: 'center', marginTop: 50}}>Chức năng đang phát triển...</div>} />
+        
+        {/* TODO: Protected routes - Sẽ thêm sau */}
+        
+        {/* 404 Not Found */}
+        <Route path="*" element={<div>404 - Page Not Found</div>} />
       </Routes>
     </Router>
   );
