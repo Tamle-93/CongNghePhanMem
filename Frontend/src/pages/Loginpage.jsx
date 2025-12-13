@@ -1,180 +1,98 @@
-// File: Frontend/src/pages/LoginPage.jsx
-// Team UTH-ConfMS
-// MỤC ĐÍCH: Giao diện đăng nhập
+import React, { useState } from 'react';
+import { Form, Input, Button, Card, Typography, message, Select } from 'antd';
+import { LockOutlined, MailOutlined, BookOutlined } from '@ant-design/icons';
+import { useNavigate, Link } from 'react-router-dom';
+import axiosClient from '../api/axiosClient'; // Đảm bảo đã import file này
 
-import { useState } from 'react';
-import { Form, Input, Button, Select, message, Card } from 'antd';
-import { MailOutlined, LockOutlined, BookOutlined } from '@ant-design/icons';
-import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import './LoginPage.css';
-
+const { Title, Text } = Typography;
 const { Option } = Select;
 
 const LoginPage = () => {
-  const [form] = Form.useForm();
-  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-
-  // URL API Backend
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+  const [loading, setLoading] = useState(false);
 
   const onFinish = async (values) => {
     setLoading(true);
-    
+    message.loading({ content: 'Đang kết nối Database...', key: 'login' });
+
     try {
-      // Gọi API đăng nhập
-      const response = await axios.post(`${API_BASE_URL}/auth/login`, {
-        username: values.email, // Có thể dùng email hoặc username
-        password: values.password
-      });
-
-      if (response.data.status === 'success') {
-        const { token, user } = response.data.data;
-
-        // Lưu token và thông tin user vào localStorage
-        localStorage.setItem('token', token);
-        localStorage.setItem('user', JSON.stringify(user));
-
-        message.success('Đăng nhập thành công!');
-
-        // Chuyển hướng dựa theo role
-        switch (user.role) {
-          case 'Admin':
-            navigate('/admin/dashboard');
-            break;
-          case 'Chair':
-            navigate('/chair/dashboard');
-            break;
-          case 'Reviewer':
-            navigate('/reviewer/dashboard');
-            break;
-          case 'Author':
-          default:
-            navigate('/author/dashboard');
-            break;
+        // --- GỌI API THẬT XUỐNG BACKEND ---
+        const response = await axiosClient.post('/api/auth/login', values);
+        
+        // Nếu Backend trả về success
+        if (response.data.status === 'success') {
+            const { token, user } = response.data.data;
+            
+            // Lưu Token thật vào máy
+            localStorage.setItem('token', token);
+            localStorage.setItem('user', JSON.stringify(user));
+            
+            message.success({ content: 'Đăng nhập thành công!', key: 'login' });
+            
+            // Chuyển trang theo vai trò
+            if (user.role === 'Author') navigate('/author-dashboard');
+            else if (user.role === 'Reviewer') navigate('/reviewer-dashboard');
+            else navigate('/');
         }
-      }
     } catch (error) {
-      console.error('Login error:', error);
-
-      if (error.response) {
-        // Lỗi từ server (401, 400, 500...)
-        const errorMsg = error.response.data.message || 'Đăng nhập thất bại';
-        message.error(errorMsg);
-      } else if (error.request) {
-        // Không kết nối được server
-        message.error('Không thể kết nối đến server');
-      } else {
-        message.error('Đã xảy ra lỗi không xác định');
-      }
+        // Nếu nhập sai -> Backend trả lỗi 401 -> Nhảy vào đây
+        const errorMsg = error.response?.data?.message || 'Lỗi kết nối Server!';
+        message.error({ content: errorMsg, key: 'login' });
     } finally {
-      setLoading(false);
+        setLoading(false);
     }
   };
 
-  const handleForgotPassword = () => {
-    message.info('Chức năng quên mật khẩu đang được phát triển');
-    // TODO: Chuyển đến trang quên mật khẩu
-    // navigate('/forgot-password');
-  };
-
-  const handleRegister = () => {
-    navigate('/register');
+  // ... (Phần CSS styles giữ nguyên như cũ vì bạn đã ưng ý layout) ...
+  const styles = {
+    container: { position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: '#f0f5ff', zIndex: 1000 },
+    card: { width: 400, boxShadow: '0 4px 20px rgba(0,0,0,0.1)', borderRadius: '12px', padding: '20px' },
+    header: { textAlign: 'center', marginBottom: 25 },
+    logoContainer: { display: 'inline-flex', justifyContent: 'center', alignItems: 'center', width: 56, height: 56, backgroundColor: '#1890ff', borderRadius: '50%', marginBottom: 15 },
+    logoIcon: { fontSize: 28, color: 'white' },
+    link: { color: '#1890ff', fontWeight: 500, cursor: 'pointer', textDecoration: 'none' }
   };
 
   return (
-    <div className="login-container">
-      <Card className="login-card">
-        {/* Logo và Tiêu đề */}
-        <div className="login-header">
-          <div className="login-logo">
-            <BookOutlined style={{ fontSize: 48, color: '#1890ff' }} />
-          </div>
-          <h1 className="login-title">UTH-ConfMS</h1>
-          <p className="login-subtitle">Hệ thống Quản lý Hội nghị Khoa học</p>
+    <div style={styles.container}>
+      <Card style={styles.card} bordered={false}>
+        <div style={styles.header}>
+          <div style={styles.logoContainer}><BookOutlined style={styles.logoIcon} /></div>
+          <Title level={4} style={{ marginBottom: 5 }}>UTH-ConfMS</Title>
+          <Text type="secondary" style={{ fontSize: '13px' }}>Hệ thống Quản lý Hội nghị</Text>
         </div>
 
-        {/* Form đăng nhập */}
-        <Form
-          form={form}
-          name="login"
-          onFinish={onFinish}
-          autoComplete="off"
-          layout="vertical"
-          size="large"
-        >
-          {/* Email */}
-          <Form.Item
-            label="Email"
-            name="email"
-            rules={[
-              { required: true, message: 'Vui lòng nhập email!' },
-              { type: 'email', message: 'Email không đúng định dạng!' }
-            ]}
-          >
-            <Input
-              prefix={<MailOutlined />}
-              placeholder="your.email@uth.edu.vn"
-              autoComplete="email"
-            />
+        <Form name="login_form" onFinish={onFinish} layout="vertical" size="large" initialValues={{ role: 'Author' }}>
+          
+          <Form.Item name="email" rules={[{ required: true, message: 'Nhập Email!' }]}>
+            <Input prefix={<MailOutlined style={{ color: '#bfbfbf' }} />} placeholder="Email đăng nhập" />
           </Form.Item>
 
-          {/* Mật khẩu */}
-          <Form.Item
-            label="Mật khẩu"
-            name="password"
-            rules={[
-              { required: true, message: 'Vui lòng nhập mật khẩu!' },
-              { min: 6, message: 'Mật khẩu phải có ít nhất 6 ký tự!' }
-            ]}
-          >
-            <Input.Password
-              prefix={<LockOutlined />}
-              placeholder="••••••••"
-              autoComplete="current-password"
-            />
+          <Form.Item name="password" rules={[{ required: true, message: 'Nhập mật khẩu!' }]}>
+            <Input.Password prefix={<LockOutlined style={{ color: '#bfbfbf' }} />} placeholder="Mật khẩu" />
           </Form.Item>
 
-          {/* Demo Role Selector (Chỉ để test - Xóa khi production) */}
-          <div className="demo-section">
-            <p className="demo-label">Demo - Chọn vai trò để đăng nhập:</p>
-            <Form.Item
-              name="demoRole"
-              initialValue="Author"
-            >
+          <div style={{ marginBottom: 20 }}>
+            <Text style={{ color: '#595959', fontSize: '13px' }}>Đăng nhập với vai trò:</Text>
+            <Form.Item name="role" style={{ marginBottom: 0, marginTop: 5 }}>
               <Select>
                 <Option value="Author">Tác giả (Author)</Option>
                 <Option value="Reviewer">Phản biện (Reviewer)</Option>
-                <Option value="Chair">Chủ tọa (Chair)</Option>
-                <Option value="Admin">Quản trị (Admin)</Option>
+                <Option value="Chair">Chủ trì (Chair)</Option>
               </Select>
             </Form.Item>
           </div>
 
-          {/* Nút đăng nhập */}
-          <Form.Item>
-            <Button
-              type="primary"
-              htmlType="submit"
-              loading={loading}
-              block
-              size="large"
-              className="login-button"
-            >
+          <Form.Item style={{ marginBottom: 0 }}>
+            <Button type="primary" htmlType="submit" block loading={loading} style={{ height: '40px', fontWeight: 500 }}>
               Đăng nhập
             </Button>
           </Form.Item>
 
-          {/* Links phụ */}
-          <div className="login-footer">
-            <Button type="link" onClick={handleForgotPassword}>
-              Quên mật khẩu?
-            </Button>
-            <span className="login-divider">•</span>
-            <Button type="link" onClick={handleRegister}>
-              Đăng ký tài khoản
-            </Button>
+          <div style={{ textAlign: 'center', marginTop: 20 }}>
+            <Link to="/forgot-password" style={styles.link}>Quên mật khẩu?</Link>
+            <span style={{ margin: '0 8px' }}>•</span>
+            <Link to="/register" style={styles.link}>Đăng ký tài khoản</Link>
           </div>
         </Form>
       </Card>
