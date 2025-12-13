@@ -85,33 +85,28 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 
 # ============= JWT TOKEN =============
 
-def generate_token(user_id: int, username: str, role: str) -> str:
+def generate_token(user_id: str, username: str, role: str) -> str:  # ← user_id là string (UUID)
     """
     Tạo JWT token sau khi login thành công
     
     Args:
-        user_id: ID của user trong database
+        user_id: UUID của user (string format)  # ← CẬP NHẬT DOC
         username: Tên đăng nhập
         role: Vai trò (Author, Reviewer, Chair, Admin)
     
     Returns:
         str: JWT token string
-    
-    Example:
-        >>> token = generate_token(1, "john_doe", "Author")
-        >>> print(token)  # eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
     """
     payload = {
-        "user_id": user_id,
+        "user_id": user_id,  # ← UUID string
         "username": username,
         "role": role,
-        "iat": datetime.utcnow(),  # Issued At (thời điểm tạo token)
-        "exp": datetime.utcnow() + timedelta(days=TOKEN_EXPIRY_DAYS)  # Expiration
+        "iat": datetime.utcnow(),
+        "exp": datetime.utcnow() + timedelta(days=TOKEN_EXPIRY_DAYS)
     }
     
     token = jwt.encode(payload, SECRET_KEY, algorithm=JWT_ALGORITHM)
     return token
-
 
 def decode_token(token: str) -> Optional[Dict]:
     """
