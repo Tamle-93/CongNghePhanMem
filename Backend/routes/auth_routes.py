@@ -149,3 +149,12 @@ def health_check():
         data={"service": "auth", "version": "1.0"},
         message="Auth service is running"
     )), 200
+# --- Thêm vào file auth_routes.py ---
+
+@auth_bp.route('/forgot-password/init', methods=['POST'])
+def init_forgot_password():
+    return auth_controller.get_security_question()
+
+@auth_bp.route('/forgot-password/reset', methods=['POST'])
+def finish_forgot_password():
+    return auth_controller.reset_password()
