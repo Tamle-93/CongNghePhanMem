@@ -3,7 +3,7 @@
 # Team Member: Lê Minh Tâm
 from flask import request, jsonify
 from models.user_model import UserModel
-from Backend.config.database import get_connection
+from config.database import get_connection
 from utils.security import (
     hash_password, 
     verify_password, 

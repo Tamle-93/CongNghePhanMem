@@ -1,0 +1,245 @@
+/* File: Frontend/src/pages/AuthorDashboard.css */
+
+.dashboard-layout {
+  min-height: 100vh;
+  background: #f5f5f5;
+}
+
+/* Header */
+.dashboard-header {
+  background: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  padding: 0 32px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 64px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.logo {
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, #1890ff 0%, #096dd9 100%);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  color: white;
+}
+
+.logo-text h2 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: #262626;
+}
+
+.logo-text span {
+  font-size: 12px;
+  color: #8c8c8c;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.user-name {
+  font-weight: 600;
+  color: #262626;
+  font-size: 14px;
+}
+
+.user-email {
+  font-size: 12px;
+  color: #8c8c8c;
+}
+
+.logout-btn {
+  border-radius: 6px;
+}
+
+/* Content */
+.dashboard-content {
+  padding: 24px 32px;
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.content-wrapper {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+/* Tabs */
+.tabs-container {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+  border-bottom: 2px solid #f0f0f0;
+  padding-bottom: 8px;
+}
+
+.tab-button {
+  font-size: 15px;
+  font-weight: 500;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.tab-button.ant-btn-primary {
+  background: transparent !important;
+  color: #1890ff !important;
+  border-bottom: 2px solid #1890ff !important;
+  border-radius: 0 !important;
+}
+
+/* Section Header */
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.section-header h3 {
+  font-size: 20px;
+  font-weight: 600;
+  margin: 0;
+}
+
+/* Papers List */
+.papers-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.paper-card {
+  border-radius: 8px;
+  border: 1px solid #e8e8e8;
+  transition: all 0.3s;
+}
+
+.paper-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-color: #1890ff;
+}
+
+.paper-card.accepted-paper {
+  background: #f6ffed;
+  border-color: #b7eb8f;
+}
+
+.paper-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.paper-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #262626;
+  margin: 0;
+  flex: 1;
+}
+
+.status-tag {
+  font-size: 13px;
+  padding: 4px 12px;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.paper-meta {
+  display: flex;
+  gap: 8px;
+  font-size: 13px;
+  color: #8c8c8c;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+.paper-authors {
+  font-size: 13px;
+  color: #595959;
+  margin-bottom: 16px;
+}
+
+.paper-actions {
+  display: flex;
+  gap: 16px;
+  padding-top: 12px;
+  border-top: 1px solid #f0f0f0;
+}
+
+.paper-actions .ant-btn-link {
+  padding: 0;
+  height: auto;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .dashboard-header {
+    padding: 0 16px;
+  }
+
+  .header-left .logo-text h2 {
+    display: none;
+  }
+
+  .user-info {
+    display: none;
+  }
+
+  .dashboard-content {
+    padding: 16px;
+  }
+
+  .content-wrapper {
+    padding: 16px;
+  }
+
+  .tabs-container {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+  }
+
+  .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .section-header button {
+    width: 100%;
+  }
+
+  .paper-actions {
+    flex-wrap: wrap;
+  }
+}

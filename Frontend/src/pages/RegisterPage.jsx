@@ -42,6 +42,7 @@ const RegisterPage = () => {
       password: formData.password,
       fullname: formData.fullname,
       email: formData.email,
+      role: formData.role || 'Author', // ← THÊM: Lấy role từ form
       security_questions: [
         { question: values.question1, answer: values.answer1 },
         { question: values.question2, answer: values.answer2 },
@@ -54,13 +55,23 @@ const RegisterPage = () => {
 
       if (response.data.status === 'success') {
         message.success('Đăng ký thành công! Vui lòng đăng nhập');
-        navigate('/login');
+        setTimeout(() => {
+          navigate('/login');
+        }, 1500);
       }
     } catch (error) {
+      console.error('Register error:', error);
       if (error.response) {
-        message.error(error.response.data.message || 'Đăng ký thất bại');
+        const errorMsg = error.response.data.message || 'Đăng ký thất bại';
+        const errorDetails = error.response.data.details;
+        
+        if (errorDetails && Array.isArray(errorDetails)) {
+          message.error(errorDetails.join(', '));
+        } else {
+          message.error(errorMsg);
+        }
       } else {
-        message.error('Không thể kết nối đến server');
+        message.error('Không thể kết nối đến server. Vui lòng kiểm tra Backend đã chạy chưa!');
       }
     } finally {
       setLoading(false);
@@ -96,13 +107,16 @@ const RegisterPage = () => {
           >
             <p className="step-label">1. Thông tin tài khoản</p>
 
-            {/* Vai trò */}
+            {/* Vai trò - CHO PHÉP CHỌN TẤT CẢ */}
             <Form.Item
               label={<span style={{ color: '#ff4d4f' }}>* Đăng ký với vai trò:</span>}
               name="role"
+              rules={[{ required: true, message: 'Vui lòng chọn vai trò!' }]}
             >
               <Select>
                 <Option value="Author">Tác giả (Author)</Option>
+                <Option value="Reviewer">Phản biện (Reviewer)</Option>
+                <Option value="Chair">Chủ tọa (Chair)</Option>
               </Select>
             </Form.Item>
 

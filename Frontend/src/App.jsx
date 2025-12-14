@@ -1,12 +1,9 @@
 // File: Frontend/src/App.jsx
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import LoginPage from './pages/Loginpage';
-<<<<<<< HEAD
-import RegisterPage from './pages/RegisterPage'; // Đảm bảo bạn đã tạo file này (tôi đã gửi code ở tin nhắn trước)
-=======
+import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
->>>>>>> 641d0bdd6feb48ea2a6ce2b5ec91624bafcdb5cc
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
+import AuthorDashboard from './pages/AuthorDashboard';
 
 function App() {
   return (
@@ -20,7 +17,13 @@ function App() {
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         
-        {/* TODO: Protected routes - Sẽ thêm sau */}
+        {/* Author Dashboard */}
+        <Route path="/author/dashboard" element={<AuthorDashboard />} />
+        
+        {/* TODO: Các dashboard khác */}
+        {/* <Route path="/reviewer/dashboard" element={<ReviewerDashboard />} /> */}
+        {/* <Route path="/chair/dashboard" element={<ChairDashboard />} /> */}
+        {/* <Route path="/admin/dashboard" element={<AdminDashboard />} /> */}
         
         {/* 404 Not Found */}
         <Route path="*" element={<div>404 - Page Not Found</div>} />
