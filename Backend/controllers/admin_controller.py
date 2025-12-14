@@ -108,3 +108,195 @@ class AdminController:
                 code=500,
                 details=str(e)
             )), 500
+    @require_auth
+    @require_role(["Admin"])
+    def get_user_by_id(self, user_id):
+        """
+        Endpoint: GET /admin/users/<user_id>
+        Headers: Authorization: Bearer <token>
+        
+        Returns:
+            200: Thông tin user
+            403: Không có quyền
+            404: Không tìm thấy user
+            500: Server error
+        """
+        try:
+            # Lấy thông tin user từ database
+            user = self.user_model.get_user_by_id(user_id)
+            
+            if not user:
+                return jsonify(error_response(
+                    message="Không tìm thấy người dùng",
+                    code=404
+                )), 404
+            
+            # Xóa thông tin nhạy cảm
+            user.pop('passwordhash', None)
+            user.pop('PasswordHash', None)
+            
+            # Trả về response thành công
+            return jsonify(success_response(
+                data=user,
+                message="Lấy thông tin người dùng thành công"
+            )), 200
+            
+        except Exception as e:
+            return jsonify(error_response(
+                message="Lỗi hệ thống",
+                code=500,
+                details=str(e)
+            )), 500
+    
+    @require_auth
+    @require_role(["Admin"])
+    def create_user(self):
+        """
+        Endpoint: POST /admin/users
+        Headers: Authorization: Bearer <token>
+        Body: {
+            "username": "new_user",
+            "password": "Password123!",
+            "fullname": "New User",
+            "email": "newuser@example.com",
+            "role": "Author"
+        }
+        
+        Returns:
+            201: User được tạo thành công
+            400: Validation error
+            403: Không có quyền
+            409: Username hoặc Email đã tồn tại
+            500: Server error
+        """
+        try:
+            # Lấy dữ liệu từ request
+            data = request.get_json()
+            
+            if not data:
+                return jsonify(error_response(
+                    message="Không có dữ liệu",
+                    code=400
+                )), 400
+            
+            username = data.get('username', '').strip()
+            password = data.get('password', '')
+            fullname = data.get('fullname', '').strip()
+            email = data.get('email', '').strip().lower()
+            role = data.get('role', 'Author').strip()
+            
+            # Kiểm tra các trường bắt buộc
+            if not all([username, password, fullname, email]):
+                return jsonify(error_response(
+                    message="Thiếu thông tin bắt buộc",
+                    code=400,
+                    details="Cần có đầy đủ: username, password, fullname, email"
+                )), 400
+            
+            # Validate role
+            valid_roles = ['Author', 'Reviewer', 'Chair', 'Admin']
+            if role not in valid_roles:
+                return jsonify(error_response(
+                    message="Role không hợp lệ",
+                    code=400,
+                    details=f"Role phải là một trong: {', '.join(valid_roles)}"
+                )), 400
+            
+            # Validate Username
+            username_errors = validate_username(username)
+            if username_errors:
+                return jsonify(error_response(
+                    message="Username không hợp lệ",
+                    code=400,
+                    details=username_errors
+                )), 400
+            
+            # Validate Password
+            password_errors = validate_password(password)
+            if password_errors:
+                return jsonify(error_response(
+                    message="Mật khẩu không đủ mạnh",
+                    code=400,
+                    details=password_errors
+                )), 400
+            
+            # Validate Email
+            email_errors = validate_email(email)
+            if email_errors:
+                return jsonify(error_response(
+                    message="Email không hợp lệ",
+                    code=400,
+                    details=email_errors
+                )), 400
+            
+            # Validate Fullname
+            fullname_errors = validate_fullname(fullname)
+            if fullname_errors:
+                return jsonify(error_response(
+                    message="Họ tên không hợp lệ",
+                    code=400,
+                    details=fullname_errors
+                )), 400
+            
+            # Kiểm tra Username đã tồn tại chưa
+            if self.user_model.check_username_exists(username):
+                return jsonify(error_response(
+                    message="Username đã tồn tại",
+                    code=409
+                )), 409
+            
+            # Kiểm tra Email đã tồn tại chưa
+            if self.user_model.check_email_exists(email):
+                return jsonify(error_response(
+                    message="Email đã được sử dụng",
+                    code=409
+                )), 409
+            
+            # Hash password
+            password_hash = hash_password(password)
+            
+            # Tạo user mới
+            new_user = self.user_model.create_user(
+                username=username,
+                password_hash=password_hash,
+                full_name=fullname,
+                email=email,
+                role=role
+            )
+            
+            if not new_user:
+                return jsonify(error_response(
+                    message="Không thể tạo người dùng",
+                    code=500
+                )), 500
+            
+            # Xóa thông tin nhạy cảm
+            new_user.pop('passwordhash', None)
+            new_user.pop('PasswordHash', None)
+            
+            # Trả về response thành công
+            return jsonify(success_response(
+                data=new_user,
+                message="Tạo người dùng thành công"
+            )), 201
+            
+        except Exception as e:
+            error_msg = str(e)
+            
+            if "Username already exists" in error_msg:
+                return jsonify(error_response(
+                    message="Username đã tồn tại",
+                    code=409
+                )), 409
+            elif "Email already exists" in error_msg:
+                return jsonify(error_response(
+                    message="Email đã được sử dụng",
+                    code=409
+                )), 409
+            
+            return jsonify(error_response(
+                message="Lỗi hệ thống",
+                code=500,
+                details=error_msg
+            )), 500
+    
