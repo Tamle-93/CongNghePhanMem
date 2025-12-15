@@ -29,3 +29,24 @@ def get_my_reviews():
     ]
 
     return success_response(mock_data, "Mock reviewer assignments - week 1")
+
+# ==============================
+# MEMBER 4 - ASSIGN REVIEWER
+# ==============================
+
+@review_bp.route("/assign", methods=["POST"])
+def assign_reviewer():
+    """
+    Assign reviewer to a paper
+    Member 4 - Assignment feature
+    Week 1: init endpoint (mock)
+    """
+    # MOCK RESPONSE - will implement logic later
+    mock_result = {
+        "paper_id": 1,
+        "reviewer_id": 2,
+        "status": "Assigned"
+    }
+
+    return success_response(mock_result, "Reviewer assigned successfully (mock)")
+
