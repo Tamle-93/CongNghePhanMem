@@ -19,8 +19,9 @@ const LoginPage = () => {
     setLoading(true);
     
     try {
+      // GỬI CẢ EMAIL VÀ USERNAME (Backend sẽ check cả 2)
       const response = await axios.post(`${API_BASE_URL}/auth/login`, {
-        username: values.email,
+        username: values.login_input, // ← ĐỔI: Gửi input vào field username
         password: values.password
       });
 
@@ -30,7 +31,8 @@ const LoginPage = () => {
         localStorage.setItem('user', JSON.stringify(user));
         message.success('Đăng nhập thành công!');
 
-        switch (user.role) {
+        // Redirect theo role
+        switch (user.role || user.Role) {
           case 'Admin':
             navigate('/admin/dashboard');
             break;
@@ -47,6 +49,7 @@ const LoginPage = () => {
         }
       }
     } catch (error) {
+      console.error('Login error:', error);
       if (error.response) {
         message.error(error.response.data.message || 'Đăng nhập thất bại');
       } else {
@@ -77,19 +80,16 @@ const LoginPage = () => {
           size="large"
           className="auth-form"
         >
-          {/* Email */}
+          {/* Email hoặc Username */}
           <Form.Item
-            name="email"
+            name="login_input"
             rules={[
-              { required: true, message: 'Nhập Email!' },
-              { type: 'email', message: 'Email không đúng định dạng!' }
+              { required: true, message: 'Nhập Email hoặc Username!' }
             ]}
-            validateStatus={form.getFieldError('email').length > 0 ? 'error' : ''}
-            help={form.getFieldError('email')[0]}
           >
             <Input
               prefix={<MailOutlined style={{ color: '#bfbfbf' }} />}
-              placeholder="Email đăng nhập"
+              placeholder="Email hoặc Username"
             />
           </Form.Item>
 
@@ -99,8 +99,6 @@ const LoginPage = () => {
             rules={[
               { required: true, message: 'Nhập mật khẩu!' }
             ]}
-            validateStatus={form.getFieldError('password').length > 0 ? 'error' : ''}
-            help={form.getFieldError('password')[0]}
           >
             <Input.Password
               prefix={<LockOutlined style={{ color: '#bfbfbf' }} />}
