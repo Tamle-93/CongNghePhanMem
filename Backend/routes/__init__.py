@@ -10,3 +10,7 @@
 #     app.register_blueprint(auth_bp)
 #     app.register_blueprint(paper_bp)
 #     register_api_routes(app)
+from .api_routes import register_api_routes
+
+def register_routes(app):
+    register_api_routes(app)
