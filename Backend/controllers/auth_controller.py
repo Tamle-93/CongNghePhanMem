@@ -508,3 +508,54 @@ class AuthController:
                 code=500,
                 details=str(e)
             )), 500
+    
+    def check_availability(self):
+        """
+    Endpoint: POST /auth/check-availability
+    Body: {
+        "username": "testuser",
+        "email": "test@example.com"
+    }
+    
+    Returns:
+        200: Username và Email đều available
+        409: Username hoặc Email đã tồn tại
+    """
+        try:
+            data = request.get_json()
+        
+            username = data.get('username', '').strip()
+            email = data.get('email', '').strip().lower()
+        
+            if not username or not email:
+                return jsonify(error_response(
+                    message="Thiếu username hoặc email",
+                    code=400
+                )), 400
+        
+            # Kiểm tra username
+            if self.user_model.check_username_exists(username):
+                return jsonify(error_response(
+                    message="Username đã tồn tại",
+                    code=409
+                )), 409
+        
+            # Kiểm tra email
+            if self.user_model.check_email_exists(email):
+                return jsonify(error_response(
+                    message="Email đã được sử dụng",
+                    code=409
+                )), 409
+        
+        # Cả hai đều available
+            return jsonify(success_response(
+                data=None,
+                message="Username và Email hợp lệ"
+            )), 200
+        
+        except Exception as e:
+            return jsonify(error_response(
+                message="Lỗi hệ thống",
+                code=500,
+                details=str(e)
+            )), 500

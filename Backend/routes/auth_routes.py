@@ -176,3 +176,10 @@ def forgot_password_step2():
     Bước 2: Trả lời câu hỏi + nhập mật khẩu mới
     """
     return auth_controller.forgot_password_step2()
+@auth_bp.route('/check-availability', methods=['POST'])
+def check_availability():
+    """
+    POST /auth/check-availability
+    Kiểm tra username/email có sẵn dùng không
+    """
+    return auth_controller.check_availability()
