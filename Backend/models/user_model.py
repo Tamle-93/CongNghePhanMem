@@ -1,13 +1,12 @@
-# File: user_model.py
+# File: Backend/models/user_model.py
 # Nhiệm vụ: Viết code xử lý cho user_model
 # Team Member: Lê Minh Tâm
 
-import psycopg2
 from psycopg2.extras import RealDictCursor
 from datetime import datetime
-import os
 from typing import Optional, List, Dict, Any
-from config.database import get_connection 
+from config.database import get_connection
+import json
 
 class UserModel:
     """
@@ -15,21 +14,37 @@ class UserModel:
     """
     
     def create_user(self, username: str, password_hash: str, full_name: str, 
-                    email: str, role: str = 'Author', security_data: list = None) -> Optional[Dict[str, Any]]:
+                    email: str, role: str = 'Author', 
+                    security_data: list = None) -> Optional[Dict[str, Any]]:
+        """
+        Tạo user mới trong database
+        
+        Args:
+            username: Tên đăng nhập (không có dấu cách)
+            password_hash: Mật khẩu đã hash
+            full_name: Họ tên đầy đủ
+            email: Email hợp lệ
+            role: Vai trò (Author, Reviewer, Chair, Admin)
+            security_data: Dữ liệu bảo mật (câu hỏi quên mật khẩu)
+        
+        Returns:
+            Dict chứa thông tin user vừa tạo hoặc None nếu lỗi
+        """
         conn = None
         try:
             conn = get_connection()
+            if not conn:
+                raise Exception("Cannot connect to database")
+            
             cursor = conn.cursor(cursor_factory=RealDictCursor)
             
-            # Thêm cột SecurityData vào câu Query
             query = """
                 INSERT INTO Users (Username, PasswordHash, FullName, Email, Role, CreatedDate, IsDeleted, SecurityData)
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
                 RETURNING Id, Username, FullName, Email, Role, CreatedDate
             """
             
-            # Chuyển list câu hỏi thành JSON string để lưu (cần import json)
-            import json
+            # Chuyển list câu hỏi thành JSON string để lưu
             security_json = json.dumps(security_data) if security_data else None
 
             cursor.execute(query, (
@@ -39,20 +54,37 @@ class UserModel:
             
             user = cursor.fetchone()
             conn.commit()
-            return dict(user) if user else None
+            cursor.close()
+            
+            if user:
+                user_dict = dict(user)
+                user_dict['id'] = str(user_dict.get('id') or user_dict.get('Id'))
+                return user_dict
+            
+            return None
             
         except Exception as e:
-            if conn: conn.rollback()
-            # ... (Giữ nguyên phần xử lý lỗi của bạn) ...
-            raise e
+            if conn:
+                conn.rollback()
+            
+            error_msg = str(e).lower()
+            if 'unique' in error_msg and 'username' in error_msg:
+                raise Exception("Username already exists")
+            elif 'unique' in error_msg and 'email' in error_msg:
+                raise Exception("Email already exists")
+            else:
+                raise Exception(f"Database error: {str(e)}")
+                
         finally:
-            if conn: conn.close()
-    def get_user_by_id(self, user_id: int) -> Optional[Dict[str, Any]]:
+            if conn:
+                conn.close()
+    
+    def get_user_by_id(self, user_id: str) -> Optional[Dict[str, Any]]:
         """
-        Lấy thông tin user theo ID
+        Lấy thông tin user theo ID (UUID)
         
         Args:
-            user_id: ID của user
+            user_id: UUID của user (string format)
         
         Returns:
             Dict chứa thông tin user hoặc None nếu không tìm thấy
@@ -66,16 +98,30 @@ class UserModel:
             cursor = conn.cursor(cursor_factory=RealDictCursor)
             
             query = """
-                SELECT Id, Username, PasswordHash, FullName, Email, Role, CreatedDate, IsDeleted
+                SELECT Id, Username, PasswordHash, FullName, Email, Role, CreatedDate, IsDeleted, SecurityData
                 FROM Users
-                WHERE Id = %s AND IsDeleted = FALSE
+                WHERE Id::text = %s AND IsDeleted = FALSE
             """
             
             cursor.execute(query, (user_id,))
             user = cursor.fetchone()
             cursor.close()
             
-            return dict(user) if user else None
+            if user:
+                user_dict = dict(user)
+                user_dict['id'] = str(user_dict.get('id') or user_dict.get('Id'))
+                
+                # Parse SecurityData từ JSON
+                security_data = user_dict.get('securitydata') or user_dict.get('SecurityData')
+                if security_data:
+                    if isinstance(security_data, str):
+                        user_dict['securitydata'] = json.loads(security_data)
+                    else:
+                        user_dict['securitydata'] = security_data
+                
+                return user_dict
+            
+            return None
             
         except Exception as e:
             raise Exception(f"Database error: {str(e)}")
@@ -103,7 +149,7 @@ class UserModel:
             cursor = conn.cursor(cursor_factory=RealDictCursor)
             
             query = """
-                SELECT Id, Username, PasswordHash, FullName, Email, Role, CreatedDate, IsDeleted
+                SELECT Id, Username, PasswordHash, FullName, Email, Role, CreatedDate, IsDeleted, SecurityData
                 FROM Users
                 WHERE Username = %s AND IsDeleted = FALSE
             """
@@ -112,7 +158,12 @@ class UserModel:
             user = cursor.fetchone()
             cursor.close()
             
-            return dict(user) if user else None
+            if user:
+                user_dict = dict(user)
+                user_dict['id'] = str(user_dict.get('id') or user_dict.get('Id'))
+                return user_dict
+            
+            return None
             
         except Exception as e:
             raise Exception(f"Database error: {str(e)}")
@@ -122,53 +173,62 @@ class UserModel:
                 conn.close()
 
     def get_user_by_email(self, email: str) -> Optional[Dict[str, Any]]:
-    # """
-    # Lấy thông tin user theo email (dùng cho login)
-    
-    # Args:
-    #     email: Địa chỉ email
-    
-    # Returns:
-    #     Dict chứa thông tin user (bao gồm PasswordHash) hoặc None
-    # """
-    conn = None
-    try:
-        conn = get_connection()
-        if not conn:
-            raise Exception("Cannot connect to database")
-        
-        cursor = conn.cursor(cursor_factory=RealDictCursor)
-        
-        query = """
-            SELECT Id, Username, PasswordHash, FullName, Email, Role, CreatedDate, IsDeleted
-            FROM Users
-            WHERE Email = %s AND IsDeleted = FALSE
         """
+        Lấy thông tin user theo email (dùng cho login và forgot password)
         
-        cursor.execute(query, (email,))
-        user = cursor.fetchone()
-        cursor.close()
+        Args:
+            email: Địa chỉ email
         
-        if user:
-            user_dict = dict(user)
-            user_dict['id'] = str(user_dict.get('id') or user_dict.get('Id'))
-            return user_dict
-        
-        return None
-        
-    except Exception as e:
-        raise Exception(f"Database error: {str(e)}")
-        
-    finally:
-        if conn:
-            conn.close()
+        Returns:
+            Dict chứa thông tin user (bao gồm PasswordHash và SecurityData) hoặc None
+        """
+        conn = None
+        try:
+            conn = get_connection()
+            if not conn:
+                raise Exception("Cannot connect to database")
+            
+            cursor = conn.cursor(cursor_factory=RealDictCursor)
+            
+            query = """
+                SELECT Id, Username, PasswordHash, FullName, Email, Role, CreatedDate, IsDeleted, SecurityData
+                FROM Users
+                WHERE Email = %s AND IsDeleted = FALSE
+            """
+            
+            cursor.execute(query, (email,))
+            user = cursor.fetchone()
+            cursor.close()
+            
+            if user:
+                user_dict = dict(user)
+                user_dict['id'] = str(user_dict.get('id') or user_dict.get('Id'))
+                
+                # Parse SecurityData từ JSON
+                security_data = user_dict.get('securitydata') or user_dict.get('SecurityData')
+                if security_data:
+                    if isinstance(security_data, str):
+                        user_dict['securitydata'] = json.loads(security_data)
+                    else:
+                        user_dict['securitydata'] = security_data
+                
+                return user_dict
+            
+            return None
+            
+        except Exception as e:
+            raise Exception(f"Database error: {str(e)}")
+            
+        finally:
+            if conn:
+                conn.close()
 
-    def update_user(self, user_id: int, **kwargs) -> Optional[Dict[str, Any]]:
+    def update_user(self, user_id: str, **kwargs) -> Optional[Dict[str, Any]]:
         """
         Cập nhật thông tin user
         
         Args:
-            user_id: ID của user cần update
+            user_id: UUID của user cần update (string format)
             **kwargs: Các field cần update (FullName, Email, Role)
         
         Returns:
@@ -200,7 +260,7 @@ class UserModel:
             query = f"""
                 UPDATE Users
                 SET {', '.join(update_fields)}
-                WHERE Id = %s AND IsDeleted = FALSE
+                WHERE Id::text = %s AND IsDeleted = FALSE
                 RETURNING Id, Username, FullName, Email, Role, CreatedDate, IsDeleted
             """
             
@@ -209,7 +269,12 @@ class UserModel:
             conn.commit()
             cursor.close()
             
-            return dict(user) if user else None
+            if user:
+                user_dict = dict(user)
+                user_dict['id'] = str(user_dict.get('id') or user_dict.get('Id'))
+                return user_dict
+            
+            return None
             
         except Exception as e:
             if conn:
@@ -225,12 +290,12 @@ class UserModel:
             if conn:
                 conn.close()
 
-    def update_password(self, user_id: int, new_password_hash: str) -> bool:
+    def update_password(self, user_id: str, new_password_hash: str) -> bool:
         """
         Cập nhật mật khẩu user
         
         Args:
-            user_id: ID của user
+            user_id: UUID của user (string format)
             new_password_hash: Mật khẩu mới đã hash
         
         Returns:
@@ -247,7 +312,7 @@ class UserModel:
             query = """
                 UPDATE Users
                 SET PasswordHash = %s
-                WHERE Id = %s AND IsDeleted = FALSE
+                WHERE Id::text = %s AND IsDeleted = FALSE
             """
             
             cursor.execute(query, (new_password_hash, user_id))
@@ -267,12 +332,12 @@ class UserModel:
             if conn:
                 conn.close()
 
-    def soft_delete_user(self, user_id: int) -> bool:
+    def soft_delete_user(self, user_id: str) -> bool:
         """
         Xóa mềm user (đánh dấu IsDeleted = TRUE)
         
         Args:
-            user_id: ID của user cần xóa
+            user_id: UUID của user cần xóa (string format)
         
         Returns:
             True nếu thành công, False nếu thất bại
@@ -288,7 +353,7 @@ class UserModel:
             query = """
                 UPDATE Users
                 SET IsDeleted = TRUE
-                WHERE Id = %s
+                WHERE Id::text = %s
             """
             
             cursor.execute(query, (user_id,))
@@ -351,7 +416,14 @@ class UserModel:
             users = cursor.fetchall()
             cursor.close()
             
-            return [dict(user) for user in users]
+            # Chuyển UUID sang string
+            result = []
+            for user in users:
+                user_dict = dict(user)
+                user_dict['id'] = str(user_dict.get('id') or user_dict.get('Id'))
+                result.append(user_dict)
+            
+            return result
             
         except Exception as e:
             raise Exception(f"Database error: {str(e)}")
@@ -462,7 +534,14 @@ class UserModel:
             users = cursor.fetchall()
             cursor.close()
             
-            return [dict(user) for user in users]
+            # Chuyển UUID sang string
+            result = []
+            for user in users:
+                user_dict = dict(user)
+                user_dict['id'] = str(user_dict.get('id') or user_dict.get('Id'))
+                result.append(user_dict)
+            
+            return result
             
         except Exception as e:
             raise Exception(f"Database error: {str(e)}")
@@ -470,6 +549,3 @@ class UserModel:
         finally:
             if conn:
                 conn.close()
-
-
-
