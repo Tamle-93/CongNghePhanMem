@@ -158,3 +158,21 @@ def init_forgot_password():
 @auth_bp.route('/forgot-password/reset', methods=['POST'])
 def finish_forgot_password():
     return auth_controller.reset_password()
+# ... (code cũ)
+
+@auth_bp.route('/forgot-password/step1', methods=['POST'])
+def forgot_password_step1():
+    """
+    POST /auth/forgot-password/step1
+    Bước 1: Nhập email, hệ thống trả về câu hỏi bảo mật
+    """
+    return auth_controller.forgot_password_step1()
+
+
+@auth_bp.route('/forgot-password/step2', methods=['POST'])
+def forgot_password_step2():
+    """
+    POST /auth/forgot-password/step2
+    Bước 2: Trả lời câu hỏi + nhập mật khẩu mới
+    """
+    return auth_controller.forgot_password_step2()

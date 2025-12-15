@@ -122,41 +122,46 @@ class UserModel:
                 conn.close()
 
     def get_user_by_email(self, email: str) -> Optional[Dict[str, Any]]:
-        """
-        Lấy thông tin user theo email
+    # """
+    # Lấy thông tin user theo email (dùng cho login)
+    
+    # Args:
+    #     email: Địa chỉ email
+    
+    # Returns:
+    #     Dict chứa thông tin user (bao gồm PasswordHash) hoặc None
+    # """
+    conn = None
+    try:
+        conn = get_connection()
+        if not conn:
+            raise Exception("Cannot connect to database")
         
-        Args:
-            email: Địa chỉ email
+        cursor = conn.cursor(cursor_factory=RealDictCursor)
         
-        Returns:
-            Dict chứa thông tin user hoặc None
+        query = """
+            SELECT Id, Username, PasswordHash, FullName, Email, Role, CreatedDate, IsDeleted
+            FROM Users
+            WHERE Email = %s AND IsDeleted = FALSE
         """
-        conn = None
-        try:
-            conn = get_connection()
-            if not conn:
-                raise Exception("Cannot connect to database")
-            
-            cursor = conn.cursor(cursor_factory=RealDictCursor)
-            
-            query = """
-                SELECT Id, Username, FullName, Email, Role, CreatedDate, IsDeleted
-                FROM Users
-                WHERE Email = %s AND IsDeleted = FALSE
-            """
-            
-            cursor.execute(query, (email,))
-            user = cursor.fetchone()
-            cursor.close()
-            
-            return dict(user) if user else None
-            
-        except Exception as e:
-            raise Exception(f"Database error: {str(e)}")
-            
-        finally:
-            if conn:
-                conn.close()
+        
+        cursor.execute(query, (email,))
+        user = cursor.fetchone()
+        cursor.close()
+        
+        if user:
+            user_dict = dict(user)
+            user_dict['id'] = str(user_dict.get('id') or user_dict.get('Id'))
+            return user_dict
+        
+        return None
+        
+    except Exception as e:
+        raise Exception(f"Database error: {str(e)}")
+        
+    finally:
+        if conn:
+            conn.close()
 
     def update_user(self, user_id: int, **kwargs) -> Optional[Dict[str, Any]]:
         """
