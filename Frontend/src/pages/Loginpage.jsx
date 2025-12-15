@@ -16,49 +16,64 @@ const LoginPage = () => {
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
 
   const onFinish = async (values) => {
-    setLoading(true);
-    
-    try {
-      // GỬI CẢ EMAIL VÀ USERNAME (Backend sẽ check cả 2)
-      const response = await axios.post(`${API_BASE_URL}/auth/login`, {
-        username: values.login_input, // ← ĐỔI: Gửi input vào field username
-        password: values.password
-      });
+  setLoading(true);
+  
+  // Lấy role mà người dùng chọn ở form (demo)
+  const selectedRole = values.role;
 
-      if (response.data.status === 'success') {
-        const { token, user } = response.data.data;
-        localStorage.setItem('token', token);
-        localStorage.setItem('user', JSON.stringify(user));
-        message.success('Đăng nhập thành công!');
+  try {
+    const response = await axios.post(`${API_BASE_URL}/auth/login`, {
+      username: values.login_input,
+      password: values.password
+    });
 
-        // Redirect theo role
-        switch (user.role || user.Role) {
-          case 'Admin':
-            navigate('/admin/dashboard');
-            break;
-          case 'Chair':
-            navigate('/chair/dashboard');
-            break;
-          case 'Reviewer':
-            navigate('/reviewer/dashboard');
-            break;
-          case 'Author':
-          default:
-            navigate('/author/dashboard');
-            break;
-        }
+    if (response.data.status === 'success') {
+      const { token, user } = response.data.data;
+
+      // Chuẩn hóa role từ backend (có thể là role hoặc Role)
+      const actualRole = user.role || user.Role;
+
+      // KIỂM TRA: Nếu role chọn không khớp với role thật → báo lỗi
+      if (selectedRole !== actualRole) {
+        message.error('Tài khoản này không phải vai trò đã chọn. Vui lòng kiểm tra lại!');
+        setLoading(false);
+        return; // Dừng không cho đăng nhập
       }
-    } catch (error) {
-      console.error('Login error:', error);
-      if (error.response) {
-        message.error(error.response.data.message || 'Đăng nhập thất bại');
-      } else {
-        message.error('Không thể kết nối đến server');
+
+      // Nếu khớp → cho phép đăng nhập
+      localStorage.setItem('token', token);
+      localStorage.setItem('user', JSON.stringify(user));
+      message.success('Đăng nhập thành công!');
+
+      // Redirect theo role (dùng actualRole để chắc chắn)
+      switch (actualRole) {
+        case 'Admin':
+          navigate('/admin/dashboard');
+          break;
+        case 'Chair':
+          navigate('/chair/dashboard');
+          break;
+        case 'Reviewer':
+          navigate('/reviewer/dashboard');
+          break;
+        case 'Author':
+        default:
+          navigate('/author/dashboard');
+          break;
       }
-    } finally {
-      setLoading(false);
     }
-  };
+  } catch (error) {
+    console.error('Login error:', error);
+    if (error.response) {
+      // Nếu backend trả lỗi (sai mật khẩu, không tồn tại tk,...)
+      message.error(error.response.data.message || 'Đăng nhập thất bại');
+    } else {
+      message.error('Không thể kết nối đến server');
+    }
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div className="auth-container">

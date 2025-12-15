@@ -6,7 +6,8 @@ from flask import Flask
 from flask_cors import CORS
 from routes.auth_routes import auth_bp
 from routes.admin_routes import admin_bp  # ← THÊM DÒNG NÀY
-
+# from routes.review_routes import review_bp
+# app.register_blueprint(review_bp)
 # TODO: Import thêm các blueprint khác khi các member làm xong
 # from routes.api_routes import api_bp
 # from routes.paper_routes import paper_bp

@@ -27,10 +27,34 @@ const RegisterPage = () => {
 
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
 
-  // Step 1: Thông tin tài khoản
-  const handleStep1 = (values) => {
-    setFormData({ ...formData, ...values });
-    setCurrentStep(1);
+  // Step 1: Kiểm tra username/email TRƯỚC KHI chuyển bước
+  const handleStep1 = async (values) => {
+    setLoading(true);
+
+    try {
+      // ← THÊM: Kiểm tra username/email tồn tại TRƯỚC
+      const checkResponse = await axios.post(`${API_BASE_URL}/auth/check-availability`, {
+        username: values.email.split('@')[0],
+        email: values.email
+      });
+
+      if (checkResponse.data.status === 'success') {
+        // Nếu không trùng, lưu data và chuyển bước
+        setFormData({ ...formData, ...values });
+        setCurrentStep(1);
+        message.success('Thông tin hợp lệ, vui lòng thiết lập câu hỏi bảo mật');
+      }
+    } catch (error) {
+      console.error('Check availability error:', error);
+      if (error.response) {
+        const errorMsg = error.response.data.message || 'Kiểm tra thất bại';
+        message.error(errorMsg);
+      } else {
+        message.error('Không thể kết nối đến server');
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   // Step 2: Thiết lập bảo mật (3 câu hỏi)
@@ -38,11 +62,11 @@ const RegisterPage = () => {
     setLoading(true);
 
     const finalData = {
-      username: formData.email.split('@')[0], // Tạo username từ email
+      username: formData.email.split('@')[0],
       password: formData.password,
       fullname: formData.fullname,
       email: formData.email,
-      role: formData.role || 'Author', // ← THÊM: Lấy role từ form
+      role: formData.role || 'Author',
       security_questions: [
         { question: values.question1, answer: values.answer1 },
         { question: values.question2, answer: values.answer2 },
@@ -71,7 +95,7 @@ const RegisterPage = () => {
           message.error(errorMsg);
         }
       } else {
-        message.error('Không thể kết nối đến server. Vui lòng kiểm tra Backend đã chạy chưa!');
+        message.error('Không thể kết nối đến server');
       }
     } finally {
       setLoading(false);
@@ -107,7 +131,7 @@ const RegisterPage = () => {
           >
             <p className="step-label">1. Thông tin tài khoản</p>
 
-            {/* Vai trò - CHO PHÉP CHỌN TẤT CẢ */}
+            {/* Vai trò */}
             <Form.Item
               label={<span style={{ color: '#ff4d4f' }}>* Đăng ký với vai trò:</span>}
               name="role"
@@ -162,7 +186,13 @@ const RegisterPage = () => {
 
             {/* Button */}
             <Form.Item>
-              <Button type="primary" htmlType="submit" block className="auth-button">
+              <Button 
+                type="primary" 
+                htmlType="submit" 
+                loading={loading}
+                block 
+                className="auth-button"
+              >
                 Tiếp tục
               </Button>
             </Form.Item>
