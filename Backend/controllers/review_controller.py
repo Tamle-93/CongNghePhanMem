@@ -21,10 +21,11 @@ def get_my_reviews():
 def submit_review():
     """
     WEEK 2 - Submit review
-    Body: { "assignment_id": 1, "score": 8, "comment": "..." }
+    Body: { "assignment_id": "...", "score": 8, "comment": "..." }
     """
     try:
         payload = request.get_json() or {}
+
         assignment_id = payload.get("assignment_id")
         score = payload.get("score")
         comment = payload.get("comment", "")
@@ -32,7 +33,6 @@ def submit_review():
         if assignment_id is None or score is None:
             return error_response("Missing assignment_id or score", 400)
 
-        # validate score 0-10
         try:
             score_val = float(score)
         except Exception:
@@ -41,9 +41,14 @@ def submit_review():
         if score_val < 0 or score_val > 10:
             return error_response("Score must be between 0 and 10", 400)
 
-        ReviewModel.submit_review(assignment_id=assignment_id, score=score_val, comment=comment)
+        ReviewModel.submit_review(
+            assignment_id=assignment_id,
+            score=score_val,
+            comment_for_author=comment
+        )
 
         return success_response(None, "Submit review success")
+
     except Exception as e:
         return error_response(str(e), 500)
 
