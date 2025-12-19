@@ -1,0 +1,29 @@
+# flask
+# flask-sqlalchemy
+# flask-cors
+# flask-migrate
+# python-dotenv
+# psycopg2-binary
+# marshmallow
+# openai
+# File: requirements.txt
+# Python Dependencies
+
+# Core
+Flask==3.0.0
+Flask-CORS==4.0.0
+
+# Database
+SQLAlchemy==2.0.23
+psycopg2-binary==2.9.9
+alembic==1.13.0
+
+# Security
+bcrypt==4.1.1
+PyJWT==2.8.0
+
+# Environment
+python-dotenv==1.0.0
+
+# Utils
+python-dateutil==2.8.2
