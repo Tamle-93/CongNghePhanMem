@@ -1,5 +1,6 @@
 nội dung file .env
 # App Settings
+```bash
 APP_ENV=development
 DEBUG=True
 PORT=5000
@@ -22,7 +23,7 @@ JWT_SECRET_KEY=your-jwt-secret-key-change-in-production
 DB_POOL_SIZE=10
 DB_POOL_RECYCLE=3600
 SQL_ECHO=False
-
+```
 
 ### 1. Chạy môi trường ảo
 
