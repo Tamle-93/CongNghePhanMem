@@ -21,15 +21,15 @@ def hash_password(password):
 
 def main():
     print("="*60)
-    print("🌱 SEEDING DATABASE WITH SAMPLE DATA")
+    print(" SEEDING DATABASE WITH SAMPLE DATA")
     print("="*60)
     
     db = SessionLocal()
     
     try:
         # 1. Create users
-        print("\n👤 Creating users...")
-        
+        print("\n Creating users...")
+    
         admin = User(
             username='admin',
             password_hash=hash_password('Admin@123'),
@@ -67,7 +67,7 @@ def main():
         print(f"   ✓ Created 4 users")
         
         # 2. Create conference
-        print("\n🎓 Creating conference...")
+        print("\ Creating conference...")
         
         conference = Conference(
             chair_id=chair.id,
@@ -83,7 +83,7 @@ def main():
         print(f"   ✓ Created 1 conference")
         
         # 3. Create tracks
-        print("\n📚 Creating tracks...")
+        print("\n Creating tracks...")
         
         tracks = [
             Track(
@@ -107,13 +107,13 @@ def main():
         db.commit()
         print(f"   ✓ Created {len(tracks)} tracks")
         
-        print("\n✅ Sample data created successfully!")
-        print("\n📊 Summary:")
+        print("\n Sample data created successfully!")
+        print("\n Summary:")
         print(f"   - Users: 4 (admin, chair, author, reviewer)")
         print(f"   - Conferences: 1")
         print(f"   - Tracks: {len(tracks)}")
         
-        print("\n🔐 Login credentials:")
+        print("\n Login credentials:")
         print(f"   Admin:    admin / Admin@123")
         print(f"   Chair:    chair01 / Chair@123")
         print(f"   Author:   author01 / Author@123")
@@ -121,7 +121,7 @@ def main():
         
     except Exception as e:
         db.rollback()
-        print(f"\n❌ ERROR: {e}")
+        print(f"\ ERROR: {e}")
     finally:
         db.close()
     

@@ -97,7 +97,7 @@ class TestingConfig(Config):
             return f'mysql+pymysql://{cls.DB_USER}:{cls.DB_PASSWORD}@{cls.DB_HOST}:{port}/test_{cls.DB_NAME}'
 
 
-# ✅ QUAN TRỌNG: Dictionary để app.py sử dụng
+#  QUAN TRỌNG: Dictionary để app.py sử dụng
 config = {
     'development': DevelopmentConfig,
     'production': ProductionConfig,

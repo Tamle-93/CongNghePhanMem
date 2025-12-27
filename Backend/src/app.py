@@ -30,7 +30,7 @@ def create_app(config_name=None):
     
     app = Flask(__name__)
     
-    # ✅ Load configuration from config dictionary
+    # Load configuration from config dictionary
     config_class = config.get(config_name, config['default'])
     app.config.from_object(config_class())
     
@@ -148,18 +148,18 @@ if __name__ == '__main__':
     
     # Print startup information
     print(f"\n{'='*60}")
-    print(f"🚀 UTH-ConfMS API Starting")
+    print(f" UTH-ConfMS API Starting")
     print(f"{'='*60}")
-    print(f"📍 Environment:  {app.config.get('APP_ENV')}")
-    print(f"🗄️  Database:     {app.config.get('DB_TYPE').upper()}")
-    print(f"📦 DB Name:      {app.config.get('DB_NAME')}")
-    print(f"🌐 Server:       http://localhost:{app.config.get('PORT')}")
-    print(f"🔧 Debug Mode:   {app.config.get('DEBUG')}")
+    print(f" Environment:  {app.config.get('APP_ENV')}")
+    print(f"  Database:     {app.config.get('DB_TYPE').upper()}")
+    print(f" DB Name:      {app.config.get('DB_NAME')}")
+    print(f" Server:       http://localhost:{app.config.get('PORT')}")
+    print(f" Debug Mode:   {app.config.get('DEBUG')}")
     print(f"{'='*60}\n")
     
     # Auto-initialize database in development mode
     if app.config.get('APP_ENV') == 'development':
-        print("📋 Development mode detected")
+        print(" Development mode detected")
         print("   Checking database initialization...\n")
         
         from infrastructure.databases.base import check_connection, init_db
@@ -168,12 +168,12 @@ if __name__ == '__main__':
         connected, message = check_connection()
         
         if connected:
-            print("\n💡 Database is accessible!")
+            print("\n Database is accessible!")
             print("   To create/reset tables, run:")
             print("   python manage_db.py init")
             print("   python manage_db.py reset")
         else:
-            print(f"\n⚠️  Warning: Cannot connect to database")
+            print(f"\n  Warning: Cannot connect to database")
             print(f"   {message}")
             print("\n   Please check your .env configuration")
         
