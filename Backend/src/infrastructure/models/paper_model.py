@@ -12,7 +12,9 @@ from sqlalchemy import (
     Boolean
 )
 from sqlalchemy.orm import relationship
-from src.infrastructure.databases.base import Base
+from database import Base
+
+
 class PaperStatus(enum.Enum):
     SUBMITTED = "submitted"
     UNDER_REVIEW = "under_review"
@@ -20,9 +22,11 @@ class PaperStatus(enum.Enum):
     REJECTED = "rejected"
     WITHDRAWN = "withdrawn"
     CAMERA_READY = "camera_ready"
+
+
 class Paper(Base):
     """
-    Scientific paper submitted to a conference
+    Paper entity for scientific conference submission
     """
 
     __tablename__ = "papers"
@@ -44,9 +48,17 @@ class Paper(Base):
 
     is_withdrawn = Column(Boolean, default=False)
 
-    submitter_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    conference_id = Column(Integer, ForeignKey("conferences.id"), nullable=False)
-    track_id = Column(Integer, ForeignKey("tracks.id"), nullable=True)
+    submitter_id = Column(
+        Integer,
+        ForeignKey("users.id"),
+        nullable=False
+    )
+
+    conference_id = Column(
+        Integer,
+        ForeignKey("conferences.id"),
+        nullable=False
+    )
 
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(
@@ -58,7 +70,6 @@ class Paper(Base):
     # Relationships
     submitter = relationship("User", back_populates="submitted_papers")
     conference = relationship("Conference", back_populates="papers")
-    track = relationship("Track", back_populates="papers")
     reviews = relationship(
         "Review",
         back_populates="paper",
@@ -69,4 +80,3 @@ class Paper(Base):
         back_populates="paper",
         cascade="all, delete-orphan"
     )
-    decision = relationship("Decision", back_populates="paper", uselist=False)
