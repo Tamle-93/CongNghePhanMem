@@ -6,16 +6,13 @@ from sqlalchemy import (
     ForeignKey
 )
 from sqlalchemy.orm import relationship
-from src.infrastructure.databases.base import Base
+from database import Base
 
 
 class PaperAuthor(Base):
     """
     Association table between Paper and User (Author)
-    Supports:
-    - Multiple authors per paper
-    - Author order
-    - Corresponding author
+    Supports author order and corresponding author
     """
 
     __tablename__ = "paper_authors"
