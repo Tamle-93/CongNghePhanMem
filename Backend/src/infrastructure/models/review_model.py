@@ -7,7 +7,7 @@ from sqlalchemy import Column, Integer, Text, ForeignKey, DateTime, Boolean, Che
 from sqlalchemy.orm import relationship
 from datetime import datetime
 
-from src.infrastructure.databases.base import Base
+from infrastructure.databases.base import Base
 
 class Review(Base):
     __tablename__ = 'reviews'
@@ -26,7 +26,8 @@ class Review(Base):
     # Review Info
     score = Column(Integer, nullable=True)
     comments_for_author = Column(Text, nullable=True)
-    comments_for_chair = Column(Text, nullable=True)
+    confidential_content = Column(Text, nullable=True)
+    old_confidential_content = Column(Text)
 
     # Relationships
     paper = relationship("Paper", back_populates="reviews")

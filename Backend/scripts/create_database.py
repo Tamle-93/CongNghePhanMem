@@ -6,14 +6,12 @@ Script để tạo database và tất cả tables
 import sys
 import os
 
-# Add project root and src to Python path so imports like 'infrastructure' work
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 SRC_DIR = os.path.join(BASE_DIR, 'src')
-# Put SRC_DIR first so modules under src can be imported as top-level packages
 sys.path.insert(0, SRC_DIR)
 sys.path.insert(0, BASE_DIR)
 
-from src.infrastructure.databases.base import init_db, check_connection, engine
+from infrastructure.databases.base import init_db, check_connection, engine
 from src.config import Config
 
 

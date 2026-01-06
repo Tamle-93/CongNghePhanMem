@@ -6,7 +6,7 @@ from sqlalchemy import (
     ForeignKey
 )
 from sqlalchemy.orm import relationship
-from src.infrastructure.databases.base import Base
+from infrastructure.databases.base import Base
 
 
 class PaperAuthor(Base):

@@ -7,7 +7,7 @@ from sqlalchemy import Column, Integer, String, Boolean, DateTime
 from sqlalchemy.orm import relationship
 from datetime import datetime
 
-from src.infrastructure.databases.base import Base
+from infrastructure.databases.base import Base
 
 class User(Base):
     __tablename__ = 'users'
@@ -56,6 +56,6 @@ class User(Base):
     )
 
     conflicts = relationship(
-        "Conflict",
+        "ConflictOfInterest",
         back_populates="reviewer"
     )
