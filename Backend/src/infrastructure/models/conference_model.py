@@ -7,7 +7,7 @@ from sqlalchemy import Column, Integer, String, Text, DateTime, Boolean, Foreign
 from sqlalchemy.orm import relationship
 from datetime import datetime
 
-from src.infrastructure.databases.base import Base
+from infrastructure.databases.base import Base
 
 class Conference(Base):
     __tablename__ = 'conferences'
@@ -25,6 +25,8 @@ class Conference(Base):
     submission_deadline = Column(DateTime, nullable=False)
     review_deadline = Column(DateTime, nullable=False)
     is_blind_review = Column(Boolean, default=True, nullable=False)
+    start_date = Column(DateTime)
+    end_date = Column(DateTime)
 
     # Timestamps
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)

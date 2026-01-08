@@ -6,7 +6,7 @@ Database Base và Engine - Multi-database support
 from sqlalchemy import create_engine, text, inspect
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-from config import get_config  # Import từ config.py
+from config import get_config
 import os
 
 # Get current configuration
@@ -19,24 +19,16 @@ safe_url = DATABASE_URL
 if hasattr(current_config, 'DB_PASSWORD') and current_config.DB_PASSWORD:
     safe_url = DATABASE_URL.replace(current_config.DB_PASSWORD, '***')
 
-print(f" Connecting to {DB_TYPE.upper()}: {safe_url}")
+print(f"🔗 Connecting to {DB_TYPE.upper()}: {safe_url}")
 
-# ============================================
-# Engine Options - Different for each DB type
-# ============================================
-engine_options = {
-    'echo': current_config.DB_ECHO,
-}
+# Engine options
+engine_options = {'echo': current_config.DB_ECHO}
 
-# SQLite: No connection pool needed
 if DB_TYPE == 'sqlite':
-    print(" SQLite mode: single connection")
-    engine_options.update({
-        'connect_args': {'check_same_thread': False}  # Allow multi-threading
-    })
+    print("📝 SQLite mode: single connection")
+    engine_options.update({'connect_args': {'check_same_thread': False}})
 else:
-    # PostgreSQL & MySQL: Use connection pool
-    print(f" Connection pool: size={current_config.DB_POOL_SIZE}")
+    print(f"🏊 Connection pool: size={current_config.DB_POOL_SIZE}")
     engine_options.update({
         'pool_pre_ping': True,
         'pool_size': current_config.DB_POOL_SIZE,
@@ -47,36 +39,25 @@ else:
 # Create engine
 try:
     engine = create_engine(DATABASE_URL, **engine_options)
-    print(" Database engine created")
+    print("✅ Database engine created")
 except Exception as e:
-    print(f" Failed to create engine: {e}")
+    print(f"❌ Failed to create engine: {e}")
     raise
 
-# Base class for models
-Base = declarative_base()
+# ✅ CRITICAL: Create Base ONCE and only once
+# Check if Base already exists to prevent recreation
+if 'Base' not in globals():
+    Base = declarative_base()
+    print("🔨 Created new Base instance")
+else:
+    print("♻️  Reusing existing Base instance")
 
 # Session factory
-SessionLocal = sessionmaker(
-    autocommit=False,
-    autoflush=False,
-    bind=engine
-)
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
 def get_db():
-    """
-    Dependency injection for database session
-    
-    Usage:
-        db = next(get_db())
-        try:
-            # Your operations
-            db.commit()
-        except:
-            db.rollback()
-        finally:
-            db.close()
-    """
+    """Dependency injection for database session"""
     db = SessionLocal()
     try:
         yield db
@@ -87,35 +68,66 @@ def get_db():
 def init_db():
     """Initialize database - create all tables"""
     try:
-        print(" Importing models...")
+        print("📦 Importing all models...")
         
-        # Import all models để SQLAlchemy nhận diện
-        from infrastructure.models import (
-            User, Conference, Track, Paper,
-            PaperAuthor, Assignment, Review,
-            Decision, Conflict
-        )
+        # ✅ Import directly from each model file
+        from infrastructure.models.user_model import User
+        from infrastructure.models.umcauthres_model import UMCAuthRES
+        from infrastructure.models.conference_model import Conference
+        from infrastructure.models.conference_mentor_model import ConferenceMentor
+        from infrastructure.models.track_model import Track
+        from infrastructure.models.paper_model import Paper
+        from infrastructure.models.paper_author_model import PaperAuthor
+        from infrastructure.models.assignment_model import Assignment
+        from infrastructure.models.review_model import Review
+        from infrastructure.models.brow_history_model import BrowHistory
+        from infrastructure.models.decision_model import Decision
+        from infrastructure.models.conflict_of_interest_model import ConflictOfInterest
+        from infrastructure.models.audit_log_ai_model import AuditLogAI
         
-        print(f" Creating tables in {DB_TYPE.upper()}...")
+        # ✅ Debug: Check Base identity
+        print(f"\n🔍 Debug Info:")
+        print(f"   Base ID: {id(Base)}")
+        print(f"   User's Base ID: {id(User.metadata)}")
+        print(f"   Same Base? {Base.metadata is User.metadata}")
+        
+        # ✅ Verify models are registered
+        tables_count = len(Base.metadata.tables)
+        print(f"\n✓ Found {tables_count} tables in Base.metadata:")
+        
+        if tables_count == 0:
+            print("\n❌ ERROR: No tables in Base.metadata!")
+            print("   Checking User class:")
+            print(f"   - User.__tablename__: {User.__tablename__}")
+            print(f"   - User.__table__ exists: {hasattr(User, '__table__')}")
+            if hasattr(User, '__table__'):
+                print(f"   - User.__table__.name: {User.__table__.name}")
+            return False
+        
+        for table_name in sorted(Base.metadata.tables.keys()):
+            print(f"   • {table_name}")
+        
+        print(f"\n📋 Creating {tables_count} tables in {DB_TYPE.upper()}...")
         Base.metadata.create_all(bind=engine)
         
-        # Verify tables were created
+        # Verify in database
         inspector = inspect(engine)
-        tables = inspector.get_table_names()
+        db_tables = inspector.get_table_names()
         
-        print(f" Created {len(tables)} tables successfully!")
-        if tables:
-            for table in sorted(tables):
-                print(f"   ✓ {table}")
+        print(f"\n✅ Successfully created {len(db_tables)} tables!")
+        print("\n📊 Database Schema:")
+        print("="*60)
+        for table in sorted(db_tables):
+            print(f"   ✓ {table}")
+        print("="*60)
         
         return True
         
     except Exception as e:
-        print(f" Error creating tables: {e}")
+        print(f"\n❌ Error: {e}")
         import traceback
         traceback.print_exc()
         return False
-
 
 def drop_db():
     """Drop all tables - DANGER! Only for development"""

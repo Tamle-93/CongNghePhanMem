@@ -9,7 +9,7 @@ from sqlalchemy.orm import relationship
 from datetime import datetime
 import uuid
 
-from src.infrastructure.databases.base import Base
+from infrastructure.databases.base import Base
 
 class Decision(Base):
     __tablename__ = 'decisions'
@@ -21,11 +21,14 @@ class Decision(Base):
     # Foreign Keys
     paper_id = Column(Integer, ForeignKey('papers.id', ondelete='CASCADE'), nullable=False)
     conference_id = Column(Integer, ForeignKey('conferences.id', ondelete='SET NULL'))
-    chair_id = Column(Integer, ForeignKey('users.id', ondelete='RESTRICT'), nullable=False)
+    chair_user_id = Column(Integer, ForeignKey('users.id', ondelete='RESTRICT'), nullable=False)
     
     # Decision Info
     result = Column(String(20), nullable=True)
     final_comment = Column(Text, nullable=True)
+    name = Column(String(255))
+    code = Column(String(50))
+    description = Column(Text)
     
     # Timestamps
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)

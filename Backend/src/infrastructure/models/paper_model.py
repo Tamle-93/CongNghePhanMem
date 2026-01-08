@@ -12,7 +12,7 @@ from sqlalchemy import (
     Boolean
 )
 from sqlalchemy.orm import relationship
-from src.infrastructure.databases.base import Base
+from infrastructure.databases.base import Base
 class PaperStatus(enum.Enum):
     SUBMITTED = "submitted"
     UNDER_REVIEW = "under_review"

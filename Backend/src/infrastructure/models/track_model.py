@@ -7,7 +7,7 @@ from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Boolean
 from sqlalchemy.orm import relationship
 from datetime import datetime
 
-from src.infrastructure.databases.base import Base
+from infrastructure.databases.base import Base
 
 class Track(Base):
     __tablename__ = 'tracks'
