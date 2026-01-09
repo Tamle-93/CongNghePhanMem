@@ -120,8 +120,8 @@ def get_config(env=None):
     if env is None:
         env = os.getenv('APP_ENV', 'development')
     
-    # Lấy Class ra trước
+    
     config_class = config.get(env, config['default'])
     
-    # Thêm dấu () để KHỞI TẠO class thành instance
+    
     return config_class()
