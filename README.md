@@ -61,4 +61,7 @@ c. Proposed Tasks:
 ○ TP8 - Build – Deploy and Test the system.
 ○ TP9 - Prepare all the required documents: System analysis and Design, Test plan, Installation manual, User manual.
 4. Other comments (propose all relative things if have).
+<<<<<<< HEAD
 
+=======
+>>>>>>> 74026901412b7bf3441554009fbb98dd4e37529b

@@ -1,0 +1,22 @@
+# Backend Runtime Requirements
+Flask>=2.2,<4
+Flask-CORS>=3.0,<5
+Flask-SQLAlchemy>=3.0,<4
+Flask-Migrate>=4.0,<5
+python-dotenv>=1.0,<2
+marshmallow>=3.0,<4
+
+# SQLAlchemy (core ORM)
+SQLAlchemy>=2.0,<3
+
+# Database Drivers
+# PostgreSQL (default)
+psycopg2-binary>=2.9,<3
+
+# MySQL (optional - install if needed)
+# pymysql>=1.1,<2
+
+# SQLite is built-in to Python
+
+# Optional / heavy (enable only if you need AI features)
+# openai>=0.27.0
