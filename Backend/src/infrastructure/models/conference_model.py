@@ -1,4 +1,4 @@
-# File: src/infrastructure/models/conference_model.py
+ # File: src/infrastructure/models/conference_model.py
 """
 Conferences Model - Hội nghị khoa học (standardized)
 """
