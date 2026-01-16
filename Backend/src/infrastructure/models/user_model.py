@@ -1,8 +1,6 @@
-# ============================================
-# File: Backend/src/infrastructure/models/user_model.py (UPDATED)
-# ============================================
+# Backend/src/infrastructure/models/user_model.py - VERIFY METHODS
 """
-Users Model - UPDATED with Multi-Role Support
+Users Model - Multi-Role Support VERIFIED
 """
 from sqlalchemy import Column, Integer, String, Boolean, DateTime
 from sqlalchemy.orm import relationship
@@ -22,15 +20,12 @@ class User(Base):
     full_name = Column(String(100), nullable=False)
     email = Column(String(255), unique=True, nullable=False, index=True)
     
-    # ❌ KHÔNG CÒN CỘT role nữa - đã chuyển sang bảng user_roles
-    # role = Column(String(20), nullable=False, default='Author')  # DEPRECATED
-    
     # Timestamps
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     is_deleted = Column(Boolean, default=False, nullable=False)
     
-    # ✅ RELATIONSHIPS MỚI
+    # ✅ RELATIONSHIPS
     user_roles = relationship(
         "UserRole",
         foreign_keys="UserRole.user_id",
@@ -38,18 +33,17 @@ class User(Base):
         cascade="all, delete-orphan"
     )
     
-    # Các relationships khác giữ nguyên
     submitted_papers = relationship("Paper", back_populates="submitter", foreign_keys="Paper.submitter_id")
     authored_papers = relationship("PaperAuthor", back_populates="author")
     chaired_conferences = relationship("Conference", back_populates="chair")
     assignments = relationship("Assignment", back_populates="reviewer")
     decisions = relationship("Decision", back_populates="chair")
     
-    # ✅ PROPERTY ĐỂ LẤY DANH SÁCH ROLES
+    # ✅ PROPERTY: Get list of role names
     @property
     def roles(self):
         """
-        Lấy danh sách tên roles của user (chỉ active roles)
+        Get list of active role names
         Returns: List[str] - ['Author', 'Reviewer', 'Chair']
         """
         return [ur.role.name for ur in self.user_roles if ur.is_active]
@@ -57,34 +51,41 @@ class User(Base):
     @property
     def global_roles(self):
         """
-        Lấy roles toàn cục (không gắn conference cụ thể)
+        Get global roles (not tied to specific conference)
         """
         return [ur.role.name for ur in self.user_roles if ur.is_active and ur.conference_id is None]
     
     def get_roles_in_conference(self, conference_id):
         """
-        Lấy roles của user trong 1 conference cụ thể
+        Get roles in a specific conference
+        
+        Args:
+            conference_id: int
+            
+        Returns: List[str] - roles in this conference
         """
         roles = []
         for ur in self.user_roles:
             if ur.is_active:
-                # Bao gồm cả global roles và conference-specific roles
+                # Include both global roles and conference-specific roles
                 if ur.conference_id is None or ur.conference_id == conference_id:
                     roles.append(ur.role.name)
         return list(set(roles))  # Remove duplicates
     
     def has_role(self, role_name, conference_id=None):
         """
-        Kiểm tra user có role cụ thể không
+        Check if user has a specific role
+        
         Args:
-            role_name: str - tên role (Author, Reviewer, Chair, Admin)
-            conference_id: int (optional) - check trong conference cụ thể
+            role_name: str - 'Author', 'Reviewer', 'Chair', 'Admin'
+            conference_id: int (optional) - check in specific conference
+            
         Returns: bool
         """
         for ur in self.user_roles:
             if ur.is_active and ur.role.name == role_name:
                 if conference_id is None:
-                    return True  # Check global
+                    return True  # Global check
                 if ur.conference_id is None or ur.conference_id == conference_id:
                     return True
         return False
