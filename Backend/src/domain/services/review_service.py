@@ -1,28 +1,17 @@
-from sqlalchemy.orm import Session
-from datetime import datetime
-
-from infrastructure.models.review_model import Review
 from domain.schemas.review_schema import ReviewCreateSchema
+from models.review_model import ReviewModel
 
 
-def submit_review(db: Session, data: ReviewCreateSchema):
-    review = Review(
-        Assignment_Id=data.assignment_id,
-        Score=data.score,
-        ConfidenceLevel=data.confidence_level,
-        CommentsForAuthor=data.comments_for_author,
-        CommentsForChair=data.comments_for_chair,
-        SubmittedDate=datetime.utcnow()
-    )
+class ReviewService:
 
-    db.add(review)
-    db.commit()
-    db.refresh(review)
-    return review
+    @staticmethod
+    def get_assignments_for_reviewer(user_id):
+        return ReviewModel.get_assignments_for_reviewer(user_id)
 
-
-def get_reviews_by_assignment(db: Session, assignment_id):
-    return db.query(Review).filter(
-        Review.Assignment_Id == assignment_id,
-        Review.IsDeleted == False
-    ).all()
+    @staticmethod
+    def submit_review(data: ReviewCreateSchema):
+        ReviewModel.submit_review(
+            assignment_id=data.assignment_id,
+            score=data.score,
+            comment=data.comment
+        )
