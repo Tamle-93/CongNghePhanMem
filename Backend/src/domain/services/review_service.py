@@ -1,4 +1,4 @@
-from domain.schema.review_schema import ReviewCreateSchema
+from Backend.schemas.review_schema import ReviewCreateSchema
 from models.review_model import ReviewModel
 
 class ReviewService:

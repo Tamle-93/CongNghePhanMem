@@ -5,7 +5,7 @@
 from flask import Blueprint, request, jsonify
 
 from domain.services.review_service import ReviewService
-from domain.schema.review_schema import ReviewCreateSchema
+from Backend.schemas.review_schema import ReviewCreateSchema
 
 review_bp = Blueprint("review", __name__)
 
