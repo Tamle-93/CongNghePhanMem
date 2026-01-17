@@ -7,7 +7,7 @@ Authentication API Routes
 
 from flask import Blueprint, request, jsonify
 from domain.services.auth_service import AuthService
-from domain.schemas.user_schema import (
+from api.schemas.user_schema import (
     UserRegistrationSchema,
     UserLoginSchema,
     UserResponseSchema
