@@ -2,8 +2,8 @@
 # Nhiệm vụ: Viết code xử lý cho review_controller
 # Team Member: Điền tên người phụ trách vào đây
 from flask import Blueprint, request, jsonify
-from domain.services.review_service import ReviewService
-from schemas.schema.review_schema import ReviewCreateSchema
+from src.domain.services.review_service import ReviewService
+from schemas.review_schema import ReviewCreateSchema
 
 review_bp = Blueprint("review", __name__, url_prefix="/reviews")
 
