@@ -4,6 +4,8 @@ Export all models - COMPLETE UPDATE
 """
 
 from .user_model import User
+from .role_model import Role                    # ✅ THÊM dòng này
+from .user_role_model import UserRole          # ✅ THÊM dòng này
 from .umcauthres_model import UMCAuthRES
 from .conference_model import Conference
 from .conference_mentor_model import ConferenceMentor
@@ -18,6 +20,8 @@ from .conflict_of_interest_model import ConflictOfInterest
 from .audit_log_ai_model import AuditLogAI
 
 __all__ = [
+    'Role',              # ✅ THÊM
+    'UserRole',          # ✅ THÊM
     'User',
     'UMCAuthRES',
     'Conference',
