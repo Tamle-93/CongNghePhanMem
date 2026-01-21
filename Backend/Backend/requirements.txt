@@ -1,0 +1,44 @@
+# Flask Core (STABLE)
+Flask==2.3.3
+Flask-CORS>=3.0,<5
+Flask-SQLAlchemy>=3.0,<4
+Flask-Migrate>=4.0,<5
+
+# Env
+python-dotenv>=1.0,<2
+
+# ORM
+SQLAlchemy>=2.0,<3
+
+# Serialization
+marshmallow>=3.20,<4
+
+# DB
+psycopg2-binary>=2.9,<3
+
+# Auth
+bcrypt>=4.0,<5
+PyJWT>=2.8,<3
+
+# Mail
+Flask-Mail>=0.9.1
+
+# Swagger (Flask 3 chưa ổn)
+flasgger==0.9.7.1
+
+# i18n
+Flask-Babel>=3.0,<4
+
+# Cache
+Flask-Caching>=2.0,<3
+redis>=4.5,<6
+
+# Rate limit
+Flask-Limiter>=3.3,<4
+
+# PDF
+PyPDF2>=3.0,<4
+
+# Dev
+pytest>=7,<8
+pytest-flask>=1.2,<2
