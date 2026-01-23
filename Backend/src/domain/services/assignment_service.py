@@ -428,4 +428,8 @@ class AssignmentService:
             'review_score': review.score if review else None,
             'assigned_at': assignment.assigned_at.isoformat(),
             'created_at': assignment.created_at.isoformat()
+<<<<<<< HEAD
         }
+=======
+        }
+>>>>>>> main
