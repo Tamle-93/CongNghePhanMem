@@ -1,6 +1,7 @@
+// frontend/src/api/axiosConfig.js
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:5000/api/v1';
+const API_BASE_URL = 'http://localhost:5000/api';
 
 const axiosInstance = axios.create({
   baseURL: API_BASE_URL,
@@ -9,7 +10,7 @@ const axiosInstance = axios.create({
   },
 });
 
-// Add token to every request
+// ✅ Request interceptor - Tự động thêm token
 axiosInstance.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
@@ -23,14 +24,15 @@ axiosInstance.interceptors.request.use(
   }
 );
 
-// Handle errors globally
+// ✅ Response interceptor - Handle errors
 axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
+      // Token expired or invalid
       localStorage.removeItem('token');
       localStorage.removeItem('user');
-      window.location.href = '/login';
+      window.location.href = '/auth/login';
     }
     return Promise.reject(error);
   }

@@ -1,5 +1,5 @@
 """
-Backend/src/api/controllers/users.py
+Backend/src/api/controllers/users_controller.py
 User Management API Routes
 """
 
@@ -23,7 +23,7 @@ def list_users():
     """
     List all users
     ---
-    GET /api/v1/users?role=Reviewer&page=1&per_page=20
+    GET /api/controllers/users?role=Reviewer&page=1&per_page=20
     """
     db = SessionLocal()
     

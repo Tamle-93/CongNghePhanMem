@@ -20,7 +20,7 @@ def init_rate_limiter(app):
 # Usage example:
 # from config.rate_limit_config import limiter
 #
-# @app.route('/api/v1/auth/login', methods=['POST'])
+# @app.route('/api/controllers/auth/login', methods=['POST'])
 # @limiter.limit("5 per minute")  # Max 5 login attempts per minute
 # def login():
 #     pass

@@ -59,7 +59,7 @@ class Assignment(Base):
         cascade="all, delete-orphan"
     )
     reviewer = relationship("User", back_populates="assignments")
-    paper = relationship("Paper", backref="paper_assignments")
+    paper = relationship("Paper", back_populates="assignments", overlaps="paper_assignments")
     conference = relationship("Conference", backref="conference_assignments")
     
     def __repr__(self):
