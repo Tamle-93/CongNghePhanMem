@@ -5,7 +5,7 @@ Database Base và Engine - Multi-database support
 
 from sqlalchemy import create_engine, text, inspect
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, scoped_session  # ⭐ THÊM scoped_session
 from config import get_config
 import os
 
@@ -45,7 +45,6 @@ except Exception as e:
     raise
 
 # ✅ CRITICAL: Create Base ONCE and only once
-# Check if Base already exists to prevent recreation
 if 'Base' not in globals():
     Base = declarative_base()
     print("🔨 Created new Base instance")
@@ -54,6 +53,11 @@ else:
 
 # Session factory
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+# ⭐ THÊM: Scoped session for thread-safety (dùng cho seed_database.py)
+db_session = scoped_session(SessionLocal)
+Base.query = db_session.query_property()
+print("🔄 Created scoped session (db_session)")
 
 
 def get_db():
@@ -72,18 +76,25 @@ def init_db():
         
         # ✅ Import directly from each model file
         from infrastructure.models.user_model import User
-        from infrastructure.models.umcauthres_model import UMCAuthRES
+        from infrastructure.models.role_model import Role  # ⭐ THÊM
+        from infrastructure.models.user_role_model import UserRole  # ⭐ THÊM
         from infrastructure.models.conference_model import Conference
-        from infrastructure.models.conference_mentor_model import ConferenceMentor
         from infrastructure.models.track_model import Track
         from infrastructure.models.paper_model import Paper
         from infrastructure.models.paper_author_model import PaperAuthor
         from infrastructure.models.assignment_model import Assignment
         from infrastructure.models.review_model import Review
-        from infrastructure.models.brow_history_model import BrowHistory
         from infrastructure.models.decision_model import Decision
         from infrastructure.models.conflict_of_interest_model import ConflictOfInterest
         from infrastructure.models.audit_log_ai_model import AuditLogAI
+        
+        # Optional models (nếu có)
+        try:
+            from infrastructure.models.umcauthres_model import UMCAuthRES
+            from infrastructure.models.conference_mentor_model import ConferenceMentor
+            from infrastructure.models.brow_history_model import BrowHistory
+        except ImportError:
+            pass
         
         # ✅ Debug: Check Base identity
         print(f"\n🔍 Debug Info:")
@@ -129,30 +140,36 @@ def init_db():
         traceback.print_exc()
         return False
 
+
+def shutdown_session(exception=None):
+    """⭐ THÊM: Remove scoped session"""
+    db_session.remove()
+
+
 def drop_db():
     """Drop all tables - DANGER! Only for development"""
     
     # Safety check - không cho xóa trong production
     if os.getenv('APP_ENV') == 'production':
-        print(" Cannot drop tables in PRODUCTION environment!")
+        print("❌ Cannot drop tables in PRODUCTION environment!")
         return False
     
     try:
-        print("\n  WARNING: This will DELETE ALL TABLES!")
+        print("\n⚠️  WARNING: This will DELETE ALL TABLES!")
         print(f"   Database: {DB_TYPE.upper()} - {current_config.DB_NAME}")
         response = input("\nType 'YES' to confirm: ")
         
         if response != 'YES':
-            print(" Operation cancelled")
+            print("❌ Operation cancelled")
             return False
         
-        print("\n Dropping all tables...")
+        print("\n🗑️  Dropping all tables...")
         Base.metadata.drop_all(bind=engine)
-        print(" All tables dropped successfully!")
+        print("✅ All tables dropped successfully!")
         return True
         
     except Exception as e:
-        print(f" Error dropping tables: {e}")
+        print(f"❌ Error dropping tables: {e}")
         return False
 
 
@@ -162,55 +179,55 @@ def check_connection():
     Returns: (success: bool, message: str)
     """
     try:
-        print(f" Testing {DB_TYPE.upper()} connection...")
+        print(f"🔌 Testing {DB_TYPE.upper()} connection...")
         
         with engine.connect() as conn:
             # Database-specific version checks
             if DB_TYPE == 'postgresql':
                 result = conn.execute(text("SELECT version()"))
                 version = result.fetchone()[0].split(',')[0]
-                print(f" PostgreSQL connected!")
+                print(f"✅ PostgreSQL connected!")
                 print(f"   {version}")
                 
             elif DB_TYPE == 'mysql':
                 result = conn.execute(text("SELECT VERSION()"))
                 version = result.fetchone()[0]
-                print(f" MySQL connected!")
+                print(f"✅ MySQL connected!")
                 print(f"   Version: {version}")
                 
             elif DB_TYPE == 'sqlite':
                 result = conn.execute(text("SELECT sqlite_version()"))
                 version = result.fetchone()[0]
-                print(f" SQLite connected!")
+                print(f"✅ SQLite connected!")
                 print(f"   Version: {version}")
                 
             else:
                 # Generic check for other databases
                 conn.execute(text("SELECT 1"))
-                print(f" {DB_TYPE.upper()} connection successful!")
+                print(f"✅ {DB_TYPE.upper()} connection successful!")
         
         return True, "Connection successful"
         
     except Exception as e:
         error_msg = str(e)
-        print(f" Database connection failed!")
+        print(f"❌ Database connection failed!")
         print(f"   Error: {error_msg}")
         
         # Provide helpful hints based on error type
         if "refused" in error_msg.lower() or "can't connect" in error_msg.lower():
-            print("\n Hint: Is the database server running?")
+            print("\n💡 Hint: Is the database server running?")
             if DB_TYPE == 'postgresql':
                 print("   Try: sudo service postgresql start")
             elif DB_TYPE == 'mysql':
                 print("   Try: sudo service mysql start")
                 
         elif "authentication" in error_msg.lower() or "access denied" in error_msg.lower():
-            print("\n Hint: Check your database credentials in .env")
+            print("\n💡 Hint: Check your database credentials in .env")
             print(f"   DB_USER={current_config.DB_USER}")
             print(f"   DB_PASSWORD=***")
             
         elif "database" in error_msg.lower() and "does not exist" in error_msg.lower():
-            print(f"\n Hint: Create the database first:")
+            print(f"\n💡 Hint: Create the database first:")
             if DB_TYPE == 'postgresql':
                 print(f"   createdb {current_config.DB_NAME}")
             elif DB_TYPE == 'mysql':
@@ -218,7 +235,7 @@ def check_connection():
                 print(f"   mysql> CREATE DATABASE {current_config.DB_NAME};")
                 
         elif "no such table" in error_msg.lower():
-            print("\n Hint: Initialize the database first:")
+            print("\n💡 Hint: Initialize the database first:")
             print("   python manage_db.py init")
         
         return False, error_msg
@@ -245,11 +262,11 @@ def reset_db():
     DANGER! Only for development/testing
     """
     if os.getenv('APP_ENV') == 'production':
-        print(" Cannot reset database in PRODUCTION environment!")
+        print("❌ Cannot reset database in PRODUCTION environment!")
         return False
     
     print("\n" + "="*60)
-    print("  DATABASE RESET WARNING")
+    print("  ⚠️  DATABASE RESET WARNING")
     print("="*60)
     print("This will DELETE ALL DATA and recreate tables!")
     print(f"Database: {DB_TYPE.upper()} - {current_config.DB_NAME}")
@@ -258,18 +275,18 @@ def reset_db():
     response = input("Type 'RESET' to confirm: ")
     
     if response != 'RESET':
-        print(" Operation cancelled")
+        print("❌ Operation cancelled")
         return False
     
     # Step 1: Drop tables
-    print("\n  Step 1: Dropping all tables...")
+    print("\n🗑️  Step 1: Dropping all tables...")
     Base.metadata.drop_all(bind=engine)
-    print(" Tables dropped")
+    print("✅ Tables dropped")
     
     # Step 2: Create tables
-    print("\n Step 2: Creating fresh tables...")
+    print("\n🔨 Step 2: Creating fresh tables...")
     if not init_db():
         return False
     
-    print("\n Database reset completed successfully!")
+    print("\n✅ Database reset completed successfully!")
     return True

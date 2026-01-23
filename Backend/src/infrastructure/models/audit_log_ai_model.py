@@ -1,12 +1,11 @@
+# Backend/src/infrastructure/models/audit_log_ai_model.py
 """
-Backend/src/infrastructure/models/audit_log_ai_model.py
 Audit Log AI Model - Track system activities
 """
 
 from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey
 from sqlalchemy.orm import relationship
 from datetime import datetime
-
 from infrastructure.databases.base import Base
 
 
@@ -22,20 +21,21 @@ class AuditLogAI(Base):
     # Primary Key
     id = Column(Integer, primary_key=True, index=True)
     
-    # Who performed the action
-    action_user_id = Column(
+    # ✅ FIXED: Changed from action_user_id to user_id
+    user_id = Column(
         Integer, 
         ForeignKey('users.id', ondelete='SET NULL'),
-        nullable=True  # Can be NULL for system actions
+        nullable=True,  # Can be NULL for system actions
+        index=True
     )
     
     # What action was performed
     action_type = Column(String(100), nullable=False, index=True)
-    # Examples: 'user_login', 'paper_submitted', 'review_submitted', 
-    #           'assignment_created', 'decision_made'
+    # Examples: 'user_login', 'user_registered', 'paper_submitted', 
+    #           'review_submitted', 'assignment_created', 'decision_made'
     
     # Which table/entity was affected
-    table_name = Column(String(50), nullable=False)
+    table_name = Column(String(50), nullable=False, index=True)
     
     # Which specific record
     record_id = Column(Integer, nullable=True)
@@ -52,10 +52,22 @@ class AuditLogAI(Base):
     )
     
     # Relationship
-    user = relationship("User", backref="ai_audit_logs")
+    user = relationship("User", foreign_keys=[user_id], backref="audit_logs")
     
     def __repr__(self):
-        return f"<AuditLogAI(id={self.id}, action='{self.action_type}', table='{self.table_name}')>"
+        return f"<AuditLogAI(id={self.id}, action='{self.action_type}', user={self.user_id})>"
+    
+    def to_dict(self):
+        """Convert to dictionary"""
+        return {
+            'id': self.id,
+            'user_id': self.user_id,
+            'action_type': self.action_type,
+            'table_name': self.table_name,
+            'record_id': self.record_id,
+            'data': self.data,
+            'timestamp': self.timestamp.isoformat() if self.timestamp else None,
+        }
     
     @classmethod
     def log(cls, db_session, user_id, action_type, table_name, 
@@ -74,7 +86,7 @@ class AuditLogAI(Base):
             )
         """
         log_entry = cls(
-            action_user_id=user_id,
+            user_id=user_id,
             action_type=action_type,
             table_name=table_name,
             record_id=record_id,
