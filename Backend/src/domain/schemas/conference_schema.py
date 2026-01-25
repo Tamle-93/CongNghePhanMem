@@ -16,7 +16,7 @@ class ConferenceCreateSchema(Schema):
     review_deadline = fields.DateTime(required=True)
     start_date = fields.DateTime()
     end_date = fields.DateTime()
-    is_blind_review = fields.Bool(missing=True)
+    is_blind_review = fields.Bool(load_default=True)
     
     @validates_schema
     def validate_dates(self, data, **kwargs):

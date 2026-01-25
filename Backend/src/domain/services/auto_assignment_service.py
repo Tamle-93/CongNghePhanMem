@@ -1,13 +1,15 @@
 """
 Backend/src/domain/services/auto_assignment_service.py
-Auto-Assignment Algorithm - Reviewer-Paper Matching
+Auto-Assignment Algorithm - Reviewer-Paper Matching with COI Enforcement
 """
 from infrastructure.databases.base import SessionLocal
 from infrastructure.models import (
-    Assignment, Paper, User, Conference, ConflictOfInterest, Track
+    Assignment, Paper, User, Conference, ConflictOfInterest, Track,
+    AuditLog, FeatureFlag
 )
 from sqlalchemy import func
 import json
+from datetime import datetime
 
 class AutoAssignmentService:
     """
@@ -76,10 +78,13 @@ class AutoAssignmentService:
                 ConflictOfInterest.conference_id == conference_id
             ).all()
             
+            # ✅ BUILD CONFLICT MAP FOR FAST LOOKUP
             conflict_map = {}
             for c in conflicts:
                 key = (c.paper_id, c.reviewer_id)
-                conflict_map[key] = True
+                conflict_map[key] = c.reason  # Store reason for audit logging
+            
+            print(f"✅ Found {len(conflicts)} conflicts of interest for conference {conference_id}")
             
             # Track reviewer workload
             reviewer_workload = {r.id: 0 for r in reviewers}
@@ -113,11 +118,12 @@ class AutoAssignmentService:
                     if reviewer.id in paper_assignments[paper.id]:
                         continue
                     
-                    # Skip if conflict
-                    if conflict_map.get((paper.id, reviewer.id)):
+                    # ✅ SKIP IF CONFLICT OF INTEREST - STRICT ENFORCEMENT
+                    if (paper.id, reviewer.id) in conflict_map:
+                        # Don't even offer option to assign
                         continue
                     
-                    # Skip if author
+                    # Skip if author (self-review protection)
                     if paper.submitter_id == reviewer.id:
                         continue
                     
@@ -177,6 +183,23 @@ class AutoAssignmentService:
             
             db.commit()
             
+            # ✅ LOG AUTO-ASSIGNMENT TO AUDIT
+            AuditLog.log_action(
+                db_session=db,
+                user_id=None,  # System action
+                action='AUTO_ASSIGNMENT_RUN',
+                entity_type='Conference',
+                entity_id=conference_id,
+                changes={
+                    'new_assignments': len(new_assignments),
+                    'total_papers': len(papers),
+                    'total_reviewers': len(reviewers),
+                    'errors': len(errors)
+                },
+                status='success' if not errors else 'partial',
+                description=f'Auto-assignment completed: {len(new_assignments)} assignments created'
+            )
+            
             # Statistics
             stats = {
                 'total_papers': len(papers),
@@ -185,7 +208,8 @@ class AutoAssignmentService:
                 'reviewer_workload': reviewer_workload,
                 'papers_fully_assigned': sum(1 for p_id, assigns in paper_assignments.items() if len(assigns) >= reviewers_per_paper),
                 'papers_partially_assigned': sum(1 for p_id, assigns in paper_assignments.items() if 0 < len(assigns) < reviewers_per_paper),
-                'papers_not_assigned': sum(1 for p_id, assigns in paper_assignments.items() if len(assigns) == 0)
+                'papers_not_assigned': sum(1 for p_id, assigns in paper_assignments.items() if len(assigns) == 0),
+                'conflicts_respected': len(conflicts)
             }
             
             return new_assignments, stats, errors if errors else None

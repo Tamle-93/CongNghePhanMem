@@ -1,33 +1,84 @@
 # Backend/src/domain/services/email_service.py
 """
-Email Service - Send notifications to users
+Email Service - Send notifications to users with idempotency support
 """
 from flask_mail import Mail, Message
+from infrastructure.databases.base import SessionLocal
+from infrastructure.models import EmailLog
 from datetime import datetime
 import os
+import hashlib
 
 mail = Mail()
 
 class EmailService:
-    """Email notification service"""
+    """Email notification service with idempotency"""
     
     @staticmethod
-    def send_email(to, subject, body, html=None):
+    def send_email(to, subject, body, html=None, 
+                   email_type=None, entity_type=None, entity_id=None, 
+                   user_id=None, idempotency_key=None):
         """
-        Send email to recipient
+        ✅ Send email with idempotency support
+        Prevents duplicate emails from being sent
         
         Args:
             to: str or list - recipient email(s)
             subject: str - email subject
             body: str - plain text body
             html: str (optional) - HTML body
+            email_type: str - type of email (for tracking)
+            entity_type: str - related entity type (Paper, Review, Decision)
+            entity_id: int - related entity ID
+            user_id: int - user associated with email
+            idempotency_key: str - custom idempotency key (auto-generated if not provided)
             
         Returns: (success: bool, message: str)
         """
+        db = SessionLocal()
+        
         try:
             if isinstance(to, str):
                 to = [to]
             
+            # Generate idempotency key if not provided
+            if not idempotency_key:
+                recipient = to[0] if isinstance(to, list) else to
+                idempotency_key = EmailLog.generate_idempotency_key(
+                    recipient=recipient,
+                    email_type=email_type or 'GENERIC',
+                    entity_type=entity_type or 'SYSTEM',
+                    entity_id=entity_id or 0
+                )
+            
+            # ✅ CHECK IF EMAIL ALREADY SENT (idempotency)
+            existing_email = db.query(EmailLog).filter(
+                EmailLog.idempotency_key == idempotency_key,
+                EmailLog.status == 'sent'
+            ).first()
+            
+            if existing_email:
+                print(f"⏭️  Email already sent (idempotency check): {idempotency_key}")
+                return True, "Email already sent (cached)"
+            
+            # Log email
+            recipient = to[0] if isinstance(to, list) else to
+            email_log = EmailLog(
+                idempotency_key=idempotency_key,
+                recipient_email=recipient,
+                subject=subject,
+                body=body,
+                email_type=email_type or 'GENERIC',
+                related_entity_type=entity_type,
+                related_entity_id=entity_id,
+                user_id=user_id,
+                status='pending'
+            )
+            db.add(email_log)
+            db.commit()
+            db.refresh(email_log)
+            
+            # Send email
             msg = Message(
                 subject=subject,
                 recipients=to,
@@ -36,10 +87,28 @@ class EmailService:
             )
             
             mail.send(msg)
+            
+            # Update log
+            email_log.status = 'sent'
+            email_log.sent_at = datetime.utcnow()
+            db.commit()
+            
             return True, "Email sent successfully"
             
         except Exception as e:
+            # Log failure
+            try:
+                if 'email_log' in locals():
+                    email_log.status = 'failed'
+                    email_log.last_error = str(e)
+                    email_log.retry_count += 1
+                    db.commit()
+            except:
+                pass
+            
             return False, f"Failed to send email: {str(e)}"
+        finally:
+            db.close()
     
     @staticmethod
     def send_paper_submission_confirmation(author_email, author_name, paper_title, conference_name):

@@ -167,26 +167,7 @@ def update_paper(paper_id):
     except Exception as e:
         return jsonify({'status': 'error', 'message': str(e)}), 500
 
-@papers_bp.route('/<int:paper_id>/withdraw', methods=['POST'])
-@require_auth
-def withdraw_paper(paper_id):
-    """Withdraw paper"""
-    try:
-        success, error = PaperService.withdraw_paper(
-            paper_id,
-            request.current_user['user_id']
-        )
-        
-        if error:
-            return jsonify({'status': 'error', 'message': error}), 400
-        
-        return jsonify({
-            'status': 'success',
-            'message': 'Paper withdrawn successfully'
-        }), 200
-        
-    except Exception as e:
-        return jsonify({'status': 'error', 'message': str(e)}), 500
+
 
 @papers_bp.route('/<int:paper_id>/camera-ready', methods=['POST'])
 @require_auth
@@ -249,3 +230,42 @@ def get_my_papers():
         
     except Exception as e:
         return jsonify({'status': 'error', 'message': str(e)}), 500
+
+@papers_bp.route('/<int:paper_id>/withdraw', methods=['POST'])
+@require_auth
+def withdraw_paper(paper_id):
+    """
+    ✅ Withdraw a paper (before deadline)
+    Authors can only withdraw their own papers before submission deadline
+    ---
+    POST /api/controllers/papers/{id}/withdraw
+    Headers: Authorization: Bearer <token>
+    
+    Responses:
+        200: Paper withdrawn successfully
+        400: Cannot withdraw (after deadline, after decision, etc.)
+        403: Permission denied
+        404: Paper not found
+    """
+    try:
+        success, error = PaperService.withdraw_paper(
+            paper_id=paper_id,
+            user_id=request.current_user['user_id']
+        )
+        
+        if not success:
+            return jsonify({
+                'status': 'error',
+                'message': error
+            }), 400 if error != "Permission denied" else 403
+        
+        return jsonify({
+            'status': 'success',
+            'message': 'Paper withdrawn successfully'
+        }), 200
+        
+    except Exception as e:
+        return jsonify({
+            'status': 'error',
+            'message': str(e)
+        }), 500

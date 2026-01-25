@@ -60,7 +60,12 @@ def require_auth(f):
     def decorated_function(*args, **kwargs):
         token = request.headers.get('Authorization')
         
+        # Debug logging
+        print(f"\n[AUTH] Request headers: {dict(request.headers)}")
+        print(f"[AUTH] Authorization header: {token}")
+        
         if not token:
+            print("[AUTH] ❌ NO TOKEN PROVIDED - returning 401")
             return jsonify({'status': 'error', 'message': 'No token provided'}), 401
         
         if token.startswith('Bearer '):
@@ -69,7 +74,9 @@ def require_auth(f):
         try:
             payload = decode_token(token)
             request.current_user = payload
+            print(f"[AUTH] ✅ Token decoded successfully for user {payload.get('user_id')}")
         except ValueError as e:
+            print(f"[AUTH] ❌ Token decode error: {str(e)}")
             return jsonify({'status': 'error', 'message': str(e)}), 401
         
         return f(*args, **kwargs)

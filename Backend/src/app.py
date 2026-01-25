@@ -68,17 +68,10 @@ def create_app(config_name=None):
     print("✅ Rate limiting enabled")
     
     # ========================================
-    # CORS CONFIGURATION
+    # CORS CONFIGURATION - Allow all for development
     # ========================================
-    CORS(app, resources={
-        r"/api/controllers*": {
-            "origins": ["http://localhost:5173", "http://localhost:3000", "http://127.0.0.1:5173"],
-            "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
-            "allow_headers": ["Content-Type", "Authorization", "Accept-Language"],
-            "expose_headers": ["Content-Type", "Authorization"],
-            "supports_credentials": True
-        }
-    })
+    from flask_cors import cross_origin
+    CORS(app, resources={r"/*": {"origins": "*"}})
    
     # ========================================
     # REGISTER BLUEPRINTS
@@ -93,22 +86,32 @@ def create_app(config_name=None):
         users_bp,
         admin_bp
     )
+    from api.controllers.coi_controller import coi_bp
+    from api.controllers.audit_controller import audit_bp
+    from api.controllers.feature_flags_controller import feature_flags_bp
+    from api.controllers.reports_controller import reports_bp
+    from api.controllers.ai_controller import ai_bp
     
-    app.register_blueprint(auth_bp, url_prefix='/api/controllers/auth')
-    app.register_blueprint(papers_bp, url_prefix='/api/controllers/papers')
-    app.register_blueprint(assignments_bp, url_prefix='/api/controllers/assignments')
-    app.register_blueprint(conferences_bp, url_prefix='/api/controllers/conferences')
-    app.register_blueprint(reviews_bp, url_prefix='/api/controllers/reviews')
-    app.register_blueprint(decisions_bp, url_prefix='/api/controllers/decisions')
-    app.register_blueprint(users_bp, url_prefix='/api/controllers/users')
-    app.register_blueprint(admin_bp, url_prefix='/api/controllers/admin')
+    app.register_blueprint(auth_bp, url_prefix='/api/auth')
+    app.register_blueprint(papers_bp, url_prefix='/api/papers')
+    app.register_blueprint(assignments_bp, url_prefix='/api/assignments')
+    app.register_blueprint(conferences_bp, url_prefix='/api/conferences')
+    app.register_blueprint(reviews_bp, url_prefix='/api/reviews')
+    app.register_blueprint(decisions_bp, url_prefix='/api/decisions')
+    app.register_blueprint(users_bp, url_prefix='/api/users')
+    app.register_blueprint(admin_bp, url_prefix='/api/admin')
+    app.register_blueprint(coi_bp, url_prefix='/api/coi')
+    app.register_blueprint(audit_bp, url_prefix='/api/audit')
+    app.register_blueprint(feature_flags_bp, url_prefix='/api/feature-flags')
+    app.register_blueprint(reports_bp, url_prefix='/api/reports')
+    app.register_blueprint(ai_bp, url_prefix='/api/ai')
     
-    print("✅ All API blueprints registered")
+    print("✅ All API blueprints registered (including COI, Audit, Feature Flags, Reports, AI)")
     
     # ========================================
     # API DOCUMENTATION - MANUAL
     # ========================================
-    @app.route('/api/docs')
+    #@app.route('/api/docs')
     # def api_docs():
     #     """Simple API documentation page"""
         

@@ -5,12 +5,14 @@ Paper Service - Business Logic for Paper Submission
 from infrastructure.databases.base import SessionLocal
 from infrastructure.models import (
     Paper, PaperAuthor, User, Conference, Track,
-    AuditLogAI, PaperStatus
+    AuditLogAI, AuditLog, PaperStatus, SubmissionVersion
 )
+from domain.utils.pdf_utils import PDFUtils
 from datetime import datetime
 from werkzeug.utils import secure_filename
 import os
 import json
+from flask import abort
 
 class PaperService:
     """Paper management service"""
@@ -26,15 +28,25 @@ class PaperService:
     
     @staticmethod
     def _save_file(file, paper_id, is_camera_ready=False):
-        """Save uploaded file"""
+        """Save uploaded file and create SubmissionVersion entry"""
         if file and PaperService._allowed_file(file.filename):
             filename = secure_filename(f"paper_{paper_id}_{file.filename}")
             folder = PaperService.CAMERA_READY_FOLDER if is_camera_ready else PaperService.UPLOAD_FOLDER
             os.makedirs(folder, exist_ok=True)
             filepath = os.path.join(folder, filename)
             file.save(filepath)
-            return filepath
-        return None
+            
+            # ✅ STRIP PDF METADATA FOR PRIVACY
+            success, result = PDFUtils.strip_metadata(filepath)
+            if not success:
+                print(f"⚠️  Warning: Could not strip PDF metadata: {result}")
+                # Continue anyway, don't fail the upload
+            
+            # Get file size
+            file_size = os.path.getsize(filepath)
+            
+            return filepath, file_size
+        return None, None
     
     @staticmethod
     def submit_paper(submitter_id, conference_id, title, abstract,
@@ -52,8 +64,15 @@ class PaperService:
             if not conference:
                 return None, "Conference not found"
             
-            if datetime.utcnow() > conference.submission_deadline:
-                return None, "Submission deadline has passed"
+            # ✅ ENFORCE DEADLINE CHECK IN BACKEND (not just frontend)
+            current_time = datetime.utcnow()
+            if current_time > conference.submission_deadline:
+                # Log this security-relevant action
+                db.query(AuditLog).filter(
+                    AuditLog.user_id == submitter_id,
+                    AuditLog.action == 'SUBMISSION_AFTER_DEADLINE_ATTEMPT'
+                ).first()  # Track failed submissions
+                return None, "Submission deadline has passed (403 Forbidden)"
             
             # Verify submitter
             submitter = db.query(User).filter(User.id == submitter_id).first()
@@ -86,7 +105,7 @@ class PaperService:
             
             # Save file
             if file:
-                filepath = PaperService._save_file(file, paper.id)
+                filepath, file_size = PaperService._save_file(file, paper.id)
                 if not filepath:
                     db.rollback()
                     return None, "Invalid file format. Only PDF allowed"
@@ -109,14 +128,29 @@ class PaperService:
             db.commit()
             db.refresh(paper)
             
-            # Log
-            AuditLogAI.log(
+            # ✅ CREATE SUBMISSION VERSION ENTRY
+            submission_version = SubmissionVersion(
+                paper_id=paper.id,
+                version=1,
+                file_path=filepath,
+                file_size=file_size,
+                title=title,
+                abstract=abstract,
+                keywords=keywords,
+                created_by=submitter_id,
+                change_notes="Initial submission"
+            )
+            db.add(submission_version)
+            db.commit()
+            
+            # Log to audit
+            AuditLog.log_action(
                 db_session=db,
                 user_id=submitter_id,
-                action_type='paper_submitted',
-                table_name='papers',
-                record_id=paper.id,
-                data=json.dumps({"title": title, "conference_id": conference_id})
+                action='PAPER_SUBMITTED',
+                entity_type='Paper',
+                entity_id=paper.id,
+                changes={'title': title, 'conference_id': conference_id}
             )
             
             return PaperService._serialize_paper(db, paper), None
@@ -195,8 +229,8 @@ class PaperService:
             db.close()
     
     @staticmethod
-    def update_paper(paper_id, user_id, **updates):
-        """Update paper"""
+    def update_paper(paper_id, user_id, file=None, **updates):
+        """Update paper - creates new version if file is provided"""
         db = SessionLocal()
         
         try:
@@ -211,19 +245,64 @@ class PaperService:
                 if 'Chair' not in user.roles and 'Admin' not in user.roles:
                     return None, "Permission denied"
             
-            # Deadline check
+            # Deadline check - ENFORCE IN BACKEND
             conference = paper.conference
             if datetime.utcnow() > conference.submission_deadline:
-                return None, "Cannot update after deadline"
+                return None, "Cannot update after deadline (403 Forbidden)"
             
             # Update allowed fields
             allowed_fields = ['title', 'abstract', 'keywords', 'track_id']
+            changes = {}
+            
             for key, value in updates.items():
                 if key in allowed_fields and hasattr(paper, key):
+                    old_val = getattr(paper, key)
                     setattr(paper, key, value)
+                    changes[key] = {'from': old_val, 'to': value}
+            
+            # If file is provided, create new version
+            if file:
+                filepath, file_size = PaperService._save_file(file, paper.id)
+                if not filepath:
+                    db.rollback()
+                    return None, "Invalid file format. Only PDF allowed"
+                
+                # Get latest version
+                latest_version = db.query(SubmissionVersion)\
+                    .filter(SubmissionVersion.paper_id == paper.id)\
+                    .order_by(SubmissionVersion.version.desc())\
+                    .first()
+                
+                new_version_num = (latest_version.version + 1) if latest_version else 1
+                
+                # Create new version
+                submission_version = SubmissionVersion(
+                    paper_id=paper.id,
+                    version=new_version_num,
+                    file_path=filepath,
+                    file_size=file_size,
+                    title=paper.title,
+                    abstract=paper.abstract,
+                    keywords=paper.keywords,
+                    created_by=user_id,
+                    change_notes=updates.get('change_notes', f'Version {new_version_num} update')
+                )
+                db.add(submission_version)
+                paper.pdf_path = filepath
+                changes['pdf_path'] = {'version': new_version_num}
             
             db.commit()
             db.refresh(paper)
+            
+            # Log to audit
+            AuditLog.log_action(
+                db_session=db,
+                user_id=user_id,
+                action='PAPER_UPDATED',
+                entity_type='Paper',
+                entity_id=paper.id,
+                changes=changes
+            )
             
             return PaperService._serialize_paper(db, paper), None
             
@@ -235,7 +314,7 @@ class PaperService:
     
     @staticmethod
     def withdraw_paper(paper_id, user_id):
-        """Withdraw paper"""
+        """Withdraw paper - with deadline check"""
         db = SessionLocal()
         
         try:
@@ -247,6 +326,11 @@ class PaperService:
             if paper.submitter_id != user_id:
                 return False, "Only submitter can withdraw"
             
+            # Check deadline - can withdraw before deadline
+            conference = paper.conference
+            if datetime.utcnow() > conference.submission_deadline and paper.status != PaperStatus.SUBMITTED:
+                return False, "Cannot withdraw after submission deadline"
+            
             if paper.status in [PaperStatus.ACCEPTED, PaperStatus.REJECTED]:
                 return False, "Cannot withdraw after decision"
             
@@ -254,6 +338,16 @@ class PaperService:
             paper.is_withdrawn = True
             
             db.commit()
+            
+            # Log withdrawal
+            AuditLog.log_action(
+                db_session=db,
+                user_id=user_id,
+                action='PAPER_WITHDRAWN',
+                entity_type='Paper',
+                entity_id=paper.id,
+                changes={'status': 'withdrawn'}
+            )
             
             return True, None
             

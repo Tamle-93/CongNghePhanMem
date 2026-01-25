@@ -285,6 +285,79 @@ class AdminService:
             db.close()
     
     @staticmethod
+    def block_user(user_id, admin_id):
+        """Block user account (Admin only)"""
+        db = SessionLocal()
+        
+        try:
+            if user_id == admin_id:
+                return False, "Cannot block yourself"
+            
+            user = db.query(User).filter(User.id == user_id).first()
+            
+            if not user:
+                return False, "User not found"
+            
+            if user.is_blocked:
+                return False, "User is already blocked"
+            
+            user.is_blocked = True
+            db.commit()
+            
+            # Log
+            AuditLogAI.log(
+                db_session=db,
+                user_id=admin_id,
+                action_type='admin_user_blocked',
+                table_name='users',
+                record_id=user_id,
+                data=json.dumps({'username': user.username})
+            )
+            
+            return True, None
+            
+        except Exception as e:
+            db.rollback()
+            return False, str(e)
+        finally:
+            db.close()
+    
+    @staticmethod
+    def unblock_user(user_id, admin_id):
+        """Unblock user account (Admin only)"""
+        db = SessionLocal()
+        
+        try:
+            user = db.query(User).filter(User.id == user_id).first()
+            
+            if not user:
+                return False, "User not found"
+            
+            if not user.is_blocked:
+                return False, "User is not blocked"
+            
+            user.is_blocked = False
+            db.commit()
+            
+            # Log
+            AuditLogAI.log(
+                db_session=db,
+                user_id=admin_id,
+                action_type='admin_user_unblocked',
+                table_name='users',
+                record_id=user_id,
+                data=json.dumps({'username': user.username})
+            )
+            
+            return True, None
+            
+        except Exception as e:
+            db.rollback()
+            return False, str(e)
+        finally:
+            db.close()
+    
+    @staticmethod
     def get_audit_logs(page=1, per_page=50, user_id=None, action_type=None):
         """Get audit logs"""
         db = SessionLocal()

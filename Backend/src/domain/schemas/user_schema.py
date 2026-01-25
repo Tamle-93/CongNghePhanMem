@@ -23,11 +23,11 @@ class UserRegistrationSchema(Schema):
     )
     roles = fields.List(
         fields.Str(),
-        missing=['Author']  # Default role
+        load_default=['Author']  # Default role
     )
     
     @validates('password')
-    def validate_password(self, value):
+    def validate_password(self, value, **kwargs):
         """Validate password strength"""
         if not re.search(r'[A-Z]', value):
             raise ValidationError('Password must contain at least one uppercase letter')
@@ -95,7 +95,7 @@ class UserUpdateSchema(Schema):
     )
     
     @validates('password')
-    def validate_password(self, value):
+    def validate_password(self, value, **kwargs):
         """Validate password strength"""
         if not re.search(r'[A-Z]', value):
             raise ValidationError('Password must contain at least one uppercase letter')
