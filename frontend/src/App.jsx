@@ -1,100 +1,121 @@
-// Frontend/src/App.jsx
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
-import Layout from './components/layout/Layout';
+import MainLayout from './components/layout/MainLayout';
 
-// Auth Pages
-import LoginPage from './pages/auth/LoginPage';
-import RegisterPage from './pages/auth/RegisterPage';
-import ForgotPasswordPage from './pages/auth/ForgotPasswordPage';
-//import LoginSystem from './components/LoginSystem';
+// Pages
+import LoginPage from './pages/LoginPage';
+import RegisterPage from './pages/RegisterPage';
+import ForgotPasswordPage from './pages/ForgotPasswordPage';
+import HomePage from './pages/HomePage';
+import ConferencesPage from './pages/ConferencesPage';
+import GuidePage from './pages/GuidePage';
+import ProfilePage from './pages/ProfilePage';
+import NotFoundPage from './pages/NotFoundPage';
 
 // Author Pages
-import AuthorDashboard from './pages/author/AuthorDashboard';
-import SubmitPaperPage from './pages/author/SubmitPaperPage';
-import PaperDetailPage from './pages/author/PaperDetailPage';
-import CameraReadyPage from './pages/author/CameraReadyPage';
-
-// Reviewer Pages
-import ReviewerDashboard from './pages/reviewer/ReviewerDashboard';
-import ReviewPaperPage from './pages/reviewer/ReviewPaperPage';
-
-// Chair Pages
-import ChairDashboard from './pages/chair/ChairDashboard';
-import ChairPapersPage from './pages/chair/ChairPapersPage';
-import ChairAssignmentsPage from './pages/chair/ChairAssignmentsPage';
+import AuthorPapersPage from './pages/author/AuthorPapersPage';
+import PaperSubmitPage from './pages/author/PaperSubmitPage';
+import AuthorPaperDetail from './pages/author/AuthorPaperDetail';
+import AuthorRevision from './pages/author/AuthorRevision';
+import AuthorReviewResults from './pages/author/AuthorReviewResults';
 
 // Admin Pages
 import AdminDashboard from './pages/admin/AdminDashboard';
-import AdminUsersPage from './pages/admin/AdminUsersPage';
-import AdminConferencesPage from './pages/admin/AdminConferencesPage';
-import AdminAuditLogsPage from './pages/admin/AdminAuditLogsPage';
+import AdminUserManagement from './pages/admin/AdminUserManagement';
+import AdminAddUser from './pages/admin/AdminAddUser';
+import AdminCreateConference from './pages/admin/AdminCreateConference';
+import AdminConferenceManagement from './pages/admin/AdminConferenceManagement';
+import AdminAuditLogs from './pages/admin/AdminAuditLogs';
+import AdminSystemConfig from './pages/admin/AdminSystemConfig';
 
-// Settings
-import SettingsPage from './pages/settings/SettingsPage';
-import NotFound from './pages/NotFound';
+// Chair Pages
+import ChairHomePage from './pages/chair/ChairHomePage';
+import ChairPapersPage from './pages/chair/ChairPapersPage';
+import ChairTracksPage from './pages/chair/ChairTracksPage';
+import ChairReviewersPage from './pages/chair/ChairReviewersPage';
+import ChairAssignments from './pages/chair/ChairAssignments';
+import ChairDecision from './pages/chair/ChairDecision';
+import ChairTimeline from './pages/chair/ChairTimeline';
+import ChairAddMilestone from './pages/chair/ChairAddMilestone';
+
+// Reviewer Pages
+import ReviewerDashboard from './pages/reviewer/ReviewerDashboard';
+import ReviewerAssignments from './pages/reviewer/ReviewerAssignments';
+import ReviewerPapers from './pages/reviewer/ReviewerPapers';
+import ReviewerReviews from './pages/reviewer/ReviewerReviews';
+import ReviewerPaperDetail from './pages/reviewer/ReviewerPaperDetail';
+import ReviewerReviewForm from './pages/reviewer/ReviewerReviewForm';
+import ReviewerBidding from './pages/reviewer/ReviewerBidding';
+import ReviewerHistory from './pages/reviewer/ReviewerHistory';
 
 function App() {
   return (
-    <BrowserRouter>
-      <AuthProvider>
+    <AuthProvider>
+      <BrowserRouter>
         <Routes>
-          {/* Public routes */}
-          <Route path="/auth/login" element={<LoginPage />} /> 
-          <Route path="/" element={<Navigate to="/auth/login" replace />} /> 
-          <Route path="*" element={<div>Not Found</div>} />
-          <Route path="/auth/register" element={<RegisterPage />} />
-          <Route path="/auth/forgot-password" element={<ForgotPasswordPage />} />
+          {/* Public Routes */}
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
 
-          {/* Protected routes */}
+          {/* Protected Routes */}
           <Route element={<ProtectedRoute />}>
-            {/* Author routes */}
-            <Route path="/author/dashboard" element={<AuthorDashboard />} />
-            <Route path="/author/submit" element={<SubmitPaperPage />} />
-            <Route path="/author/paper/:id" element={<PaperDetailPage />} />
-            <Route path="/author/camera-ready/:id" element={<CameraReadyPage />} />
-
-            {/* Reviewer routes */}
-            <Route path="/reviewer/dashboard" element={<ReviewerDashboard />} />
-            <Route path="/reviewer/review/:assignmentId" element={<ReviewPaperPage />} />
-
-            {/* Chair routes */}
-            <Route path="/chair/dashboard" element={<ChairDashboard />} />
-            <Route path="/chair/papers" element={<ChairPapersPage />} />
-            <Route path="/chair/assignments" element={<ChairAssignmentsPage />} />
-
-            {/* Admin routes */}
-            <Route path="/admin/dashboard" element={<AdminDashboard />} />
-            <Route path="/admin/users" element={<AdminUsersPage />} />
-            <Route path="/admin/conferences" element={<AdminConferencesPage />} />
-            <Route path="/admin/audit-logs" element={<AdminAuditLogsPage />} />
-
-            {/* Settings */}
-            <Route path="/settings" element={<SettingsPage />} />
+            <Route element={<MainLayout />}>
+              {/* Home */}
+              <Route path="/home" element={<HomePage />} />
+              <Route path="/conferences" element={<ConferencesPage />} />
+              <Route path="/guide" element={<GuidePage />} />
+              <Route path="/profile" element={<ProfilePage />} />
+              
+              {/* Author Routes */}
+              <Route path="/author/papers" element={<AuthorPapersPage />} />
+              <Route path="/author/papers/:id" element={<AuthorPaperDetail />} />
+              <Route path="/author/papers/:id/revision" element={<AuthorRevision />} />
+              <Route path="/author/papers/:id/reviews" element={<AuthorReviewResults />} />
+              <Route path="/author/submit" element={<PaperSubmitPage />} />
+              
+              {/* Admin Routes */}
+              <Route path="/admin" element={<AdminDashboard />} />
+              <Route path="/admin/users" element={<AdminUserManagement />} />
+              <Route path="/admin/users/add" element={<AdminAddUser />} />
+              <Route path="/admin/conferences" element={<AdminConferenceManagement />} />
+              <Route path="/admin/conferences/create" element={<AdminCreateConference />} />
+              <Route path="/admin/audit-logs" element={<AdminAuditLogs />} />
+              <Route path="/admin/system-config" element={<AdminSystemConfig />} />
+              
+              {/* Chair Routes */}
+              <Route path="/chair" element={<ChairHomePage />} />
+              <Route path="/chair/papers" element={<ChairPapersPage />} />
+              <Route path="/chair/papers/:id/assign" element={<ChairAssignments />} />
+              <Route path="/chair/papers/:id/decision" element={<ChairDecision />} />
+              <Route path="/chair/tracks" element={<ChairTracksPage />} />
+              <Route path="/chair/reviewers" element={<ChairReviewersPage />} />
+              <Route path="/chair/timeline" element={<ChairTimeline />} />
+              <Route path="/chair/timeline/add" element={<ChairAddMilestone />} />
+              
+              {/* Reviewer Routes */}
+              <Route path="/reviewer" element={<ReviewerDashboard />} />
+              <Route path="/reviewer/assignments" element={<ReviewerAssignments />} />
+              <Route path="/reviewer/papers" element={<ReviewerPapers />} />
+              <Route path="/reviewer/papers/:id" element={<ReviewerPaperDetail />} />
+              <Route path="/reviewer/papers/:id/review" element={<ReviewerReviewForm />} />
+              <Route path="/reviewer/reviews" element={<ReviewerReviews />} />
+              <Route path="/reviewer/bidding" element={<ReviewerBidding />} />
+              <Route path="/reviewer/history" element={<ReviewerHistory />} />
+            </Route>
           </Route>
 
-          {/* Default redirect */}
-          <Route path="/" element={<Navigate to="/auth/login" replace />} /> */
-          <Route path="*" element={<NotFound />} />
+          {/* Redirects */}
+          <Route path="/" element={<Navigate to="/login" replace />} />
+          
+          {/* 404 */}
+          <Route path="*" element={<NotFoundPage />} />
         </Routes>
-      </AuthProvider>
-    </BrowserRouter>
+      </BrowserRouter>
+    </AuthProvider>
   );
 }
 
 export default App;
-
-// import React from 'react';
-// import LoginSystem from './components/LoginSystem';
-// import AuthorDashboard from './pages/author/AuthorDashboard';
-// function App() {
-//   return (
-//     <div className="App">
-//       <LoginSystem />
-//     </div>
-//   );
-// }
-
-// export default App;

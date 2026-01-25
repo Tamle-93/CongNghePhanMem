@@ -1,398 +1,349 @@
-// src/pages/chair/ChairPapersPage.jsx
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
 
-const ChairPapersPage = ({ onNavigate }) => {
+const ChairPapersPage = () => {
+  const navigate = useNavigate();
   const [papers, setPapers] = useState([]);
-  const [conferences, setConferences] = useState([]);
-  const [selectedConference, setSelectedConference] = useState(null);
-  const [filter, setFilter] = useState('all'); // all, submitted, under_review, decided
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-
-  // Decision Modal
-  const [showDecisionModal, setShowDecisionModal] = useState(false);
-  const [selectedPaper, setSelectedPaper] = useState(null);
-  const [decisionForm, setDecisionForm] = useState({
-    result: '',
-    final_comment: ''
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filters, setFilters] = useState({
+    track: '',
+    status: '',
+    sort: 'newest'
   });
-  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    loadConferences();
+    fetchPapers();
   }, []);
 
-  useEffect(() => {
-    if (selectedConference) {
-      loadPapers();
-    }
-  }, [selectedConference]);
-
-  const loadConferences = async () => {
+  const fetchPapers = async () => {
     try {
-      const response = await api.listConferences({ page: 1, per_page: 100 });
-      if (response.status === 'success' && response.data.conferences.length > 0) {
-        setConferences(response.data.conferences);
-        setSelectedConference(response.data.conferences[0].id);
-      }
+      const response = await api.listPapers().catch(() => ({ data: { papers: [] } }));
+      setPapers(response.data?.papers || []);
     } catch (err) {
-      setError('Không thể tải danh sách hội nghị: ' + err.message);
-    }
-  };
-
-  const loadPapers = async () => {
-    try {
-      setLoading(true);
-      setError('');
-      const response = await api.listPapers({ conference_id: selectedConference });
-      
-      if (response.status === 'success') {
-        setPapers(response.data.papers || []);
-      }
-    } catch (err) {
-      setError('Không thể tải danh sách bài báo: ' + err.message);
+      console.error('Error:', err);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleViewDetail = (paperId) => {
-    onNavigate('paper-detail', { paperId });
-  };
-
-  const handleAssignReviewers = (paperId) => {
-    onNavigate('assignments', { paperId });
-  };
-
-  const handleMakeDecision = (paper) => {
-    setSelectedPaper(paper);
-    setDecisionForm({ result: '', final_comment: '' });
-    setShowDecisionModal(true);
-  };
-
-  const submitDecision = async (e) => {
-    e.preventDefault();
-    if (!decisionForm.result) {
-      alert('Vui lòng chọn quyết định');
-      return;
-    }
-
-    if (!window.confirm(`Bạn có chắc muốn ${decisionForm.result} bài báo này?`)) {
-      return;
-    }
-
-    setSubmitting(true);
-
-    try {
-      const response = await api.makeDecision({
-        paper_id: selectedPaper.id,
-        result: decisionForm.result,
-        final_comment: decisionForm.final_comment
-      });
-
-      if (response.status === 'success') {
-        alert('Đã gửi quyết định thành công!');
-        setShowDecisionModal(false);
-        loadPapers();
-      }
-    } catch (err) {
-      alert('Lỗi: ' + err.message);
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  const getStatusColor = (status) => {
-    const colors = {
-      submitted: 'bg-blue-100 text-blue-800',
-      under_review: 'bg-yellow-100 text-yellow-800',
-      accepted: 'bg-green-100 text-green-800',
-      rejected: 'bg-red-100 text-red-800',
-      withdrawn: 'bg-gray-100 text-gray-800'
+  const getStatusBadge = (status) => {
+    const badges = {
+      pending: { bg: 'bg-blue-100 text-blue-700', text: 'Chờ phân công' },
+      under_review: { bg: 'bg-orange-100 text-orange-700', text: 'Đang phản biện' },
+      completed: { bg: 'bg-green-100 text-green-700', text: 'Đã có kết quả' },
+      accepted: { bg: 'bg-green-100 text-green-700', text: 'Đã chấp nhận' },
+      rejected: { bg: 'bg-red-100 text-red-700', text: 'Đã từ chối' }
     };
-    return colors[status] || 'bg-gray-100 text-gray-800';
-  };
-
-  const getStatusText = (status) => {
-    const texts = {
-      submitted: 'Đã nộp',
-      under_review: 'Đang phản biện',
-      accepted: 'Chấp nhận',
-      rejected: 'Từ chối',
-      withdrawn: 'Đã rút'
-    };
-    return texts[status] || status;
+    const badge = badges[status] || badges.pending;
+    return <span className={`${badge.bg} px-2.5 py-1 rounded-full text-xs font-semibold`}>{badge.text}</span>;
   };
 
   const filteredPapers = papers.filter(paper => {
-    if (filter === 'submitted') return paper.status === 'submitted';
-    if (filter === 'under_review') return paper.status === 'under_review';
-    if (filter === 'decided') return ['accepted', 'rejected'].includes(paper.status);
-    return true;
+    const matchesSearch = paper.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         paper.authors?.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesTrack = !filters.track || paper.track === filters.track;
+    const matchesStatus = !filters.status || paper.status === filters.status;
+    return matchesSearch && matchesTrack && matchesStatus;
   });
+
+  const stats = {
+    total: papers.length,
+    pending: papers.filter(p => p.status === 'pending').length,
+    reviewing: papers.filter(p => p.status === 'under_review').length,
+    completed: papers.filter(p => p.status === 'accepted' || p.status === 'rejected').length
+  };
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <div className="text-center">
-          <svg className="animate-spin h-12 w-12 text-blue-600 mx-auto mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-          </svg>
-          <p className="text-gray-600">Đang tải dữ liệu...</p>
-        </div>
+      <div className="flex items-center justify-center min-h-96">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-800">Quản lý bài nộp</h2>
-          <p className="text-sm text-gray-600 mt-1">
-            Tổng số: <span className="font-semibold text-blue-600">{papers.length}</span> bài báo
-          </p>
-        </div>
-        {conferences.length > 1 && (
-          <select
-            value={selectedConference || ''}
-            onChange={(e) => setSelectedConference(parseInt(e.target.value))}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-          >
-            {conferences.map(conf => (
-              <option key={conf.id} value={conf.id}>{conf.name}</option>
-            ))}
-          </select>
-        )}
-      </div>
-
-      {/* Error Message */}
-      {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
-          {error}
-        </div>
-      )}
-
-      {/* Statistics */}
-      <div className="grid grid-cols-4 gap-4">
-        <div className="bg-white rounded-lg shadow p-4">
-          <p className="text-sm text-gray-600">Đã nộp</p>
-          <p className="text-2xl font-bold text-blue-600">
-            {papers.filter(p => p.status === 'submitted').length}
-          </p>
-        </div>
-        <div className="bg-white rounded-lg shadow p-4">
-          <p className="text-sm text-gray-600">Đang phản biện</p>
-          <p className="text-2xl font-bold text-yellow-600">
-            {papers.filter(p => p.status === 'under_review').length}
-          </p>
-        </div>
-        <div className="bg-white rounded-lg shadow p-4">
-          <p className="text-sm text-gray-600">Chấp nhận</p>
-          <p className="text-2xl font-bold text-green-600">
-            {papers.filter(p => p.status === 'accepted').length}
-          </p>
-        </div>
-        <div className="bg-white rounded-lg shadow p-4">
-          <p className="text-sm text-gray-600">Từ chối</p>
-          <p className="text-2xl font-bold text-red-600">
-            {papers.filter(p => p.status === 'rejected').length}
-          </p>
-        </div>
-      </div>
-
-      {/* Filter Tabs */}
-      <div className="bg-white rounded-lg shadow">
-        <div className="border-b border-gray-200">
-          <nav className="flex -mb-px">
-            <button
-              onClick={() => setFilter('all')}
-              className={`px-6 py-4 text-sm font-medium border-b-2 transition ${
-                filter === 'all'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700'
-              }`}
-            >
-              Tất cả ({papers.length})
+    <div className="min-h-screen bg-slate-50">
+      <main className="max-w-[1440px] mx-auto px-6 py-8 md:px-10 lg:px-20">
+        {/* Header */}
+        <div className="mb-8 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+          <div>
+            <h1 className="text-slate-900 text-3xl font-black leading-tight tracking-tight">
+              Quản Lý & Phân Công Bài Nộp
+            </h1>
+            <p className="text-slate-600 text-base font-normal mt-2">
+              Trung tâm quản lý toàn bộ danh sách bài nộp, thực hiện phân công phản biện và ra quyết định chấp nhận/từ chối.
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center gap-3">
+            <button className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-900 text-sm font-bold rounded-lg hover:bg-slate-50 transition-colors shadow-sm">
+              <span className="material-symbols-outlined text-lg">download</span>
+              Tải tất cả bài báo
             </button>
-            <button
-              onClick={() => setFilter('submitted')}
-              className={`px-6 py-4 text-sm font-medium border-b-2 transition ${
-                filter === 'submitted'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700'
-              }`}
-            >
-              Đã nộp ({papers.filter(p => p.status === 'submitted').length})
+            <button className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-bold rounded-lg hover:bg-blue-700 transition-colors shadow-sm shadow-blue-600/20">
+              <span className="material-symbols-outlined text-lg">export_notes</span>
+              Xuất báo cáo (CSV/Excel)
             </button>
-            <button
-              onClick={() => setFilter('under_review')}
-              className={`px-6 py-4 text-sm font-medium border-b-2 transition ${
-                filter === 'under_review'
-                  ? 'border-yellow-500 text-yellow-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700'
-              }`}
-            >
-              Đang phản biện ({papers.filter(p => p.status === 'under_review').length})
-            </button>
-            <button
-              onClick={() => setFilter('decided')}
-              className={`px-6 py-4 text-sm font-medium border-b-2 transition ${
-                filter === 'decided'
-                  ? 'border-green-500 text-green-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700'
-              }`}
-            >
-              Đã quyết định ({papers.filter(p => ['accepted', 'rejected'].includes(p.status)).length})
-            </button>
-          </nav>
-        </div>
-
-        {/* Papers Table */}
-        <div className="overflow-x-auto">
-          {filteredPapers.length === 0 ? (
-            <div className="p-12 text-center">
-              <svg className="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-              <p className="text-gray-600">Không có bài báo nào</p>
-            </div>
-          ) : (
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tiêu đề</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tác giả</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Trạng thái</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Reviewers</th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Thao tác</th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {filteredPapers.map(paper => (
-                  <tr key={paper.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4">
-                      <button
-                        onClick={() => handleViewDetail(paper.id)}
-                        className="text-sm font-medium text-blue-600 hover:text-blue-800 text-left"
-                      >
-                        {paper.title}
-                      </button>
-                      {paper.track_name && (
-                        <div className="text-xs text-gray-500 mt-1">{paper.track_name}</div>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-900">{paper.submitter_name}</td>
-                    <td className="px-6 py-4">
-                      <span className={`px-3 py-1 text-xs font-medium rounded-full ${getStatusColor(paper.status)}`}>
-                        {getStatusText(paper.status)}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-600">
-                      0/0
-                    </td>
-                    <td className="px-6 py-4 text-right text-sm space-x-2">
-                      <button
-                        onClick={() => handleViewDetail(paper.id)}
-                        className="text-blue-600 hover:text-blue-900 font-medium"
-                      >
-                        Xem
-                      </button>
-                      <span className="text-gray-300">|</span>
-                      <button
-                        onClick={() => handleAssignReviewers(paper.id)}
-                        className="text-purple-600 hover:text-purple-900 font-medium"
-                      >
-                        Phân công
-                      </button>
-                      {paper.status === 'under_review' && (
-                        <>
-                          <span className="text-gray-300">|</span>
-                          <button
-                            onClick={() => handleMakeDecision(paper)}
-                            className="text-green-600 hover:text-green-900 font-medium"
-                          >
-                            Quyết định
-                          </button>
-                        </>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </div>
-      </div>
-
-      {/* Decision Modal */}
-      {showDecisionModal && selectedPaper && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6 border-b border-gray-200">
-              <h3 className="text-xl font-bold text-gray-800">Ra quyết định</h3>
-              <p className="text-sm text-gray-600 mt-1">{selectedPaper.title}</p>
-            </div>
-
-            <form onSubmit={submitDecision} className="p-6 space-y-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Quyết định <span className="text-red-500">*</span>
-                </label>
-                <select
-                  value={decisionForm.result}
-                  onChange={(e) => setDecisionForm({ ...decisionForm, result: e.target.value })}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-lg"
-                  required
-                  disabled={submitting}
-                >
-                  <option value="">-- Chọn quyết định --</option>
-                  <option value="Accept">✓ Chấp nhận (Accept)</option>
-                  <option value="Reject">✗ Từ chối (Reject)</option>
-                  <option value="Revision">⟳ Yêu cầu sửa (Revision)</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Nhận xét cho tác giả
-                </label>
-                <textarea
-                  value={decisionForm.final_comment}
-                  onChange={(e) => setDecisionForm({ ...decisionForm, final_comment: e.target.value })}
-                  rows="6"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                  placeholder="Nhập nhận xét tổng hợp từ các reviewers và quyết định cuối cùng..."
-                  disabled={submitting}
-                />
-              </div>
-
-              <div className="flex space-x-4">
-                <button
-                  type="submit"
-                  disabled={submitting}
-                  className="flex-1 bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 font-medium disabled:bg-blue-300"
-                >
-                  {submitting ? 'Đang gửi...' : 'Gửi quyết định'}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setShowDecisionModal(false)}
-                  disabled={submitting}
-                  className="px-8 bg-gray-200 text-gray-700 py-3 rounded-lg hover:bg-gray-300"
-                >
-                  Hủy
-                </button>
-              </div>
-            </form>
           </div>
         </div>
-      )}
+
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <div className="bg-white p-4 rounded-xl border border-slate-200">
+            <p className="text-xs font-bold text-slate-500 uppercase">Tổng số bài nộp</p>
+            <div className="flex items-end justify-between mt-2">
+              <span className="text-2xl font-black">{stats.total}</span>
+              <span className="text-xs text-green-500 flex items-center">
+                <span className="material-symbols-outlined text-xs">trending_up</span> +12
+              </span>
+            </div>
+          </div>
+          <div className="bg-white p-4 rounded-xl border border-slate-200">
+            <p className="text-xs font-bold text-slate-500 uppercase">Chưa phân công</p>
+            <div className="flex items-end justify-between mt-2">
+              <span className="text-2xl font-black text-blue-600">{stats.pending}</span>
+              <span className="text-xs text-blue-500">Cần xử lý ngay</span>
+            </div>
+          </div>
+          <div className="bg-white p-4 rounded-xl border border-slate-200">
+            <p className="text-xs font-bold text-slate-500 uppercase">Đang phản biện</p>
+            <div className="flex items-end justify-between mt-2">
+              <span className="text-2xl font-black text-orange-500">{stats.reviewing}</span>
+              <span className="text-xs text-slate-400">Trên tổng số</span>
+            </div>
+          </div>
+          <div className="bg-white p-4 rounded-xl border border-slate-200">
+            <p className="text-xs font-bold text-slate-500 uppercase">Đã có quyết định</p>
+            <div className="flex items-end justify-between mt-2">
+              <span className="text-2xl font-black text-green-500">{stats.completed}</span>
+              <span className="text-xs text-slate-400">{Math.round(stats.completed / stats.total * 100)}% hoàn thành</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Main Table Card */}
+        <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+          {/* Filters */}
+          <div className="p-4 md:p-6 border-b border-slate-200 bg-slate-50/50">
+            <div className="flex flex-col gap-4">
+              <div className="flex flex-col md:flex-row gap-4 items-center">
+                <div className="relative flex-1 w-full">
+                  <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
+                  <input
+                    className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-blue-600 text-sm shadow-sm"
+                    placeholder="Tìm kiếm theo mã ID, tiêu đề, tác giả hoặc từ khóa..."
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                </div>
+                <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
+                  <button className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2.5 bg-white border border-slate-200 rounded-lg text-sm font-medium hover:bg-slate-50 transition-colors shadow-sm">
+                    <span className="material-symbols-outlined text-lg">filter_alt</span>
+                    Bộ lọc nâng cao
+                  </button>
+                  <button 
+                    onClick={fetchPapers}
+                    className="p-2.5 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors shadow-sm"
+                  >
+                    <span className="material-symbols-outlined text-lg">refresh</span>
+                  </button>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[10px] font-bold text-slate-500 uppercase px-1">Phân ban chuyên môn</label>
+                  <select 
+                    className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-600"
+                    value={filters.track}
+                    onChange={(e) => setFilters({...filters, track: e.target.value})}
+                  >
+                    <option value="">Tất cả phân ban</option>
+                    <option value="cs">Khoa học máy tính</option>
+                    <option value="se">Công nghệ phần mềm</option>
+                    <option value="is">An toàn thông tin</option>
+                    <option value="ai">Trí tuệ nhân tạo</option>
+                  </select>
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[10px] font-bold text-slate-500 uppercase px-1">Trạng thái xử lý</label>
+                  <select 
+                    className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-600"
+                    value={filters.status}
+                    onChange={(e) => setFilters({...filters, status: e.target.value})}
+                  >
+                    <option value="">Tất cả trạng thái</option>
+                    <option value="pending">Chờ phân công</option>
+                    <option value="under_review">Đang phản biện</option>
+                    <option value="completed">Đã có kết quả phản biện</option>
+                    <option value="accepted">Đã chấp nhận</option>
+                    <option value="rejected">Đã từ chối</option>
+                  </select>
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[10px] font-bold text-slate-500 uppercase px-1">Thời gian nộp</label>
+                  <select 
+                    className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-600"
+                    value={filters.sort}
+                    onChange={(e) => setFilters({...filters, sort: e.target.value})}
+                  >
+                    <option value="newest">Mới nhất</option>
+                    <option value="oldest">Cũ nhất</option>
+                    <option value="deadline">Gần hạn phản biện</option>
+                  </select>
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[10px] font-bold text-slate-500 uppercase px-1">Số lượng hiển thị</label>
+                  <select className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-600">
+                    <option value="10">10 bản ghi / trang</option>
+                    <option value="20">20 bản ghi / trang</option>
+                    <option value="50">50 bản ghi / trang</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Table */}
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse">
+              <thead>
+                <tr>
+                  <th className="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 bg-slate-50 w-24 text-center">
+                    Mã bài
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 bg-slate-50">
+                    Tiêu đề bài báo & Tác giả
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 bg-slate-50">
+                    Phân ban
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 bg-slate-50">
+                    Phản biện
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 bg-slate-50">
+                    Trạng thái
+                  </th>
+                  <th className="px-6 py-4 text-right text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 bg-slate-50">
+                    Hành động
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {filteredPapers.length === 0 ? (
+                  <tr>
+                    <td colSpan="6" className="px-6 py-12 text-center text-slate-500">
+                      <span className="material-symbols-outlined text-4xl mb-2 block text-slate-300">description</span>
+                      Không tìm thấy bài báo nào
+                    </td>
+                  </tr>
+                ) : (
+                  filteredPapers.map((paper, index) => (
+                    <tr key={paper.id} className="hover:bg-slate-50 transition-colors">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900 border-b border-slate-100 text-center font-mono font-medium text-slate-500">
+                        #{String(index + 1).padStart(3, '0')}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-slate-900 border-b border-slate-100">
+                        <div className="flex flex-col max-w-md">
+                          <span className="font-bold text-slate-900 truncate" title={paper.title}>
+                            {paper.title}
+                          </span>
+                          <span className="text-xs text-slate-600 mt-1">
+                            {paper.authors || 'Chưa có tác giả'} • {new Date(paper.created_at).toLocaleDateString('vi-VN')}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm border-b border-slate-100">
+                        <span className="px-2 py-1 bg-blue-50 text-blue-600 rounded text-xs font-semibold">
+                          {paper.track || 'Khoa học máy tính'}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm border-b border-slate-100">
+                        {paper.status === 'pending' ? (
+                          <span className="text-xs text-slate-400 italic">Chưa chỉ định</span>
+                        ) : (
+                          <div className="flex -space-x-2">
+                            <div className="size-6 rounded-full border-2 border-white bg-slate-300 flex items-center justify-center text-[8px] font-bold">PB1</div>
+                            <div className="size-6 rounded-full border-2 border-white bg-slate-400 flex items-center justify-center text-[8px] font-bold">PB2</div>
+                          </div>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm border-b border-slate-100">
+                        {getStatusBadge(paper.status)}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm border-b border-slate-100">
+                        <div className="flex items-center justify-end gap-2">
+                          <button 
+                            onClick={() => navigate(`/chair/papers/${paper.paper_id}`)}
+                            className="p-2 hover:bg-slate-100 text-slate-500 rounded-lg transition-colors"
+                            title="Xem chi tiết"
+                          >
+                            <span className="material-symbols-outlined">visibility</span>
+                          </button>
+                          {paper.status === 'pending' ? (
+                            <button 
+                              onClick={() => navigate(`/chair/papers/${paper.paper_id}/assign`)}
+                              className="flex items-center gap-1 px-3 py-1.5 bg-blue-600 text-white hover:bg-blue-700 rounded-lg text-xs font-bold transition-all shadow-sm"
+                            >
+                              <span className="material-symbols-outlined text-sm">person_add</span>
+                              Phân công
+                            </button>
+                          ) : paper.status === 'under_review' ? (
+                            <button 
+                              onClick={() => navigate(`/chair/papers/${paper.paper_id}/assign`)}
+                              className="flex items-center gap-1 px-3 py-1.5 border border-slate-200 text-slate-600 hover:bg-slate-100 rounded-lg text-xs font-bold transition-all"
+                            >
+                              <span className="material-symbols-outlined text-sm">edit</span>
+                              Điều chỉnh
+                            </button>
+                          ) : (paper.status === 'reviewed' || paper.status === 'completed') && (
+                            <button 
+                              onClick={() => navigate(`/chair/papers/${paper.paper_id}/decision`)}
+                              className="flex items-center gap-1 px-3 py-1.5 bg-green-600 text-white hover:bg-green-700 rounded-lg text-xs font-bold transition-all shadow-sm"
+                            >
+                              <span className="material-symbols-outlined text-sm">gavel</span>
+                              Quyết định
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Pagination */}
+          <div className="p-4 bg-slate-50/50 border-t border-slate-100 flex items-center justify-between">
+            <span className="text-sm text-slate-600">
+              Hiển thị <span className="font-bold">{filteredPapers.length}</span> trong tổng số <span className="font-bold">{papers.length}</span> bài báo
+            </span>
+            <div className="flex gap-2">
+              <button className="px-3 py-1.5 border border-slate-200 rounded-lg text-sm font-medium hover:bg-slate-50 transition-colors">
+                Trước
+              </button>
+              <button className="px-3 py-1.5 bg-blue-600 text-white rounded-lg text-sm font-medium">1</button>
+              <button className="px-3 py-1.5 border border-slate-200 rounded-lg text-sm font-medium hover:bg-slate-50 transition-colors">2</button>
+              <button className="px-3 py-1.5 border border-slate-200 rounded-lg text-sm font-medium hover:bg-slate-50 transition-colors">3</button>
+              <button className="px-3 py-1.5 border border-slate-200 rounded-lg text-sm font-medium hover:bg-slate-50 transition-colors">
+                Sau
+              </button>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      {/* Material Symbols Icons */}
+      <link 
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" 
+        rel="stylesheet" 
+      />
     </div>
   );
 };
 
 export default ChairPapersPage;
+
+

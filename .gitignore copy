@@ -1,0 +1,19 @@
+# Python cache
+__pycache__/
+*.pyc
+
+# Visual Studio / VS Code
+.vs/
+.vscode/
+*.user
+*.suo
+*.db
+*.json
+
+# Môi trường và Bảo mật
+.env
+venv/
+env/
+
+# Database tạm
+*.sqlite
