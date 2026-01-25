@@ -1,11 +1,9 @@
-# ============================================
-# File: Backend/src/api/controllers/auth.py
-# ============================================
 """
-Authentication API Routes
+Backend/src/api/controllers/auth_controller.py
+Authentication API Routes - WITH SWAGGER DOCS
 """
-
 from flask import Blueprint, request, jsonify
+from flasgger import swag_from
 from domain.services.auth_service import AuthService
 from domain.schemas.user_schema import (
     UserRegistrationSchema,
@@ -15,49 +13,79 @@ from domain.schemas.user_schema import (
 from domain.utils.auth_utils import require_auth
 from marshmallow import ValidationError
 
+auth_bp = Blueprint('auth', __name__)
 
-auth_bp = Blueprint('auth', __name__, url_prefix='/auth') 
-# Schemas
 registration_schema = UserRegistrationSchema()
 login_schema = UserLoginSchema()
 user_response_schema = UserResponseSchema()
-
 
 @auth_bp.route('/register', methods=['POST'])
 def register():
     """
     Register a new user
     ---
-    Request Body:
-        {
-            "username": "author01",
-            "password": "SecurePass123",
-            "email": "author@uth.edu.vn",
-            "full_name": "Nguyen Van A",
-            "role": "Author"  // Optional: Author, Reviewer, Chair, Admin
-        }
-    
-    Response:
-        {
-            "status": "success",
-            "message": "User registered successfully",
-            "data": {
-                "user": {...},
-                "token": "jwt_token_here"
-            }
-        }
+    tags:
+      - Authentication
+    parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          required:
+            - username
+            - password
+            - email
+            - full_name
+          properties:
+            username:
+              type: string
+              exa"
+            password:
+              type: string
+              example: "Author@123"
+            email:
+              type: string
+              example: "author@uth.edu.vn"
+            full_name:
+              type: string
+              example: "Nguyen Van A"
+            roles:
+              type: array
+              items:
+                type: string
+              example: ["Author"]
+    responses:
+      201:
+        description: User registered successfully
+        schema:
+          type: object
+          properties:
+            status:
+              type: string
+              example: "success"
+            message:
+              type: string
+              example: "User registered successfully"
+            data:
+              type: object
+              properties:
+                user:
+                  type: object
+                token:
+                  type: string
+      400:
+        description: Validation error
     """
     try:
-        # Validate input
         data = registration_schema.load(request.json)
         
-        # Register user
         user, token_or_error = AuthService.register_user(
             username=data['username'],
             password=data['password'],
             email=data['email'],
             full_name=data['full_name'],
-            role=data.get('role', 'Author')
+            roles=data.get('roles', ['Author'])
         )
         
         if user is None:
@@ -87,32 +115,50 @@ def register():
             'message': str(e)
         }), 500
 
-
 @auth_bp.route('/login', methods=['POST'])
 def login():
     """
     Login user
     ---
-    Request Body:
-        {
-            "username": "author01",
-            "password": "SecurePass123"
-        }
-    
-    Response:
-        {
-            "status": "success",
-            "data": {
-                "user": {...},
-                "token": "jwt_token_here"
-            }
-        }
+    tags:
+      - Authentication
+    parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          required:
+            - username
+            - password
+          properties:
+            username:
+              type: string
+              exa"
+            password:
+              type: string
+              example: "Author@123"
+    responses:
+      200:
+        description: Login successful
+        schema:
+          type: object
+          properties:
+            status:
+              type: string
+            data:
+              type: object
+              properties:
+                user:
+                  type: object
+                token:
+                  type: string
+      401:
+        description: Invalid credentials
     """
     try:
-        # Validate input
         data = login_schema.load(request.json)
         
-        # Login user
         user, token_or_error = AuthService.login_user(
             username=data['username'],
             password=data['password']
@@ -145,23 +191,31 @@ def login():
             'message': str(e)
         }), 500
 
-
 @auth_bp.route('/me', methods=['GET'])
 @require_auth
 def get_current_user():
     """
     Get current authenticated user
     ---
-    Headers:
-        Authorization: Bearer <token>
-    
-    Response:
-        {
-            "status": "success",
-            "data": {
-                "user": {...}
-            }
-        }
+    tags:
+      - Authentication
+    security:
+      - Bearer: []
+    responses:
+      200:
+        description: User information
+        schema:
+          type: object
+          properties:
+            status:
+              type: string
+            data:
+              type: object
+              properties:
+                user:
+                  type: object
+      404:
+        description: User not found
     """
     try:
         user_id = request.current_user['user_id']
@@ -187,24 +241,221 @@ def get_current_user():
             'message': str(e)
         }), 500
 
-
 @auth_bp.route('/logout', methods=['POST'])
 @require_auth
 def logout():
     """
-    Logout user (client should delete token)
+    Logout user
     ---
-    Response:
-        {
-            "status": "success",
-            "message": "Logged out successfully"
-        }
+    tags:
+      - Authentication
+    security:
+      - Bearer: []
+    responses:
+      200:
+        description: Logged out successfully
     """
-    # In JWT, logout is handled client-side by deleting the token
-    # Optionally, you can implement token blacklisting here
-    
     return jsonify({
         'status': 'success',
         'message': 'Logged out successfully'
     }), 200
 
+@auth_bp.route('/forgot-password', methods=['POST'])
+def forgot_password():
+    """
+    Request password reset
+    ---
+    tags:
+      - Authentication
+    parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          required:
+            - email
+          properties:
+            email:
+              type: string
+              example: "author01@uth.edu.vn"
+    responses:
+      200:
+        description: Reset email sent
+      404:
+        description: Email not found
+    """
+    try:
+        data = request.json
+        email = data.get('email')
+        
+        if not email:
+            return jsonify({
+                'status': 'error',
+                'message': 'Email is required'
+            }), 400
+        
+        # Gọi service để gửi email reset
+        success, message = AuthService.send_password_reset_email(email)
+        
+        if not success:
+            return jsonify({
+                'status': 'error',
+                'message': message
+            }), 404
+        
+        return jsonify({
+            'status': 'success',
+            'message': 'Password reset email sent',
+            'data': {
+                'email': email
+            }
+        }), 200
+        
+    except Exception as e:
+        return jsonify({
+            'status': 'error',
+            'message': str(e)
+        }), 500
+
+@auth_bp.route('/reset-password', methods=['POST'])
+def reset_password():
+    """
+    Reset password with token
+    ---
+    tags:
+      - Authentication
+    parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          required:
+            - email
+            - reset_token
+            - new_password
+          properties:
+            email:
+              type: string
+            reset_token:
+              type: string
+            new_password:
+              type: string
+    responses:
+      200:
+        description: Password reset successful
+      400:
+        description: Invalid token or validation error
+    """
+    try:
+        data = request.json
+        email = data.get('email')
+        reset_token = data.get('reset_token')
+        new_password = data.get('new_password')
+        
+        # Validate input
+        if not all([email, reset_token, new_password]):
+            return jsonify({
+                'status': 'error',
+                'message': 'Email, reset_token, and new_password are required'
+            }), 400
+        
+        # Reset password
+        success, message = AuthService.reset_password(email, reset_token, new_password)
+        
+        if not success:
+            return jsonify({
+                'status': 'error',
+                'message': message
+            }), 400
+        
+        return jsonify({
+            'status': 'success',
+            'message': 'Password reset successfully'
+        }), 200
+        
+    except Exception as e:
+        return jsonify({
+            'status': 'error',
+            'message': str(e)
+        }), 500
+
+
+@auth_bp.route('/refresh', methods=['POST'])
+def refresh_token():
+    """
+    ✅ Refresh access token using refresh token
+    ---
+    tags:
+      - Authentication
+    parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          required:
+            - refresh_token
+          properties:
+            refresh_token:
+              type: string
+              example: "long-refresh-token-string"
+    responses:
+      200:
+        description: Token refreshed successfully
+        schema:
+          type: object
+          properties:
+            status:
+              type: string
+              example: "success"
+            data:
+              type: object
+              properties:
+                access_token:
+                  type: string
+                token_type:
+                  type: string
+                  example: "Bearer"
+                expires_in:
+                  type: integer
+                  example: 3600
+      400:
+        description: Invalid or expired refresh token
+      401:
+        description: Unauthorized
+    """
+    try:
+        data = request.json
+        if not data or 'refresh_token' not in data:
+            return jsonify({
+                'status': 'error',
+                'message': 'refresh_token is required'
+            }), 400
+        
+        refresh_token_str = data['refresh_token']
+        
+        # Refresh access token
+        new_access_token, error = AuthService.refresh_access_token(refresh_token_str)
+        
+        if error:
+            return jsonify({
+                'status': 'error',
+                'message': error
+            }), 401
+        
+        return jsonify({
+            'status': 'success',
+            'data': {
+                'access_token': new_access_token,
+                'token_type': 'Bearer',
+                'expires_in': 3600  # 1 hour
+            }
+        }), 200
+        
+    except Exception as e:
+        return jsonify({
+            'status': 'error',
+            'message': str(e)
+        }), 500
