@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html class="light" lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Danh Mục Hội Nghị Khoa Học UTH - UTH-ConfMS</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "background-light": "#f8fafc",
+                        "background-dark": "#0f172a",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: { "DEFAULT": "0.375rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+<style type="text/tailwindcss">
+        body {
+            font-family: "Inter", sans-serif;
+            @apply bg-background-light text-slate-900;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
+            font-size: 20px;
+        }
+        .nav-link {
+            @apply text-[15px] font-medium text-slate-600 hover:text-primary transition-colors;
+        }
+        .nav-link.active {
+            @apply text-primary font-bold border-b-2 border-primary pb-1;
+        }
+    </style>
+</head>
+<body class="dark:bg-background-dark dark:text-white min-h-screen flex flex-col font-display">
+<header class="sticky top-0 z-50 w-full border-b border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 backdrop-blur px-4">
+<div class="mx-auto flex h-16 max-w-7xl items-center justify-between">
+<div class="flex items-center gap-10">
+<div class="flex items-center gap-3">
+<div class="flex size-9 items-center justify-center rounded-lg bg-primary text-white">
+<span class="material-symbols-outlined text-xl">school</span>
+</div>
+<h1 class="text-xl font-extrabold tracking-tight text-primary">UTH-ConfMS</h1>
+</div>
+<nav class="hidden md:flex items-center gap-8">
+<a class="nav-link" href="#">Trang chủ</a>
+<a class="nav-link active" href="#">Hội nghị</a>
+<a class="nav-link" href="#">Bài báo của tôi</a>
+<a class="nav-link" href="#">Hướng dẫn</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<div class="hidden md:flex flex-col items-end">
+<span class="text-sm font-bold text-slate-900 dark:text-white">Nguyễn Văn A</span>
+<span class="text-[11px] font-medium uppercase tracking-wider text-slate-500">Nhà nghiên cứu</span>
+</div>
+<button class="relative size-10 overflow-hidden rounded-full border border-slate-200 dark:border-slate-700">
+<div class="absolute inset-0 bg-cover bg-center" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCEEGfcZQUPQmvrXaaUWXfspcTta3tgvcSqioAP26pBp7tDSfxMigy2FwgteZ7NbvIV8uQWgfC17CzLShvXtMABf9PagrpZxn8rU9hbGCuBowWEJU4x_xyQZVan360XUDbQTU8X92xKxhnM9hd-wcaFVuZF-mkgjiUYI5syVdsXFNMYkupc_GXRd6rSX2kQuc1wm9h7QujzJMivilwOB05LsqElQentpDkfyKQ0qQ8-OMy3CLgYabE0zJSWtiRQkqfvIBjQJP_vEQ');"></div>
+</button>
+</div>
+</div>
+</header>
+<main class="flex-1 w-full">
+<div class="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
+<div class="mx-auto max-w-7xl px-4 py-8">
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-6">
+<div>
+<h2 class="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">Tất cả Hội nghị Khoa học</h2>
+<p class="text-slate-500 dark:text-slate-400 mt-1">Khám phá và tra cứu thông tin chi tiết các hội nghị khoa học tại UTH</p>
+</div>
+<div class="flex items-center gap-2 bg-slate-100 dark:bg-slate-800 p-1 rounded-lg">
+<button class="px-3 py-1.5 rounded-md bg-white dark:bg-slate-700 shadow-sm text-sm font-semibold text-primary flex items-center gap-2">
+<span class="material-symbols-outlined">grid_view</span>
+                        Lưới
+                    </button>
+<button class="px-3 py-1.5 rounded-md text-sm font-medium text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 flex items-center gap-2">
+<span class="material-symbols-outlined">format_list_bulleted</span>
+                        Danh sách
+                    </button>
+</div>
+</div>
+<div class="mt-8 grid grid-cols-1 md:grid-cols-12 gap-3">
+<div class="md:col-span-5 relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
+<input class="w-full pl-10 pr-4 py-2.5 rounded-lg border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm shadow-sm" placeholder="Tìm tên hội nghị, mã hiệu hoặc đơn vị tổ chức..." type="text"/>
+</div>
+<div class="md:col-span-2">
+<select class="w-full py-2.5 rounded-lg border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm shadow-sm">
+<option value="">Lĩnh vực</option>
+<option value="it">Công nghệ thông tin</option>
+<option value="economy">Kinh tế &amp; Quản trị</option>
+<option value="engineering">Kỹ thuật &amp; Công nghệ</option>
+</select>
+</div>
+<div class="md:col-span-2">
+<select class="w-full py-2.5 rounded-lg border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm shadow-sm">
+<option value="">Trạng thái</option>
+<option value="open">Đang mở nộp bài</option>
+<option value="review">Đang phản biện</option>
+<option value="upcoming">Sắp diễn ra</option>
+</select>
+</div>
+<div class="md:col-span-2">
+<select class="w-full py-2.5 rounded-lg border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm shadow-sm">
+<option value="">Năm tổ chức</option>
+<option value="2024">2024</option>
+<option value="2023">2023</option>
+</select>
+</div>
+<div class="md:col-span-1">
+<button class="w-full h-full flex items-center justify-center bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg text-slate-600 transition-colors border border-slate-200 dark:border-slate-700">
+<span class="material-symbols-outlined">filter_list</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<div class="mx-auto max-w-7xl px-4 py-8">
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+<div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden hover:border-primary/50 transition-all group shadow-sm flex flex-col">
+<div class="relative h-32 bg-slate-100 dark:bg-slate-800">
+<img alt="Conference" class="w-full h-full object-cover opacity-90 group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAGXQSFN_pvzAgqT32QQnTcUU7GKHl3hIRsJFhAvd2ek33qDJ_KcMHIGzLeLHGmd7Xk4ix1a5hfes-HiZYOpwp8Wlq6HAia-DK5q9chLA7hZcitAuhsovDwwipX3dpVtT2NGUapgeIDlj0-ALwUn-9J4F0B3KCWcjEe2YUEwitfE9GagSfqR-d_E5p09b0aBtoW_SCZydlcZXhGYLigrI75bXBvoacfJrMFyFiRwJeMgSImFvtDgIiz3scKIVoTbupg1f_IaPo15Q"/>
+<div class="absolute top-2 left-2 flex gap-1">
+<span class="bg-primary text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-sm">IT</span>
+<span class="bg-green-600 text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-sm">OPEN</span>
+</div>
+</div>
+<div class="p-4 flex flex-col flex-1">
+<div class="mb-1 text-[11px] font-bold text-primary uppercase tracking-wider">Mã: UTH-IT-2024</div>
+<h4 class="font-bold text-sm text-slate-900 dark:text-white mb-3 line-clamp-2 leading-tight min-h-[2.5rem]">Hội nghị Khoa học trẻ UTH-IT 2024: Đổi mới sáng tạo</h4>
+<div class="space-y-2.5 text-xs border-t border-slate-100 dark:border-slate-800 pt-3 mb-4">
+<div class="flex items-start gap-2 text-slate-600 dark:text-slate-400">
+<span class="material-symbols-outlined !text-[16px] mt-0.5">groups</span>
+<div>
+<span class="block text-[10px] text-slate-400 uppercase font-medium">Phân ban</span>
+<span class="font-medium line-clamp-1">AI, IoT, Cloud Computing</span>
+</div>
+</div>
+<div class="flex items-start gap-2 text-slate-600 dark:text-slate-400">
+<span class="material-symbols-outlined !text-[16px] mt-0.5">business</span>
+<div>
+<span class="block text-[10px] text-slate-400 uppercase font-medium">Đơn vị tổ chức</span>
+<span class="font-medium line-clamp-1">Khoa Công nghệ thông tin</span>
+</div>
+</div>
+<div class="flex items-start gap-2 text-slate-600 dark:text-slate-400">
+<span class="material-symbols-outlined !text-[16px] mt-0.5">event_available</span>
+<div>
+<span class="block text-[10px] text-slate-400 uppercase font-medium">Deadline nộp bài</span>
+<span class="font-bold text-red-500">15/12/2023</span>
+</div>
+</div>
+</div>
+<div class="mt-auto">
+<button class="w-full py-2 bg-slate-50 dark:bg-slate-800 text-primary hover:bg-primary hover:text-white border border-primary/20 rounded-lg font-bold text-xs transition-all">Chi tiết hội nghị</button>
+</div>
+</div>
+</div>
+<div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden hover:border-primary/50 transition-all group shadow-sm flex flex-col">
+<div class="relative h-32 bg-slate-100 dark:bg-slate-800">
+<img alt="Conference" class="w-full h-full object-cover opacity-90 group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA2HelikzPl41CNt4Vh_1n7eH-nKi8BixrEb3YXvOxMTVyUVtk0lXpUz3w2HngOvwMOYrEwxP7H3PO-YorDdEirxGklIv9RqRJppYDB--K_PVQYGHCMYzDcfN68ZJZ21ywhh0in5usTu0E5I2wH2MdRaDMFQD1jZVpjw-wv9LlXBAtO4gSOmhcGyQHxXsrrCNK9fU6v9z7YYOZfkeMgHqmPhOe1wZCYUYxyWQvk8YBN2PeQQxU5J-ebufhdYAlw2U5DVkLS-4d_nw"/>
+<div class="absolute top-2 left-2 flex gap-1">
+<span class="bg-emerald-600 text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-sm">KINH TẾ</span>
+<span class="bg-amber-600 text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-sm">REVIEW</span>
+</div>
+</div>
+<div class="p-4 flex flex-col flex-1">
+<div class="mb-1 text-[11px] font-bold text-primary uppercase tracking-wider">Mã: UEF-STARTUP</div>
+<h4 class="font-bold text-sm text-slate-900 dark:text-white mb-3 line-clamp-2 leading-tight min-h-[2.5rem]">Diễn đàn Kinh tế UTH: Khởi nghiệp sáng tạo</h4>
+<div class="space-y-2.5 text-xs border-t border-slate-100 dark:border-slate-800 pt-3 mb-4">
+<div class="flex items-start gap-2 text-slate-600 dark:text-slate-400">
+<span class="material-symbols-outlined !text-[16px] mt-0.5">groups</span>
+<div>
+<span class="block text-[10px] text-slate-400 uppercase font-medium">Phân ban</span>
+<span class="font-medium line-clamp-1">Kinh tế số, Quản trị rủi ro</span>
+</div>
+</div>
+<div class="flex items-start gap-2 text-slate-600 dark:text-slate-400">
+<span class="material-symbols-outlined !text-[16px] mt-0.5">business</span>
+<div>
+<span class="block text-[10px] text-slate-400 uppercase font-medium">Đơn vị tổ chức</span>
+<span class="font-medium line-clamp-1">Viện Đào tạo Quốc tế</span>
+</div>
+</div>
+<div class="flex items-start gap-2 text-slate-600 dark:text-slate-400">
+<span class="material-symbols-outlined !text-[16px] mt-0.5">event_available</span>
+<div>
+<span class="block text-[10px] text-slate-400 uppercase font-medium">Deadline nộp bài</span>
+<span class="font-bold text-red-500">20/12/2023</span>
+</div>
+</div>
+</div>
+<div class="mt-auto">
+<button class="w-full py-2 bg-slate-50 dark:bg-slate-800 text-primary hover:bg-primary hover:text-white border border-primary/20 rounded-lg font-bold text-xs transition-all">Chi tiết hội nghị</button>
+</div>
+</div>
+</div>
+<div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden hover:border-primary/50 transition-all group shadow-sm flex flex-col">
+<div class="relative h-32 bg-slate-100 dark:bg-slate-800">
+<img alt="Conference" class="w-full h-full object-cover opacity-90 group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA9YVYA70dTMopSpr1UiZXJftRpYKa8yMbpZIowQ5NQPFBob9JJnNna-6oXmKeXRyIG042DyW6KmsHsLkVbkoA126cjn3k9LI4BubRo4CgaJVRsWclvJvmmQIcQcCYQ1fKa7gTQ09bYeDKA9MF3oqS0S3nhxQtqPh2UVBpTf_bmA8Wr7q9vWmQibbi3aOe03C_mgM6_v1Yn7cqcyc0HDCeztsKOfhzfFNnm05yGSaXDUGZA1cpowxorw3MA0jQkejPC3p6oY-UGEw"/>
+<div class="absolute top-2 left-2 flex gap-1">
+<span class="bg-orange-600 text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-sm">KỸ THUẬT</span>
+<span class="bg-green-600 text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-sm">OPEN</span>
+</div>
+</div>
+<div class="p-4 flex flex-col flex-1">
+<div class="mb-1 text-[11px] font-bold text-primary uppercase tracking-wider">Mã: RE-SD-2024</div>
+<h4 class="font-bold text-sm text-slate-900 dark:text-white mb-3 line-clamp-2 leading-tight min-h-[2.5rem]">Năng lượng tái tạo và Phát triển bền vững</h4>
+<div class="space-y-2.5 text-xs border-t border-slate-100 dark:border-slate-800 pt-3 mb-4">
+<div class="flex items-start gap-2 text-slate-600 dark:text-slate-400">
+<span class="material-symbols-outlined !text-[16px] mt-0.5">groups</span>
+<div>
+<span class="block text-[10px] text-slate-400 uppercase font-medium">Phân ban</span>
+<span class="font-medium line-clamp-1">Solar energy, Wind, Smart Grid</span>
+</div>
+</div>
+<div class="flex items-start gap-2 text-slate-600 dark:text-slate-400">
+<span class="material-symbols-outlined !text-[16px] mt-0.5">business</span>
+<div>
+<span class="block text-[10px] text-slate-400 uppercase font-medium">Đơn vị tổ chức</span>
+<span class="font-medium line-clamp-1">Khoa Điện - Điện tử</span>
+</div>
+</div>
+<div class="flex items-start gap-2 text-slate-600 dark:text-slate-400">
+<span class="material-symbols-outlined !text-[16px] mt-0.5">event_available</span>
+<div>
+<span class="block text-[10px] text-slate-400 uppercase font-medium">Deadline nộp bài</span>
+<span class="font-bold text-red-500">05/01/2024</span>
+</div>
+</div>
+</div>
+<div class="mt-auto">
+<button class="w-full py-2 bg-slate-50 dark:bg-slate-800 text-primary hover:bg-primary hover:text-white border border-primary/20 rounded-lg font-bold text-xs transition-all">Chi tiết hội nghị</button>
+</div>
+</div>
+</div>
+<div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden hover:border-primary/50 transition-all group shadow-sm flex flex-col">
+<div class="relative h-32 bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+<span class="material-symbols-outlined text-4xl text-slate-300">science</span>
+<div class="absolute top-2 left-2 flex gap-1">
+<span class="bg-blue-800 text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-sm">Y TẾ</span>
+<span class="bg-slate-500 text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-sm">UPCOMING</span>
+</div>
+</div>
+<div class="p-4 flex flex-col flex-1">
+<div class="mb-1 text-[11px] font-bold text-primary uppercase tracking-wider">Mã: MED-BIO-2024</div>
+<h4 class="font-bold text-sm text-slate-900 dark:text-white mb-3 line-clamp-2 leading-tight min-h-[2.5rem]">Hội thảo Công nghệ Sinh học trong Y tế hiện đại</h4>
+<div class="space-y-2.5 text-xs border-t border-slate-100 dark:border-slate-800 pt-3 mb-4">
+<div class="flex items-start gap-2 text-slate-600 dark:text-slate-400">
+<span class="material-symbols-outlined !text-[16px] mt-0.5">groups</span>
+<div>
+<span class="block text-[10px] text-slate-400 uppercase font-medium">Phân ban</span>
+<span class="font-medium line-clamp-1">Genetics, Bio-informatics</span>
+</div>
+</div>
+<div class="flex items-start gap-2 text-slate-600 dark:text-slate-400">
+<span class="material-symbols-outlined !text-[16px] mt-0.5">business</span>
+<div>
+<span class="block text-[10px] text-slate-400 uppercase font-medium">Đơn vị tổ chức</span>
+<span class="font-medium line-clamp-1">Viện Khoa học Sức khỏe</span>
+</div>
+</div>
+<div class="flex items-start gap-2 text-slate-600 dark:text-slate-400">
+<span class="material-symbols-outlined !text-[16px] mt-0.5">event_available</span>
+<div>
+<span class="block text-[10px] text-slate-400 uppercase font-medium">Deadline nộp bài</span>
+<span class="font-bold text-slate-500">25/02/2024</span>
+</div>
+</div>
+</div>
+<div class="mt-auto">
+<button class="w-full py-2 bg-slate-50 dark:bg-slate-800 text-primary hover:bg-primary hover:text-white border border-primary/20 rounded-lg font-bold text-xs transition-all">Chi tiết hội nghị</button>
+</div>
+</div>
+</div>
+</div>
+<div class="mt-12 flex items-center justify-between border-t border-slate-200 dark:border-slate-800 pt-6">
+<p class="text-xs text-slate-500">Hiển thị <span class="font-bold">1-12</span> của <span class="font-bold">48</span> hội nghị</p>
+<div class="flex items-center gap-1">
+<button class="size-8 flex items-center justify-center rounded border border-slate-200 dark:border-slate-700 text-slate-400 hover:text-primary transition-colors">
+<span class="material-symbols-outlined !text-[18px]">chevron_left</span>
+</button>
+<button class="size-8 flex items-center justify-center rounded bg-primary text-white text-xs font-bold shadow-sm">1</button>
+<button class="size-8 flex items-center justify-center rounded border border-slate-200 dark:border-slate-700 text-xs text-slate-600 hover:bg-slate-50">2</button>
+<button class="size-8 flex items-center justify-center rounded border border-slate-200 dark:border-slate-700 text-xs text-slate-600 hover:bg-slate-50">3</button>
+<span class="px-1 text-slate-400 text-xs">...</span>
+<button class="size-8 flex items-center justify-center rounded border border-slate-200 dark:border-slate-700 text-xs text-slate-600 hover:bg-slate-50">12</button>
+<button class="size-8 flex items-center justify-center rounded border border-slate-200 dark:border-slate-700 text-slate-400 hover:text-primary transition-colors">
+<span class="material-symbols-outlined !text-[18px]">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</main>
+<footer class="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 py-8">
+<div class="mx-auto max-w-7xl px-4">
+<div class="flex flex-col md:flex-row justify-between items-center gap-6">
+<div class="flex items-center gap-3">
+<div class="flex size-8 items-center justify-center rounded bg-slate-200 dark:bg-slate-800 text-primary">
+<span class="material-symbols-outlined text-lg">school</span>
+</div>
+<span class="font-bold text-slate-600">UTH-ConfMS</span>
+</div>
+<p class="text-[13px] text-slate-500">© 2023 Hệ thống Quản lý Hội nghị Khoa học UTH. Tất cả quyền được bảo lưu.</p>
+<div class="flex gap-4">
+<a class="text-slate-400 hover:text-primary" href="#"><span class="material-symbols-outlined">help_outline</span></a>
+<a class="text-slate-400 hover:text-primary" href="#"><span class="material-symbols-outlined">mail</span></a>
+</div>
+</div>
+</div>
+</footer>
+
+</body></html>

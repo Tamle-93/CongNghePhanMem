@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html class="light" lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Không Gian Đánh Giá &amp; Phản Biện Chuyên Sâu - UTH-ConfMS</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+<style type="text/tailwindcss">
+        body {
+            font-family: "Inter", sans-serif
+        }
+        .material-symbols-outlined {
+            font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24
+        }
+        .pdf-viewer-container {
+            height: calc(100vh - 180px);
+        }
+        .evaluation-form-container {
+            height: calc(100vh - 180px);
+            overflow-y: auto;
+        }
+        .sidebar-ai {
+            height: calc(100vh - 180px);
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-[#0d141b] dark:text-white min-h-screen flex flex-col font-display">
+<header class="sticky top-0 z-50 w-full border-b border-[#e7edf3] dark:border-gray-800 bg-white dark:bg-[#1a2634] px-4 py-3 shadow-sm">
+<div class="mx-auto flex h-14 max-w-[1600px] items-center justify-between">
+<div class="flex items-center gap-8">
+<div class="flex items-center gap-3">
+<div class="flex size-10 items-center justify-center rounded-lg bg-primary text-white">
+<span class="material-symbols-outlined text-2xl">school</span>
+</div>
+<h1 class="text-xl font-bold tracking-tight text-primary">UTH-ConfMS</h1>
+</div>
+<nav class="hidden md:flex items-center gap-6 lg:gap-8">
+<a class="text-sm font-medium text-[#4c739a] hover:text-primary transition-colors dark:text-gray-400" href="#">Trang chủ</a>
+<a class="text-sm font-medium text-[#4c739a] hover:text-primary transition-colors dark:text-gray-400" href="#">Hội nghị</a>
+<a class="text-sm font-bold text-primary border-b-2 border-primary pb-1" href="#">Phân công của tôi</a>
+<a class="text-sm font-medium text-[#4c739a] hover:text-primary transition-colors dark:text-gray-400" href="#">Đấu thầu bài báo</a>
+<a class="text-sm font-medium text-[#4c739a] hover:text-primary transition-colors dark:text-gray-400" href="#">Hướng dẫn</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<div class="hidden md:flex flex-col items-end">
+<span class="text-sm font-bold text-[#0d141b] dark:text-white">Nguyễn Văn A</span>
+<span class="text-xs text-[#4c739a] dark:text-gray-400">Người phản biện</span>
+</div>
+<button class="relative size-10 overflow-hidden rounded-full border border-[#e7edf3] dark:border-gray-700">
+<div class="absolute inset-0 bg-cover bg-center" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCEEGfcZQUPQmvrXaaUWXfspcTta3tgvcSqioAP26pBp7tDSfxMigy2FwgteZ7NbvIV8uQWgfC17CzLShvXtMABf9PagrpZxn8rU9hbGCuBowWEJU4x_xyQZVan360XUDbQTU8X92xKxhnM9hd-wcaFVuZF-mkgjiUYI5syVdsXFNMYkupc_GXRd6rSX2kQuc1wm9h7QujzJMivilwOB05LsqElQentpDkfyKQ0qQ8-OMy3CLgYabE0zJSWtiRQkqfvIBjQJP_vEQ');"></div>
+</button>
+</div>
+</div>
+</header>
+<main class="flex-1 flex flex-col p-4 gap-4 max-w-[1600px] mx-auto w-full">
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-[#1a2634] p-4 rounded-xl border border-[#e7edf3] dark:border-gray-800">
+<div>
+<div class="flex items-center gap-2 mb-1">
+<span class="bg-blue-100 text-blue-600 text-[10px] font-bold px-2 py-0.5 rounded uppercase">Mã bài: #UTH2024-085</span>
+<span class="text-xs text-gray-400 font-medium">Hạn nộp phản biện: 25/12/2023</span>
+</div>
+<h2 class="text-lg font-bold">Nghiên cứu ứng dụng Deep Learning trong việc phát hiện xâm nhập mạng cho các hệ thống IoT công nghiệp</h2>
+</div>
+<div class="flex items-center gap-3 shrink-0">
+<button class="flex items-center gap-2 px-3 py-1.5 text-sm font-medium border border-[#e7edf3] dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+<span class="material-symbols-outlined text-lg">download</span> Tải bài báo
+                </button>
+</div>
+</div>
+<div class="flex flex-col lg:flex-row gap-4 flex-1">
+<div class="lg:w-3/5 xl:w-1/2 flex flex-col gap-4">
+<div class="pdf-viewer-container bg-gray-500 rounded-xl overflow-hidden border border-[#e7edf3] dark:border-gray-800 relative">
+<div class="absolute inset-0 flex flex-col bg-white dark:bg-[#111827]">
+<div class="h-10 bg-gray-100 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between px-4">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined cursor-pointer">menu</span>
+<span class="text-xs font-medium">Page 1 / 12</span>
+</div>
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined cursor-pointer text-lg">zoom_out</span>
+<span class="text-xs">100%</span>
+<span class="material-symbols-outlined cursor-pointer text-lg">zoom_in</span>
+</div>
+</div>
+<div class="flex-1 overflow-auto p-8 flex flex-col items-center">
+<div class="w-[595px] min-h-[842px] bg-white shadow-2xl p-12 text-[#0d141b]">
+<h1 class="text-xl font-bold text-center mb-8 uppercase">Nghiên cứu ứng dụng Deep Learning trong việc phát hiện xâm nhập mạng cho các hệ thống IoT công nghiệp</h1>
+<div class="bg-gray-100 p-4 mb-6 rounded text-sm italic text-center text-gray-600">
+                                    [Thông tin tác giả đã được ẩn để đảm bảo tính khách quan trong phản biện]
+                                </div>
+<h2 class="font-bold text-base mb-2 uppercase">Tóm tắt</h2>
+<p class="text-justify text-sm leading-relaxed mb-6">
+                                    Sự phát triển của Internet vạn vật công nghiệp (IIoT) đã mang lại nhiều lợi ích to lớn nhưng đồng thời cũng đặt ra những thách thức nghiêm trọng về an ninh mạng. Bài báo này trình bày một nghiên cứu về việc ứng dụng kiến trúc học sâu (Deep Learning) nhằm phát hiện các hành vi xâm nhập trái phép trong môi trường IIoT. Chúng tôi đề xuất mô hình lai giữa CNN và LSTM để trích xuất cả đặc trưng không gian và thời gian từ dữ liệu lưu lượng mạng...
+                                </p>
+<h2 class="font-bold text-base mb-2 uppercase">1. Giới thiệu</h2>
+<p class="text-justify text-sm leading-relaxed mb-4">
+                                    Trong những năm gần đây, hệ thống điều khiển công nghiệp đã chuyển dịch từ các mạng cô lập sang các hệ thống kết nối Internet...
+                                </p>
+<div class="h-40 w-full bg-gray-50 border border-dashed border-gray-300 flex items-center justify-center text-gray-400 text-xs">
+                                    [Hình ảnh minh họa kiến trúc hệ thống]
+                                </div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="lg:flex-1 flex flex-col gap-4">
+<div class="grid grid-cols-1 xl:grid-cols-3 gap-4 flex-1">
+<div class="xl:col-span-2 evaluation-form-container bg-white dark:bg-[#1a2634] rounded-xl border border-[#e7edf3] dark:border-gray-800 p-6 flex flex-col gap-6">
+<h3 class="text-lg font-bold flex items-center gap-2 border-b border-gray-100 dark:border-gray-800 pb-3">
+<span class="material-symbols-outlined text-primary">rate_review</span> Phiếu đánh giá chi tiết
+                        </h3>
+<div class="space-y-6">
+<div class="space-y-3">
+<label class="block text-sm font-bold">1. Tính khoa học và phương pháp nghiên cứu (1-5)</label>
+<div class="flex items-center gap-4">
+<div class="flex gap-2">
+<button class="w-10 h-10 rounded-lg border border-gray-200 dark:border-gray-700 flex items-center justify-center hover:border-primary hover:text-primary transition-all">1</button>
+<button class="w-10 h-10 rounded-lg border border-gray-200 dark:border-gray-700 flex items-center justify-center hover:border-primary hover:text-primary transition-all">2</button>
+<button class="w-10 h-10 rounded-lg border border-gray-200 dark:border-gray-700 flex items-center justify-center hover:border-primary hover:text-primary transition-all">3</button>
+<button class="w-10 h-10 rounded-lg border-2 border-primary bg-primary/5 text-primary flex items-center justify-center font-bold">4</button>
+<button class="w-10 h-10 rounded-lg border border-gray-200 dark:border-gray-700 flex items-center justify-center hover:border-primary hover:text-primary transition-all">5</button>
+</div>
+<span class="text-xs text-[#4c739a] italic">Khá: Có cơ sở khoa học rõ ràng</span>
+</div>
+</div>
+<div class="space-y-3">
+<label class="block text-sm font-bold">2. Tính mới và đóng góp của bài báo (1-5)</label>
+<div class="flex items-center gap-4">
+<div class="flex gap-2">
+<button class="w-10 h-10 rounded-lg border border-gray-200 dark:border-gray-700 flex items-center justify-center hover:border-primary hover:text-primary transition-all">1</button>
+<button class="w-10 h-10 rounded-lg border border-gray-200 dark:border-gray-700 flex items-center justify-center hover:border-primary hover:text-primary transition-all">2</button>
+<button class="w-10 h-10 rounded-lg border border-gray-200 dark:border-gray-700 flex items-center justify-center hover:border-primary hover:text-primary transition-all">3</button>
+<button class="w-10 h-10 rounded-lg border border-gray-200 dark:border-gray-700 flex items-center justify-center hover:border-primary hover:text-primary transition-all">4</button>
+<button class="w-10 h-10 rounded-lg border border-gray-200 dark:border-gray-700 flex items-center justify-center hover:border-primary hover:text-primary transition-all">5</button>
+</div>
+</div>
+</div>
+<div class="space-y-3">
+<label class="block text-sm font-bold">3. Hình thức trình bày và ngôn ngữ (1-5)</label>
+<div class="flex items-center gap-4">
+<div class="flex gap-2">
+<button class="w-10 h-10 rounded-lg border border-gray-200 dark:border-gray-700 flex items-center justify-center hover:border-primary hover:text-primary transition-all">1</button>
+<button class="w-10 h-10 rounded-lg border border-gray-200 dark:border-gray-700 flex items-center justify-center hover:border-primary hover:text-primary transition-all">2</button>
+<button class="w-10 h-10 rounded-lg border border-gray-200 dark:border-gray-700 flex items-center justify-center hover:border-primary hover:text-primary transition-all">3</button>
+<button class="w-10 h-10 rounded-lg border border-gray-200 dark:border-gray-700 flex items-center justify-center hover:border-primary hover:text-primary transition-all">4</button>
+<button class="w-10 h-10 rounded-lg border border-gray-200 dark:border-gray-700 flex items-center justify-center hover:border-primary hover:text-primary transition-all">5</button>
+</div>
+</div>
+</div>
+<div class="space-y-2">
+<label class="block text-sm font-bold">4. Nhận xét chi tiết cho tác giả</label>
+<textarea class="w-full h-32 rounded-lg border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm focus:ring-primary focus:border-primary" placeholder="Vui lòng nhập các nhận xét cụ thể để tác giả chỉnh sửa bài báo..."></textarea>
+</div>
+<div class="space-y-2">
+<label class="block text-sm font-bold text-red-600 flex items-center gap-1">
+<span class="material-symbols-outlined text-sm">visibility_off</span>
+                                    5. Nhận xét kín cho Hội đồng chương trình
+                                </label>
+<textarea class="w-full h-24 rounded-lg border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm focus:ring-primary focus:border-primary" placeholder="Thông tin này sẽ không được gửi cho tác giả..."></textarea>
+</div>
+<div class="space-y-2">
+<label class="block text-sm font-bold">6. Kết luận chung</label>
+<select class="w-full rounded-lg border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm">
+<option>-- Chọn kết luận --</option>
+<option>Chấp nhận bài (Accept)</option>
+<option>Chấp nhận có chỉnh sửa nhỏ (Minor Revision)</option>
+<option>Chấp nhận có chỉnh sửa lớn (Major Revision)</option>
+<option>Từ chối bài (Reject)</option>
+</select>
+</div>
+</div>
+</div>
+<div class="sidebar-ai bg-white dark:bg-[#1a2634] rounded-xl border border-[#e7edf3] dark:border-gray-800 flex flex-col">
+<div class="p-4 border-b border-gray-100 dark:border-gray-800 bg-primary/5 rounded-t-xl">
+<h4 class="font-bold text-sm text-primary flex items-center gap-2">
+<span class="material-symbols-outlined text-xl">auto_awesome</span> AI Assistant
+                            </h4>
+</div>
+<div class="flex-1 overflow-y-auto p-4 space-y-4">
+<div class="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-100 dark:border-gray-700">
+<div class="text-[10px] font-bold text-[#4c739a] mb-1 uppercase">Ý chính của bài báo</div>
+<ul class="text-xs space-y-2 list-disc pl-4 text-gray-700 dark:text-gray-300">
+<li>Đề xuất mô hình lai CNN-LSTM cho an ninh IIoT.</li>
+<li>Sử dụng tập dữ liệu UNSW-NB15 để thực nghiệm.</li>
+<li>Kết quả đạt độ chính xác 98.2% trong phát hiện tấn công.</li>
+<li>Nhấn mạnh khả năng xử lý dữ liệu luồng theo thời gian thực.</li>
+</ul>
+</div>
+<div class="p-3 bg-blue-50/50 dark:bg-blue-900/10 rounded-lg border border-blue-100 dark:border-blue-900/30">
+<div class="text-[10px] font-bold text-blue-600 mb-1 uppercase">Đề xuất kiểm tra</div>
+<p class="text-xs text-blue-800 dark:text-blue-300 italic">"Cần kiểm tra kỹ phần thực nghiệm về độ trễ xử lý thực tế vì hệ thống IIoT rất nhạy cảm với thời gian."</p>
+</div>
+<div class="p-3 bg-orange-50/50 dark:bg-orange-900/10 rounded-lg border border-orange-100 dark:border-orange-900/30">
+<div class="text-[10px] font-bold text-orange-600 mb-1 uppercase">Phát hiện trùng lặp</div>
+<div class="flex items-center gap-2 mt-1">
+<div class="h-1.5 flex-1 bg-gray-200 rounded-full overflow-hidden">
+<div class="h-full bg-orange-500 w-[12%]"></div>
+</div>
+<span class="text-[10px] font-bold">12%</span>
+</div>
+<p class="text-[10px] mt-1 text-orange-800 dark:text-orange-300">Tương đồng thấp, bài viết có tính nguyên bản cao.</p>
+</div>
+</div>
+<div class="p-4 border-t border-gray-100 dark:border-gray-800">
+<div class="relative">
+<input class="w-full text-xs rounded-full border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 pr-10" placeholder="Hỏi AI về bài báo này..." type="text"/>
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-lg cursor-pointer hover:text-primary">send</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="bg-white dark:bg-[#1a2634] p-4 rounded-xl border border-[#e7edf3] dark:border-gray-800 flex items-center justify-between mt-auto">
+<div class="flex items-center gap-2 text-xs text-gray-400">
+<span class="material-symbols-outlined text-sm">save_as</span> Tự động lưu lúc 14:35:10
+            </div>
+<div class="flex items-center gap-4">
+<button class="px-6 py-2 text-sm font-bold text-[#4c739a] hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors border border-gray-200 dark:border-gray-700">Lưu nháp</button>
+<button class="px-8 py-2 text-sm font-bold bg-primary hover:bg-blue-600 text-white rounded-lg shadow-lg transition-all transform hover:scale-105">Nộp đánh giá</button>
+</div>
+</div>
+</main>
+<footer class="bg-white dark:bg-[#1a2634] border-t border-[#e7edf3] dark:border-gray-800 py-4 mt-4">
+<div class="mx-auto max-w-[1600px] px-4 flex flex-col md:flex-row justify-between items-center gap-4">
+<p class="text-xs text-[#4c739a] dark:text-gray-400">© 2023 UTH-ConfMS. Hệ thống quản lý hội nghị khoa học - UTH.</p>
+<div class="flex gap-6 text-xs text-[#4c739a] dark:text-gray-400">
+<a class="hover:text-primary" href="#">Chính sách bảo mật</a>
+<a class="hover:text-primary" href="#">Điều khoản sử dụng</a>
+<a class="hover:text-primary" href="#">Hỗ trợ kỹ thuật</a>
+</div>
+</div>
+</footer>
+
+</body></html>

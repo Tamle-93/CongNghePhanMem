@@ -1,306 +1,330 @@
-# ============================================
-# File: Backend/src/domain/services/auth_service.py (UPDATED)
-# ============================================
+# Backend/src/domain/services/auth_service.py
 """
-Authentication Service - UPDATED for Multi-Role Support
+Authentication Service - Business Logic with JWT and Refresh Token support
 """
-from infrastructure.databases.base import SessionLocal
-from infrastructure.models import User, Role, UserRole, AuditLogAI
-from domain.utils.auth_utils import hash_password, verify_password, generate_token
+from werkzeug.security import generate_password_hash, check_password_hash
+from infrastructure.models.user_model import User
+from infrastructure.models.role_model import Role
+from infrastructure.models.user_role_model import UserRole
+from infrastructure.models.audit_log_ai_model import AuditLogAI
+from infrastructure.models.audit_log_model import AuditLog
+from infrastructure.models.refresh_token_model import RefreshToken
+from infrastructure.databases.base import db_session
+from domain.utils.auth_utils import generate_token
+from datetime import datetime, timedelta
 import json
+import hashlib
 
 class AuthService:
     
     @staticmethod
-    def register_user(username: str, password: str, email: str, full_name: str, roles: list = None):
+    def register_user(username, password, email, full_name, roles=None):
         """
-        Register new user with multiple roles
+        Register new user with roles
         
         Args:
             username: str
-            password: str
+            password: str (plain text)
             email: str
             full_name: str
-            roles: list of str - ['Author', 'Reviewer'] (default: ['Author'])
+            roles: list of role names, default ['Author']
         
-        Returns: (user_dict, token) or (None, error_message)
+        Returns:
+            (User, token) if success
+            (None, error_message) if failed
         """
-        db = SessionLocal()
-        
         try:
-            # Check existing user
-            existing_user = db.query(User).filter(
-                (User.username == username) | (User.email == email)
-            ).first()
+            # Strip whitespace from username and email
+            username = username.strip()
+            email = email.strip()
             
-            if existing_user:
-                if existing_user.username == username:
-                    return None, "Username already exists"
-                return None, "Email already exists"
-            
-            # Default role
+            # Validate roles
             if roles is None:
                 roles = ['Author']
             
-            # Validate roles
-            valid_role_names = ['Author', 'Reviewer', 'Chair', 'Admin']
-            for role_name in roles:
-                if role_name not in valid_role_names:
-                    return None, f"Invalid role: {role_name}"
+            # Check if username exists
+            existing_user = db_session.query(User).filter_by(username=username).first()
+            if existing_user:
+                return None, "USERNAME_EXISTS"
             
-            # Create user
-            hashed_pw = hash_password(password)
+            # Check if email exists
+            existing_email = db_session.query(User).filter_by(email=email).first()
+            if existing_email:
+                return None, "EMAIL_EXISTS"
+            
+            # Create new user
             new_user = User(
                 username=username,
-                password_hash=hashed_pw,
                 email=email,
-                full_name=full_name
+                full_name=full_name,
+                password_hash=generate_password_hash(password)
             )
+            db_session.add(new_user)
+            db_session.flush()  # Get user.id
             
-            db.add(new_user)
-            db.flush()  # Get user.id before commit
-            
-            # ✅ Assign roles to user
+            #  Assign roles (GLOBAL - without conference_id)
             for role_name in roles:
-                role = db.query(Role).filter(Role.name == role_name).first()
+                role = db_session.query(Role).filter_by(name=role_name).first()
                 if not role:
-                    # Create role if not exists (shouldn't happen if DB seeded properly)
-                    role = Role(name=role_name, description=f"{role_name} role")
-                    db.add(role)
-                    db.flush()
+                    db_session.rollback()
+                    return None, f"Invalid role: {role_name}"
                 
-                # Create UserRole (global role, not conference-specific)
+                
                 user_role = UserRole(
                     user_id=new_user.id,
                     role_id=role.id,
-                    conference_id=None,  # Global role
+                    conference_id=None,  #
                     is_active=True,
-                    assigned_by=None  # Self-assigned during registration
+                    assigned_by=None,  
+                    assigned_at=datetime.utcnow()
                 )
-                db.add(user_role)
-            
-            db.commit()
-            db.refresh(new_user)
+                db_session.add(user_role)
             
             # Audit log
-            AuditLogAI.log(
-                db_session=db,
+            audit_log = AuditLogAI(
                 user_id=new_user.id,
                 action_type='user_registered',
                 table_name='users',
                 record_id=new_user.id,
-                data=json.dumps({"username": username, "roles": roles})
+                data=json.dumps({
+                    'username': username,
+                    'email': email,
+                    'full_name': full_name,
+                    'roles': roles
+                })
             )
+            db_session.add(audit_log)
             
-            # ✅ Generate token with roles array
+          
+            db_session.commit()
+            
+            # Generate JWT token
             token = generate_token(new_user.id, new_user.roles)
             
-            user_dict = {
-                'id': new_user.id,
-                'username': new_user.username,
-                'email': new_user.email,
-                'full_name': new_user.full_name,
-                'roles': new_user.roles  # ✅ Array of roles
-            }
+            # ✅ Generate refresh token
+            refresh_token_obj = RefreshToken(
+                user_id=new_user.id,
+                token=RefreshToken.generate_token(),
+                expires_at=datetime.utcnow() + timedelta(days=7),  # 7 days
+                is_revoked=False
+            )
+            db_session.add(refresh_token_obj)
+            db_session.commit()
             
-            return user_dict, token
+            return new_user, token
             
         except Exception as e:
-            db.rollback()
+            db_session.rollback()
             return None, f"Registration failed: {str(e)}"
-        finally:
-            db.close()
-    
     
     @staticmethod
-    def login_user(username: str, password: str):
+    def login_user(username, password):
         """
-        Login user and return token with all roles
-        """
-        db = SessionLocal()
+        Login user with username OR email
         
+        Returns:
+            (User, token) if success
+            (None, error_message) if failed
+        """
         try:
-            user = db.query(User).filter(User.username == username).first()
+            # Strip whitespace from username/email
+            username = username.strip()
+            
+            # Try to find user by username OR email
+            user = db_session.query(User).filter(
+                (User.username == username) | (User.email == username)
+            ).first()
             
             if not user:
-                return None, "Invalid credentials"
+                return None, "Invalid username/email or password"
             
-            if not verify_password(password, user.password_hash):
-                return None, "Invalid credentials"
-            
-            if user.is_deleted:
-                return None, "Account has been deleted"
-            
-            # ✅ Generate token with roles array
-            token = generate_token(user.id, user.roles)
+            if not check_password_hash(user.password_hash, password):
+                return None, "Invalid username/email or password"
             
             # Audit log
-            AuditLogAI.log(
-                db_session=db,
+            audit_log = AuditLogAI(
                 user_id=user.id,
                 action_type='user_login',
                 table_name='users',
                 record_id=user.id,
-                data=json.dumps({"username": username, "roles": user.roles})
+                data=json.dumps({'username': username})
             )
+            db_session.add(audit_log)
+            db_session.commit()
             
-            user_dict = {
-                'id': user.id,
-                'username': user.username,
-                'email': user.email,
-                'full_name': user.full_name,
-                'roles': user.roles  # ✅ Array of roles
-            }
+            # Generate token - INCLUDE ROLES!
+            token = generate_token(user.id, user.roles)
             
-            return user_dict, token
+            # ✅ Generate refresh token
+            refresh_token_obj = RefreshToken(
+                user_id=user.id,
+                token=RefreshToken.generate_token(),
+                expires_at=datetime.utcnow() + timedelta(days=7),  # 7 days
+                is_revoked=False
+            )
+            db_session.add(refresh_token_obj)
+            db_session.commit()
+            
+            return user, token
             
         except Exception as e:
             return None, f"Login failed: {str(e)}"
-        finally:
-            db.close()
-    
     
     @staticmethod
-    def get_user_by_id(user_id: int):
+    def get_user_by_id(user_id):
         """
-        Get user info by ID
-        """
-        db = SessionLocal()
+        Get user by ID
         
+        Returns:
+            (User, None) if found
+            (None, error_message) if not found
+        """
         try:
-            user = db.query(User).filter(
-                User.id == user_id, 
-                User.is_deleted == False
-            ).first()
+            user = db_session.query(User).filter_by(id=user_id).first()
             
             if not user:
                 return None, "User not found"
             
-            user_dict = {
-                'id': user.id,
-                'username': user.username,
-                'email': user.email,
-                'full_name': user.full_name,
-                'roles': user.roles,  # ✅ Array of roles
-                'created_at': user.created_at.isoformat()
-            }
-            
-            return user_dict, None
+            return user, None
             
         except Exception as e:
-            return None, str(e)
-        finally:
-            db.close()
+            return None, f"Error: {str(e)}"
     
-    
-    # ✅ NEW: Assign role to user
     @staticmethod
-    def assign_role(user_id: int, role_name: str, conference_id: int = None, assigned_by: int = None):
+    def refresh_access_token(refresh_token):
         """
-        Assign a role to user (Admin only)
+        ✅ Refresh access token using refresh token
         
         Args:
-            user_id: int - ID người nhận role
-            role_name: str - 'Author', 'Reviewer', 'Chair', 'Admin'
-            conference_id: int (optional) - Gán role cho conference cụ thể
-            assigned_by: int - ID admin thực hiện gán
+            refresh_token: str - The refresh token from client
         
-        Returns: (success: bool, message: str)
+        Returns:
+            (new_access_token, refresh_token_obj) if success
+            (None, error_message) if failed
         """
-        db = SessionLocal()
-        
         try:
-            # Check user exists
-            user = db.query(User).filter(User.id == user_id).first()
+            # Find refresh token
+            token_obj = db_session.query(RefreshToken)\
+                .filter(RefreshToken.token == refresh_token)\
+                .first()
+            
+            if not token_obj:
+                return None, "Invalid refresh token"
+            
+            # Check if revoked
+            if token_obj.is_revoked:
+                return None, "Refresh token has been revoked"
+            
+            # Check if expired
+            if not token_obj.is_valid():
+                return None, "Refresh token has expired"
+            
+            # Get user
+            user = db_session.query(User).filter(User.id == token_obj.user_id).first()
+            if not user:
+                return None, "User not found"
+            
+            # Generate new access token
+            new_access_token = generate_token(user.id, user.roles)
+            
+            # Log this action
+            AuditLog.log_action(
+                db_session=db_session,
+                user_id=user.id,
+                action='TOKEN_REFRESHED',
+                entity_type='RefreshToken',
+                entity_id=token_obj.id,
+                status='success'
+            )
+            
+            return new_access_token, None
+            
+        except Exception as e:
+            return None, f"Token refresh failed: {str(e)}"
+    
+    @staticmethod
+    def revoke_refresh_token(refresh_token):
+        """Revoke a refresh token (logout)"""
+        try:
+            token_obj = db_session.query(RefreshToken)\
+                .filter(RefreshToken.token == refresh_token)\
+                .first()
+            
+            if not token_obj:
+                return False, "Token not found"
+            
+            token_obj.is_revoked = True
+            db_session.commit()
+            
+            # Log logout
+            AuditLog.log_action(
+                db_session=db_session,
+                user_id=token_obj.user_id,
+                action='USER_LOGOUT',
+                entity_type='RefreshToken',
+                entity_id=token_obj.id,
+                status='success'
+            )
+            
+            return True, None
+            
+        except Exception as e:
+            return False, str(e)
+    
+    @staticmethod
+    def send_password_reset_email(email):
+        try:
+            from infrastructure.models.user_model import User
+        
+            user = User.query.filter_by(email=email).first()
+        
+            if not user:
+                return False, "Email not found"
+        
+            # Generate reset token (6 digits)
+            import random
+            reset_token = ''.join([str(random.randint(0, 9)) for _ in range(6)])
+        
+            # Save token to user (cần thêm field reset_token và reset_token_expires)
+            user.reset_token = reset_token
+            user.reset_token_expires = datetime.utcnow() + timedelta(hours=1)
+            db.session.commit()
+        
+            # Gửi email (sử dụng email_service)
+            from domain.services.email_service import EmailService
+            EmailService.send_password_reset_email(email, reset_token)
+        
+            return True, "Email sent"
+        
+        except Exception as e:
+            return False, str(e)
+
+    @staticmethod
+    def reset_password(email, reset_token, new_password):
+        """Reset password with token"""
+        try:
+            from infrastructure.models.user_model import User
+        
+            user = User.query.filter_by(email=email).first()
+        
             if not user:
                 return False, "User not found"
-            
-            # Check role exists
-            role = db.query(Role).filter(Role.name == role_name).first()
-            if not role:
-                return False, f"Role '{role_name}' not found"
-            
-            # Check if already has this role
-            existing = db.query(UserRole).filter(
-                UserRole.user_id == user_id,
-                UserRole.role_id == role.id,
-                UserRole.conference_id == conference_id
-            ).first()
-            
-            if existing:
-                if existing.is_active:
-                    return False, f"User already has role '{role_name}'"
-                else:
-                    # Reactivate
-                    existing.is_active = True
-                    existing.assigned_by = assigned_by
-                    db.commit()
-                    return True, f"Role '{role_name}' reactivated"
-            
-            # Create new UserRole
-            user_role = UserRole(
-                user_id=user_id,
-                role_id=role.id,
-                conference_id=conference_id,
-                is_active=True,
-                assigned_by=assigned_by
-            )
-            db.add(user_role)
-            db.commit()
-            
-            # Audit log
-            AuditLogAI.log(
-                db_session=db,
-                user_id=assigned_by or user_id,
-                action_type='role_assigned',
-                table_name='user_roles',
-                record_id=user_id,
-                data=json.dumps({
-                    "user_id": user_id,
-                    "role": role_name,
-                    "conference_id": conference_id
-                })
-            )
-            
-            return True, f"Role '{role_name}' assigned successfully"
-            
-        except Exception as e:
-            db.rollback()
-            return False, f"Failed to assign role: {str(e)}"
-        finally:
-            db.close()
-    
-    
-    # ✅ NEW: Revoke role from user
-    @staticmethod
-    def revoke_role(user_id: int, role_name: str, conference_id: int = None):
-        """
-        Revoke a role from user (Admin only)
-        """
-        db = SessionLocal()
         
-        try:
-            role = db.query(Role).filter(Role.name == role_name).first()
-            if not role:
-                return False, f"Role '{role_name}' not found"
-            
-            user_role = db.query(UserRole).filter(
-                UserRole.user_id == user_id,
-                UserRole.role_id == role.id,
-                UserRole.conference_id == conference_id
-            ).first()
-            
-            if not user_role:
-                return False, "User does not have this role"
-            
-            # Soft delete
-            user_role.is_active = False
-            db.commit()
-            
-            return True, f"Role '{role_name}' revoked successfully"
-            
+            # Check token
+            if user.reset_token != reset_token:
+                return False, "Invalid reset token"
+        
+            # Check expiration
+            if user.reset_token_expires < datetime.utcnow():
+                return False, "Reset token expired"
+        
+            # Update password
+            user.password = generate_password_hash(new_password)
+            user.reset_token = None
+            user.reset_token_expires = None
+            db.session.commit()
+        
+            return True, "Password reset successfully"
+        
         except Exception as e:
-            db.rollback()
-            return False, f"Failed to revoke role: {str(e)}"
-        finally:
-            db.close()
+            return False, str(e)

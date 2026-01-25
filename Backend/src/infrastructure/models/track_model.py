@@ -3,7 +3,7 @@
 Tracks Model - Tiểu ban trong hội nghị
 """
 
-from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Boolean
+from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Boolean, Text
 from sqlalchemy.orm import relationship
 from datetime import datetime
 
@@ -22,7 +22,7 @@ class Track(Base):
     # Track Info
     name = Column(String(100), nullable=False)
     code = Column(String(20), nullable=False)
-    
+    description = Column(Text, nullable=True)
     # Timestamps
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

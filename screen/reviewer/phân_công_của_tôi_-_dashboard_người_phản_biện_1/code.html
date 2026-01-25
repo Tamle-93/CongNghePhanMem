@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html class="light" lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Đấu Thầu Bài Báo Nghiên Cứu Mới - UTH-ConfMS</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+<style type="text/tailwindcss">
+        body {
+            font-family: "Inter", sans-serif
+        }
+        .material-symbols-outlined {
+            font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24
+        }
+        .ai-summary-badge {
+            background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-[#0d141b] dark:text-white min-h-screen flex flex-col font-display">
+<header class="sticky top-0 z-50 w-full border-b border-[#e7edf3] dark:border-gray-800 bg-white dark:bg-[#1a2634] px-4 py-3 shadow-sm">
+<div class="mx-auto flex h-14 max-w-7xl items-center justify-between">
+<div class="flex items-center gap-8">
+<div class="flex items-center gap-3">
+<div class="flex size-10 items-center justify-center rounded-lg bg-primary text-white">
+<span class="material-symbols-outlined text-2xl">school</span>
+</div>
+<h1 class="text-xl font-bold tracking-tight text-primary">UTH-ConfMS</h1>
+</div>
+<nav class="hidden md:flex items-center gap-6 lg:gap-8">
+<a class="text-sm font-medium text-[#4c739a] hover:text-primary transition-colors dark:text-gray-400 dark:hover:text-primary" href="#">Trang chủ</a>
+<a class="text-sm font-medium text-[#4c739a] hover:text-primary transition-colors dark:text-gray-400 dark:hover:text-primary" href="#">Hội nghị</a>
+<a class="text-sm font-medium text-[#4c739a] hover:text-primary transition-colors dark:text-gray-400 dark:hover:text-primary" href="#">Phân công của tôi</a>
+<a class="text-sm font-bold text-primary border-b-2 border-primary pb-1" href="#">Đấu thầu bài báo</a>
+<a class="text-sm font-medium text-[#4c739a] hover:text-primary transition-colors dark:text-gray-400 dark:hover:text-primary" href="#">Hướng dẫn</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<div class="hidden md:flex flex-col items-end">
+<span class="text-sm font-bold text-[#0d141b] dark:text-white">Nguyễn Văn A</span>
+<span class="text-xs text-[#4c739a] dark:text-gray-400">Người phản biện</span>
+</div>
+<button class="relative size-10 overflow-hidden rounded-full border border-[#e7edf3] dark:border-gray-700">
+<div class="absolute inset-0 bg-cover bg-center" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCEEGfcZQUPQmvrXaaUWXfspcTta3tgvcSqioAP26pBp7tDSfxMigy2FwgteZ7NbvIV8uQWgfC17CzLShvXtMABf9PagrpZxn8rU9hbGCuBowWEJU4x_xyQZVan360XUDbQTU8X92xKxhnM9hd-wcaFVuZF-mkgjiUYI5syVdsXFNMYkupc_GXRd6rSX2kQuc1wm9h7QujzJMivilwOB05LsqElQentpDkfyKQ0qQ8-OMy3CLgYabE0zJSWtiRQkqfvIBjQJP_vEQ');"></div>
+</button>
+</div>
+</div>
+</header>
+<main class="flex-1 pb-12">
+<div class="bg-white dark:bg-[#1a2634] border-b border-[#e7edf3] dark:border-gray-800">
+<div class="mx-auto max-w-7xl px-4 py-8">
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-6">
+<div>
+<nav class="flex items-center gap-2 text-sm text-[#4c739a] dark:text-gray-400 mb-2">
+<a class="hover:text-primary transition-colors" href="#">Trang chủ</a>
+<span class="material-symbols-outlined text-sm">chevron_right</span>
+<span class="text-[#0d141b] dark:text-white font-medium">Đấu thầu bài báo</span>
+</nav>
+<h2 class="text-3xl font-extrabold text-[#0d141b] dark:text-white">Đấu Thầu Bài Báo Nghiên Cứu Mới</h2>
+<p class="text-[#4c739a] dark:text-gray-400 mt-2">Chọn những bài báo bạn muốn phản biện dựa trên chuyên môn của mình.</p>
+</div>
+<div class="flex flex-col items-end gap-2">
+<div class="flex items-center gap-3">
+<span class="text-sm font-medium text-[#4c739a] dark:text-gray-400">Tiến độ đấu thầu: <span class="text-[#0d141b] dark:text-white font-bold">3/10 bài</span></span>
+</div>
+<div class="w-48 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+<div class="h-full bg-primary" style="width: 30%;"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="mx-auto max-w-7xl px-4 mt-8">
+<div class="flex flex-col gap-6">
+<div class="bg-white dark:bg-[#1a2634] rounded-xl border border-[#e7edf3] dark:border-gray-800 shadow-sm overflow-hidden hover:border-primary/40 transition-colors">
+<div class="p-6">
+<div class="flex flex-col md:flex-row gap-6">
+<div class="flex-1">
+<div class="flex items-start justify-between mb-3">
+<span class="bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 text-[10px] uppercase font-bold px-2 py-0.5 rounded">ID: PAPER-2024-042</span>
+<div class="ai-summary-badge px-3 py-1 rounded-full flex items-center gap-1.5 shadow-sm">
+<span class="material-symbols-outlined text-[16px] text-white">smart_toy</span>
+<span class="text-[11px] font-bold text-white uppercase tracking-wider">AI Summary</span>
+</div>
+</div>
+<h3 class="text-xl font-bold text-[#0d141b] dark:text-white mb-4 hover:text-primary transition-colors cursor-pointer">Ứng dụng Học sâu trong nhận diện bất thường qua ảnh X-quang phổi tại các bệnh viện tuyến đầu</h3>
+<div class="mb-6">
+<h4 class="text-xs font-bold text-[#4c739a] dark:text-gray-500 uppercase mb-2">Tóm tắt</h4>
+<p class="text-sm text-[#4c739a] dark:text-gray-400 leading-relaxed line-clamp-3">
+                                    Nghiên cứu này trình bày một giải pháp tự động dựa trên mạng nơ-ron tích chập (CNN) để hỗ trợ các bác sĩ chẩn đoán hình ảnh. Hệ thống được huấn luyện trên tập dữ liệu hơn 100,000 ảnh từ nhiều nguồn khác nhau. Kết quả thực nghiệm cho thấy độ chính xác đạt trên 92% đối với việc phát hiện viêm phổi và các triệu chứng liên quan đến COVID-19...
+                                </p>
+<button class="mt-2 text-primary text-sm font-bold flex items-center gap-1 hover:underline">
+                                    Xem thêm <span class="material-symbols-outlined text-[16px]">keyboard_arrow_down</span>
+</button>
+</div>
+<div class="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-100 dark:border-gray-800">
+<div class="flex items-center gap-2 mb-2 text-primary">
+<span class="material-symbols-outlined text-[18px]">auto_awesome</span>
+<span class="text-xs font-bold uppercase">Tóm tắt bởi AI (Đọc nhanh)</span>
+</div>
+<p class="text-sm text-[#0d141b] dark:text-gray-300">
+                                    Nghiên cứu sử dụng mô hình ResNet-50 cải tiến. Điểm mới là thuật toán tối ưu hóa trọng số dựa trên đặc thù ảnh y tế Việt Nam. Giảm thời gian chẩn đoán xuống 30% so với phương pháp thủ công.
+                                </p>
+</div>
+</div>
+<div class="w-full md:w-64 shrink-0 flex flex-col gap-3 justify-center border-t md:border-t-0 md:border-l border-[#e7edf3] dark:border-gray-800 pt-6 md:pt-0 md:pl-6">
+<span class="text-xs font-bold text-[#4c739a] dark:text-gray-500 uppercase text-center md:text-left mb-1">Mức độ quan tâm</span>
+<button class="flex items-center justify-between px-4 py-2.5 rounded-lg border-2 border-primary bg-primary/5 text-primary font-bold text-sm transition-all hover:bg-primary hover:text-white">
+<span>Rất muốn</span>
+<span class="material-symbols-outlined text-[20px]">favorite</span>
+</button>
+<button class="flex items-center justify-between px-4 py-2.5 rounded-lg border-2 border-gray-200 dark:border-gray-700 hover:border-primary/50 text-[#4c739a] dark:text-gray-400 font-bold text-sm transition-all">
+<span>Có thể</span>
+<span class="material-symbols-outlined text-[20px]">thumbs_up_down</span>
+</button>
+<button class="flex items-center justify-between px-4 py-2.5 rounded-lg border-2 border-gray-200 dark:border-gray-700 hover:border-red-200 text-[#4c739a] dark:text-gray-400 font-bold text-sm transition-all">
+<span>Không muốn</span>
+<span class="material-symbols-outlined text-[20px]">close</span>
+</button>
+<button class="flex items-center justify-between px-4 py-2.5 rounded-lg border-2 border-gray-200 dark:border-gray-700 hover:border-orange-200 text-[#4c739a] dark:text-gray-400 font-bold text-sm transition-all">
+<span>Xung đột (COI)</span>
+<span class="material-symbols-outlined text-[20px]">warning</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<div class="bg-white dark:bg-[#1a2634] rounded-xl border border-[#e7edf3] dark:border-gray-800 shadow-sm overflow-hidden hover:border-primary/40 transition-colors">
+<div class="p-6">
+<div class="flex flex-col md:flex-row gap-6">
+<div class="flex-1">
+<div class="flex items-start justify-between mb-3">
+<span class="bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 text-[10px] uppercase font-bold px-2 py-0.5 rounded">ID: PAPER-2024-057</span>
+<div class="ai-summary-badge px-3 py-1 rounded-full flex items-center gap-1.5 shadow-sm">
+<span class="material-symbols-outlined text-[16px] text-white">smart_toy</span>
+<span class="text-[11px] font-bold text-white uppercase tracking-wider">AI Summary</span>
+</div>
+</div>
+<h3 class="text-xl font-bold text-[#0d141b] dark:text-white mb-4 hover:text-primary transition-colors cursor-pointer">Giải pháp Blockchain cho quản lý chuỗi cung ứng nông sản bền vững</h3>
+<div class="mb-6">
+<h4 class="text-xs font-bold text-[#4c739a] dark:text-gray-500 uppercase mb-2">Tóm tắt</h4>
+<p class="text-sm text-[#4c739a] dark:text-gray-400 leading-relaxed line-clamp-3">
+                                    Bài báo này nghiên cứu việc tích hợp công nghệ Hyperledger Fabric vào quy trình truy xuất nguồn gốc nông sản tại khu vực Đồng bằng sông Cửu Long. Thông qua việc số hóa các chứng chỉ VietGAP và quy trình vận chuyển, nghiên cứu hướng tới việc minh bạch hóa thông tin cho người tiêu dùng cuối cùng...
+                                </p>
+<button class="mt-2 text-primary text-sm font-bold flex items-center gap-1 hover:underline">
+                                    Xem thêm <span class="material-symbols-outlined text-[16px]">keyboard_arrow_down</span>
+</button>
+</div>
+<div class="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-100 dark:border-gray-800">
+<div class="flex items-center gap-2 mb-2 text-primary">
+<span class="material-symbols-outlined text-[18px]">auto_awesome</span>
+<span class="text-xs font-bold uppercase">Tóm tắt bởi AI (Đọc nhanh)</span>
+</div>
+<p class="text-sm text-[#0d141b] dark:text-gray-300">
+                                    Đề xuất kiến trúc Blockchain 3 lớp để tối ưu hóa lưu trữ dữ liệu off-chain. Giải quyết bài toán mở rộng (scalability) cho các hệ thống nông nghiệp quy mô lớn. 
+                                </p>
+</div>
+</div>
+<div class="w-full md:w-64 shrink-0 flex flex-col gap-3 justify-center border-t md:border-t-0 md:border-l border-[#e7edf3] dark:border-gray-800 pt-6 md:pt-0 md:pl-6">
+<span class="text-xs font-bold text-[#4c739a] dark:text-gray-500 uppercase text-center md:text-left mb-1">Mức độ quan tâm</span>
+<button class="flex items-center justify-between px-4 py-2.5 rounded-lg border-2 border-gray-200 dark:border-gray-700 hover:border-primary/50 text-[#4c739a] dark:text-gray-400 font-bold text-sm transition-all">
+<span>Rất muốn</span>
+<span class="material-symbols-outlined text-[20px]">favorite</span>
+</button>
+<button class="flex items-center justify-between px-4 py-2.5 rounded-lg border-2 border-primary bg-primary text-white font-bold text-sm shadow-md">
+<span>Có thể</span>
+<span class="material-symbols-outlined text-[20px] fill-current">thumbs_up_down</span>
+</button>
+<button class="flex items-center justify-between px-4 py-2.5 rounded-lg border-2 border-gray-200 dark:border-gray-700 hover:border-red-200 text-[#4c739a] dark:text-gray-400 font-bold text-sm transition-all">
+<span>Không muốn</span>
+<span class="material-symbols-outlined text-[20px]">close</span>
+</button>
+<button class="flex items-center justify-between px-4 py-2.5 rounded-lg border-2 border-gray-200 dark:border-gray-700 hover:border-orange-200 text-[#4c739a] dark:text-gray-400 font-bold text-sm transition-all">
+<span>Xung đột (COI)</span>
+<span class="material-symbols-outlined text-[20px]">warning</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<div class="bg-white dark:bg-[#1a2634] rounded-xl border border-[#e7edf3] dark:border-gray-800 shadow-sm overflow-hidden hover:border-primary/40 transition-colors">
+<div class="p-6">
+<div class="flex flex-col md:flex-row gap-6">
+<div class="flex-1">
+<div class="flex items-start justify-between mb-3">
+<span class="bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 text-[10px] uppercase font-bold px-2 py-0.5 rounded">ID: PAPER-2024-112</span>
+<div class="ai-summary-badge px-3 py-1 rounded-full flex items-center gap-1.5 shadow-sm">
+<span class="material-symbols-outlined text-[16px] text-white">smart_toy</span>
+<span class="text-[11px] font-bold text-white uppercase tracking-wider">AI Summary</span>
+</div>
+</div>
+<h3 class="text-xl font-bold text-[#0d141b] dark:text-white mb-4 hover:text-primary transition-colors cursor-pointer">Đánh giá tác động của đô thị hóa đến vi khí hậu tại TP. Hồ Chí Minh</h3>
+<div class="mb-6">
+<h4 class="text-xs font-bold text-[#4c739a] dark:text-gray-500 uppercase mb-2">Tóm tắt</h4>
+<p class="text-sm text-[#4c739a] dark:text-gray-400 leading-relaxed line-clamp-3">
+                                    Nghiên cứu sử dụng dữ liệu viễn thám và trạm quan trắc mặt đất để phân tích hiện tượng đảo nhiệt đô thị (UHI). Kết quả chỉ ra sự tương quan thuận giữa mật độ xây dựng và sự gia tăng nhiệt độ bề mặt tại các quận trung tâm so với vùng ven...
+                                </p>
+<button class="mt-2 text-primary text-sm font-bold flex items-center gap-1 hover:underline">
+                                    Xem thêm <span class="material-symbols-outlined text-[16px]">keyboard_arrow_down</span>
+</button>
+</div>
+<div class="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-100 dark:border-gray-800">
+<div class="flex items-center gap-2 mb-2 text-primary">
+<span class="material-symbols-outlined text-[18px]">auto_awesome</span>
+<span class="text-xs font-bold uppercase">Tóm tắt bởi AI (Đọc nhanh)</span>
+</div>
+<p class="text-sm text-[#0d141b] dark:text-gray-300">
+                                    Phân tích dữ liệu lịch sử 10 năm. Sử dụng mô hình dự báo WRF để mô phỏng các kịch bản phát triển đô thị tương lai và đề xuất diện tích mảng xanh tối thiểu.
+                                </p>
+</div>
+</div>
+<div class="w-full md:w-64 shrink-0 flex flex-col gap-3 justify-center border-t md:border-t-0 md:border-l border-[#e7edf3] dark:border-gray-800 pt-6 md:pt-0 md:pl-6">
+<span class="text-xs font-bold text-[#4c739a] dark:text-gray-500 uppercase text-center md:text-left mb-1">Mức độ quan tâm</span>
+<button class="flex items-center justify-between px-4 py-2.5 rounded-lg border-2 border-gray-200 dark:border-gray-700 hover:border-primary/50 text-[#4c739a] dark:text-gray-400 font-bold text-sm transition-all">
+<span>Rất muốn</span>
+<span class="material-symbols-outlined text-[20px]">favorite</span>
+</button>
+<button class="flex items-center justify-between px-4 py-2.5 rounded-lg border-2 border-gray-200 dark:border-gray-700 hover:border-primary/50 text-[#4c739a] dark:text-gray-400 font-bold text-sm transition-all">
+<span>Có thể</span>
+<span class="material-symbols-outlined text-[20px]">thumbs_up_down</span>
+</button>
+<button class="flex items-center justify-between px-4 py-2.5 rounded-lg border-2 border-gray-200 dark:border-gray-700 hover:border-red-200 text-[#4c739a] dark:text-gray-400 font-bold text-sm transition-all">
+<span>Không muốn</span>
+<span class="material-symbols-outlined text-[20px]">close</span>
+</button>
+<button class="flex items-center justify-between px-4 py-2.5 rounded-lg border-2 border-orange-500 bg-orange-500 text-white font-bold text-sm shadow-md">
+<span>Xung đột (COI)</span>
+<span class="material-symbols-outlined text-[20px] fill-current">warning</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="mt-8 flex justify-center">
+<button class="px-8 py-3 bg-primary text-white rounded-lg font-bold shadow-lg hover:bg-blue-600 transition-all flex items-center gap-2">
+<span class="material-symbols-outlined">save</span>
+                Lưu kết quả đấu thầu
+            </button>
+</div>
+</div>
+</main>
+<footer class="bg-white dark:bg-[#1a2634] border-t border-[#e7edf3] dark:border-gray-800 pt-12 pb-6 mt-auto">
+<div class="mx-auto max-w-7xl px-4">
+<div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
+<div class="col-span-1 md:col-span-1">
+<div class="flex items-center gap-3 mb-6">
+<div class="flex size-10 items-center justify-center rounded-lg bg-primary text-white">
+<span class="material-symbols-outlined text-2xl">school</span>
+</div>
+<h2 class="text-xl font-bold tracking-tight text-primary">UTH-ConfMS</h2>
+</div>
+<p class="text-sm text-[#4c739a] dark:text-gray-400 mb-4">
+                    Hệ thống quản lý hội nghị khoa học - Đại học Công nghệ TP.HCM (UTH). Nâng tầm tri thức Việt.
+                </p>
+</div>
+<div>
+<h4 class="font-bold mb-6">Khám phá</h4>
+<ul class="space-y-4 text-sm text-[#4c739a] dark:text-gray-400">
+<li><a class="hover:text-primary transition-colors" href="#">Về hệ thống</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Tìm kiếm hội nghị</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Tạp chí khoa học</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Thư viện điện tử</a></li>
+</ul>
+</div>
+<div>
+<h4 class="font-bold mb-6">Quy định</h4>
+<ul class="space-y-4 text-sm text-[#4c739a] dark:text-gray-400">
+<li><a class="hover:text-primary transition-colors" href="#">Chính sách bảo mật</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Điều khoản sử dụng</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Quy định bản quyền</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Đạo đức khoa học</a></li>
+</ul>
+</div>
+<div>
+<h4 class="font-bold mb-6">Liên hệ</h4>
+<ul class="space-y-4 text-sm text-[#4c739a] dark:text-gray-400">
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-[20px] text-primary">location_on</span>
+<span>475A Điện Biên Phủ, P.25, Q.Bình Thạnh, TP.HCM</span>
+</li>
+<li class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[20px] text-primary">call</span>
+<span>(028) 5445 7777</span>
+</li>
+<li class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[20px] text-primary">mail</span>
+<span>khoahoc@uth.edu.vn</span>
+</li>
+</ul>
+</div>
+</div>
+<div class="border-t border-[#e7edf3] dark:border-gray-800 pt-6 flex flex-col md:flex-row justify-between items-center gap-4">
+<p class="text-xs text-[#4c739a] dark:text-gray-400">© 2023 UTH-ConfMS. All rights reserved.</p>
+<div class="flex gap-4">
+<a class="text-gray-400 hover:text-primary" href="#"><span class="material-symbols-outlined">social_leaderboard</span></a>
+<a class="text-gray-400 hover:text-primary" href="#"><span class="material-symbols-outlined">public</span></a>
+</div>
+</div>
+</div>
+</footer>
+
+</body></html>

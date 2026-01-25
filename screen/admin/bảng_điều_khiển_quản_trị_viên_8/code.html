@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html class="light" lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Cấu Hình Quản Trị Công Nghệ AI Chi Tiết - UTH-ConfMS</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                        "surface-light": "#ffffff",
+                        "surface-dark": "#1a2632",
+                        "text-main": "#0d141b",
+                        "text-sub": "#4c739a",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+<style type="text/tailwindcss">
+        @layer base {
+            .tab-active {
+                @apply border-primary text-primary border-b-2;
+            }
+            .tab-inactive {
+                @apply border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300;
+            }
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-text-main dark:text-gray-100 font-display min-h-screen flex flex-col">
+<header class="sticky top-0 z-50 w-full bg-surface-light dark:bg-surface-dark border-b border-gray-200 dark:border-gray-800 shadow-sm">
+<div class="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
+<div class="flex h-16 items-center justify-between">
+<div class="flex items-center gap-4">
+<div class="flex items-center justify-center size-10 rounded-lg bg-primary/10 text-primary">
+<span class="material-symbols-outlined">admin_panel_settings</span>
+</div>
+<h2 class="text-lg font-bold tracking-tight text-gray-900 dark:text-white">UTH-ConfMS</h2>
+</div>
+<nav class="hidden md:flex items-center gap-8">
+<a class="group flex items-center gap-2 text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">home</span>
+<span>Trang chủ</span>
+</a>
+<a class="group flex items-center gap-2 text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">event_note</span>
+<span>Quản lý hội nghị</span>
+</a>
+<a class="group flex items-center gap-2 text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">group</span>
+<span>Người dùng</span>
+</a>
+<a class="group flex items-center gap-2 text-sm font-medium text-primary" href="#">
+<span class="material-symbols-outlined text-[20px]">settings</span>
+<span>Cấu hình hệ thống</span>
+</a>
+</nav>
+<div class="flex items-center gap-4">
+<button class="hidden sm:flex items-center gap-2 h-9 px-4 rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+<span class="material-symbols-outlined text-gray-600 dark:text-gray-300 text-[18px]">person</span>
+<span class="text-sm font-bold text-gray-700 dark:text-gray-200 truncate max-w-[150px]">Trần Văn B - Quản trị viên</span>
+</button>
+<div class="size-9 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden ring-2 ring-white dark:ring-gray-800">
+<img alt="Admin Avatar" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAGR8byY-8t1PsI8wo2OwxAwhZ7hKevbyhXgt-f7bPiInde09p08FHcIWeVZXNxu0VkBHxA2FkGNxUHh6RD-QjWg2f4rmcuZqc8hjQQTM0oPAZyPNvEPE6wB5C0Sr34pdvwWt1TxFdONXxkIpDb5kKxueXXQOfFXIpjzySVHhTa-g4H0gsa_UWZ1iQDFnSkS2B47EHiUQI-R2vAPIw7giBgzqf5bht5rzURFXUt7Bfjax0c9-uzmcdfXIePbKy8MmMkFU1m0u5wcQ"/>
+</div>
+</div>
+</div>
+</div>
+</header>
+<main class="flex-1 w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
+<div class="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+<div>
+<h1 class="text-3xl font-black tracking-tight text-gray-900 dark:text-white sm:text-4xl">Cấu Hình Quản Trị Công Nghệ AI</h1>
+<p class="mt-2 text-base text-gray-500 dark:text-gray-400">Thiết lập chuyên sâu cho các mô hình ngôn ngữ lớn (LLM) và tối ưu hóa hệ thống trí tuệ nhân tạo.</p>
+</div>
+<div class="flex gap-3">
+<button class="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg font-semibold hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+<span class="material-symbols-outlined text-sm">history</span>
+                    Xem Lịch Sử
+                </button>
+<button class="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg font-semibold hover:bg-blue-600 transition-colors shadow-sm">
+<span class="material-symbols-outlined text-sm">save</span>
+                    Lưu tất cả thay đổi
+                </button>
+</div>
+</div>
+<div class="bg-surface-light dark:bg-surface-dark rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
+<div class="border-b border-gray-200 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/20">
+<nav aria-label="Tabs" class="flex overflow-x-auto px-4">
+<button class="tab-inactive flex items-center gap-2 px-6 py-4 text-sm font-medium whitespace-nowrap">
+<span class="material-symbols-outlined text-[20px]">mail</span>
+                        Cấu hình Email
+                    </button>
+<button class="tab-active flex items-center gap-2 px-6 py-4 text-sm font-bold whitespace-nowrap">
+<span class="material-symbols-outlined text-[20px]">psychology</span>
+                        Quản lý AI
+                    </button>
+<button class="tab-inactive flex items-center gap-2 px-6 py-4 text-sm font-medium whitespace-nowrap">
+<span class="material-symbols-outlined text-[20px]">security</span>
+                        Lưu trữ &amp; Bảo mật
+                    </button>
+<button class="tab-inactive flex items-center gap-2 px-6 py-4 text-sm font-medium whitespace-nowrap">
+<span class="material-symbols-outlined text-[20px]">history_edu</span>
+                        Nhật ký hệ thống
+                    </button>
+</nav>
+</div>
+<div class="p-8 space-y-10">
+<section>
+<div class="flex items-center justify-between mb-6">
+<div>
+<h3 class="text-xl font-bold text-gray-900 dark:text-white">1. Quản lý mô hình LLM</h3>
+<p class="text-sm text-gray-500">Cấu hình kết nối API và các tham số kỹ thuật cho mô hình AI.</p>
+</div>
+<button class="text-sm font-bold text-primary flex items-center gap-1 hover:underline">
+<span class="material-symbols-outlined text-[18px]">add</span> Thêm mô hình mới
+                        </button>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+<div class="p-6 border border-gray-200 dark:border-gray-700 rounded-xl bg-gray-50/30 dark:bg-gray-800/20">
+<div class="flex items-center justify-between mb-6">
+<div class="flex items-center gap-3">
+<div class="size-10 bg-green-100 dark:bg-green-900/30 text-green-600 rounded-lg flex items-center justify-center font-bold">GPT</div>
+<div>
+<p class="font-bold text-lg text-gray-900 dark:text-white">GPT-4 Turbo</p>
+<p class="text-xs text-gray-500 italic">OpenAI API Connection</p>
+</div>
+</div>
+<span class="px-2 py-1 bg-green-100 text-green-700 text-[10px] font-bold rounded-full">ĐANG HOẠT ĐỘNG</span>
+</div>
+<div class="space-y-4">
+<div>
+<label class="block text-xs font-bold text-gray-500 uppercase mb-1">API Key</label>
+<div class="relative">
+<input class="w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm font-mono pr-10" readonly="" type="password" value="sk-proj-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"/>
+<button class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-primary">
+<span class="material-symbols-outlined text-[20px]">visibility</span>
+</button>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div>
+<label class="block text-xs font-bold text-gray-500 uppercase mb-1">Max Tokens</label>
+<input class="w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm" type="number" value="4096"/>
+</div>
+<div>
+<label class="block text-xs font-bold text-gray-500 uppercase mb-1">Temperature</label>
+<div class="flex items-center gap-3">
+<input class="flex-1 h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-primary" max="1" min="0" step="0.1" type="range" value="0.7"/>
+<span class="text-sm font-bold w-8">0.7</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="p-6 border border-gray-200 dark:border-gray-700 rounded-xl bg-gray-50/30 dark:bg-gray-800/20">
+<div class="flex items-center justify-between mb-6">
+<div class="flex items-center gap-3">
+<div class="size-10 bg-blue-100 dark:bg-blue-900/30 text-blue-600 rounded-lg flex items-center justify-center font-bold">G</div>
+<div>
+<p class="font-bold text-lg text-gray-900 dark:text-white">Gemini 1.5 Pro</p>
+<p class="text-xs text-gray-500 italic">Google AI Studio</p>
+</div>
+</div>
+<span class="px-2 py-1 bg-gray-100 text-gray-500 text-[10px] font-bold rounded-full">DỰ PHÒNG</span>
+</div>
+<div class="space-y-4">
+<div>
+<label class="block text-xs font-bold text-gray-500 uppercase mb-1">API Key</label>
+<div class="relative">
+<input class="w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm font-mono pr-10" readonly="" type="password" value="AIzaSy-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"/>
+<button class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-primary">
+<span class="material-symbols-outlined text-[20px]">visibility</span>
+</button>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div>
+<label class="block text-xs font-bold text-gray-500 uppercase mb-1">Max Tokens</label>
+<input class="w-full rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm" type="number" value="8192"/>
+</div>
+<div>
+<label class="block text-xs font-bold text-gray-500 uppercase mb-1">Temperature</label>
+<div class="flex items-center gap-3">
+<input class="flex-1 h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-primary" max="1" min="0" step="0.1" type="range" value="0.5"/>
+<span class="text-sm font-bold w-8">0.5</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section>
+<h3 class="text-xl font-bold text-gray-900 dark:text-white mb-6">2. Thiết kế Prompt Hệ Thống</h3>
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+<div class="space-y-2">
+<label class="block text-sm font-bold text-gray-700 dark:text-gray-300">Tóm tắt bài báo</label>
+<textarea class="w-full h-40 rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm leading-relaxed" placeholder="Nhập System Prompt...">Bạn là một chuyên gia khoa học. Hãy tóm tắt bài báo sau theo cấu trúc: Mục tiêu, Phương pháp, Kết quả và Đóng góp chính. Ngôn ngữ: Tiếng Việt.</textarea>
+</div>
+<div class="space-y-2">
+<label class="block text-sm font-bold text-gray-700 dark:text-gray-300">Gợi ý Reviewer</label>
+<textarea class="w-full h-40 rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm leading-relaxed" placeholder="Nhập System Prompt...">Phân tích nội dung bài báo và đối chiếu với danh sách chuyên gia để gợi ý 3 người phản biện phù hợp nhất dựa trên từ khóa và lĩnh vực nghiên cứu.</textarea>
+</div>
+<div class="space-y-2">
+<label class="block text-sm font-bold text-gray-700 dark:text-gray-300">Kiểm tra chính tả</label>
+<textarea class="w-full h-40 rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm leading-relaxed" placeholder="Nhập System Prompt...">Hãy rà soát văn bản khoa học sau, phát hiện lỗi chính tả, ngữ pháp và gợi ý cách diễn đạt học thuật hơn nhưng không thay đổi ý nghĩa gốc.</textarea>
+</div>
+</div>
+</section>
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-8 pt-6 border-t border-gray-100 dark:border-gray-800">
+<section>
+<h3 class="text-xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">monitoring</span>
+                            3. Thống kê sử dụng AI
+                        </h3>
+<div class="bg-gray-50/50 dark:bg-gray-800/20 p-6 rounded-xl border border-gray-200 dark:border-gray-700">
+<div class="flex items-end gap-2 mb-6">
+<div class="flex-1 h-24 bg-primary/20 rounded-t-md relative group">
+<div class="absolute bottom-0 w-full bg-primary rounded-t-md transition-all" style="height: 60%"></div>
+<span class="absolute -top-6 left-1/2 -translate-x-1/2 text-[10px] font-bold opacity-0 group-hover:opacity-100 transition-opacity">12k</span>
+</div>
+<div class="flex-1 h-24 bg-primary/20 rounded-t-md relative group">
+<div class="absolute bottom-0 w-full bg-primary rounded-t-md transition-all" style="height: 45%"></div>
+<span class="absolute -top-6 left-1/2 -translate-x-1/2 text-[10px] font-bold opacity-0 group-hover:opacity-100 transition-opacity">9k</span>
+</div>
+<div class="flex-1 h-24 bg-primary/20 rounded-t-md relative group">
+<div class="absolute bottom-0 w-full bg-primary rounded-t-md transition-all" style="height: 80%"></div>
+<span class="absolute -top-6 left-1/2 -translate-x-1/2 text-[10px] font-bold opacity-0 group-hover:opacity-100 transition-opacity">18k</span>
+</div>
+<div class="flex-1 h-24 bg-primary/20 rounded-t-md relative group">
+<div class="absolute bottom-0 w-full bg-primary rounded-t-md transition-all" style="height: 30%"></div>
+<span class="absolute -top-6 left-1/2 -translate-x-1/2 text-[10px] font-bold opacity-0 group-hover:opacity-100 transition-opacity">6k</span>
+</div>
+<div class="flex-1 h-24 bg-primary/20 rounded-t-md relative group">
+<div class="absolute bottom-0 w-full bg-primary rounded-t-md transition-all" style="height: 95%"></div>
+<span class="absolute -top-6 left-1/2 -translate-x-1/2 text-[10px] font-bold opacity-0 group-hover:opacity-100 transition-opacity">22k</span>
+</div>
+<div class="flex-1 h-24 bg-primary/20 rounded-t-md relative group">
+<div class="absolute bottom-0 w-full bg-primary rounded-t-md transition-all" style="height: 70%"></div>
+<span class="absolute -top-6 left-1/2 -translate-x-1/2 text-[10px] font-bold opacity-0 group-hover:opacity-100 transition-opacity">15k</span>
+</div>
+<div class="flex-1 h-24 bg-primary/20 rounded-t-md relative group">
+<div class="absolute bottom-0 w-full bg-primary rounded-t-md transition-all" style="height: 55%"></div>
+<span class="absolute -top-6 left-1/2 -translate-x-1/2 text-[10px] font-bold opacity-0 group-hover:opacity-100 transition-opacity">11k</span>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div class="p-3 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700">
+<p class="text-[10px] uppercase font-bold text-gray-400 mb-1">Token tiêu thụ (24h)</p>
+<p class="text-xl font-black text-gray-900 dark:text-white">142,508</p>
+</div>
+<div class="p-3 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700">
+<p class="text-[10px] uppercase font-bold text-gray-400 mb-1">Ước tính chi phí</p>
+<p class="text-xl font-black text-green-600">$12.45</p>
+</div>
+</div>
+</div>
+</section>
+<section>
+<h3 class="text-xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">lab_profile</span>
+                            4. AI Sandbox (Thử nghiệm)
+                        </h3>
+<div class="bg-surface-light dark:bg-surface-dark border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden flex flex-col h-[230px]">
+<div class="flex-1 p-4">
+<textarea class="w-full h-full border-none focus:ring-0 bg-transparent text-sm resize-none" placeholder="Nhập nội dung cần thử nghiệm prompt tại đây..."></textarea>
+</div>
+<div class="bg-gray-50 dark:bg-gray-800/50 p-3 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between">
+<select class="text-xs rounded border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 py-1 pl-2 pr-8">
+<option>GPT-4 Turbo</option>
+<option>Gemini 1.5 Pro</option>
+</select>
+<button class="bg-primary text-white text-xs font-bold px-4 py-1.5 rounded flex items-center gap-2 hover:bg-blue-600">
+<span class="material-symbols-outlined text-[16px]">play_arrow</span>
+                                    Chạy thử
+                                </button>
+</div>
+</div>
+</section>
+</div>
+</div>
+</div>
+<div class="mt-8">
+<div class="flex items-center justify-between mb-4">
+<h2 class="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">analytics</span>
+                    Nhật ký hoạt động hệ thống (Audit Trails)
+                </h2>
+<button class="text-sm font-medium text-primary hover:bg-primary/10 px-3 py-1 rounded-lg transition-colors">Xuất file CSV</button>
+</div>
+<div class="bg-surface-light dark:bg-surface-dark border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden shadow-sm">
+<table class="w-full text-left text-sm">
+<thead class="bg-gray-50 dark:bg-gray-800 text-xs uppercase font-semibold text-gray-500">
+<tr>
+<th class="px-6 py-4">Thời gian</th>
+<th class="px-6 py-4">Người dùng</th>
+<th class="px-6 py-4">Hành động</th>
+<th class="px-6 py-4">Đối tượng</th>
+<th class="px-6 py-4">Địa chỉ IP</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-gray-200 dark:divide-gray-800">
+<tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+<td class="px-6 py-4 text-gray-500">2024-10-25 15:10:45</td>
+<td class="px-6 py-4 font-medium">Trần Văn B (Admin)</td>
+<td class="px-6 py-4"><span class="px-2 py-0.5 rounded bg-blue-50 text-blue-600 dark:bg-blue-900/20 text-xs font-bold">CONFIG_AI_LLM</span></td>
+<td class="px-6 py-4">Cập nhật Max Tokens (GPT-4)</td>
+<td class="px-6 py-4 font-mono text-xs">172.16.0.45</td>
+</tr>
+<tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+<td class="px-6 py-4 text-gray-500">2024-10-25 14:55:12</td>
+<td class="px-6 py-4 font-medium">Trần Văn B (Admin)</td>
+<td class="px-6 py-4"><span class="px-2 py-0.5 rounded bg-purple-50 text-purple-600 dark:bg-purple-900/20 text-xs font-bold">PROMPT_EDIT</span></td>
+<td class="px-6 py-4">Sửa Prompt Tóm tắt bài báo</td>
+<td class="px-6 py-4 font-mono text-xs">172.16.0.45</td>
+</tr>
+<tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+<td class="px-6 py-4 text-gray-500">2024-10-25 14:32:10</td>
+<td class="px-6 py-4 font-medium">Trần Văn B (Admin)</td>
+<td class="px-6 py-4"><span class="px-2 py-0.5 rounded bg-blue-50 text-blue-600 dark:bg-blue-900/20 text-xs font-bold">UPDATE_CONFIG</span></td>
+<td class="px-6 py-4">Cấu hình AI Prompt</td>
+<td class="px-6 py-4 font-mono text-xs">172.16.0.45</td>
+</tr>
+</tbody>
+</table>
+<div class="px-6 py-4 border-t border-gray-200 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/30">
+<button class="w-full text-center text-sm font-bold text-gray-600 dark:text-gray-400 hover:text-primary transition-colors">
+                        Xem thêm nhật ký cũ hơn
+                    </button>
+</div>
+</div>
+</div>
+</main>
+<footer class="mt-auto border-t border-gray-200 dark:border-gray-800 bg-surface-light dark:bg-surface-dark py-6">
+<div class="max-w-[1440px] mx-auto px-4 text-center">
+<p class="text-sm text-gray-500 dark:text-gray-400">© 2024 Hệ thống Quản lý Hội nghị Khoa học UTH-ConfMS. Bản quyền thuộc về ĐH UTH.</p>
+</div>
+</footer>
+
+</body></html>

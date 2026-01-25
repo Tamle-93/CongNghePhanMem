@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html class="light" lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Quản Lý Mốc Thời Gian Quan Trọng | UTH-ConfMS</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,FILL@0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&amp;display=swap" rel="stylesheet"/>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#003366", // UTH Navy
+                        "primary-light": "#137fec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style type="text/tailwindcss">
+        @layer base {
+            .tab-active {
+                @apply border-primary text-primary;
+            }
+            .tab-inactive {
+                @apply border-transparent text-[#4c739a] hover:text-primary hover:border-slate-300;
+            }
+        }.custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #e2e8f0;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-[#0d141b] dark:text-white overflow-hidden">
+<div class="relative flex min-h-screen w-full flex-col overflow-x-hidden">
+<header class="sticky top-0 z-40 flex items-center justify-between whitespace-nowrap border-b border-solid border-slate-200 dark:border-slate-800 bg-white dark:bg-[#1a2632] px-6 py-3 shadow-sm">
+<div class="flex items-center gap-3">
+<div class="flex items-center justify-center size-10 rounded bg-primary/10 text-primary">
+<span class="material-symbols-outlined !text-2xl">school</span>
+</div>
+<h2 class="text-primary dark:text-white text-lg font-bold leading-tight tracking-[-0.015em]">UTH-ConfMS</h2>
+</div>
+<div class="flex flex-1 justify-end gap-8">
+<nav class="hidden lg:flex items-center gap-8">
+<a class="text-[#4c739a] dark:text-slate-400 hover:text-primary dark:hover:text-primary text-sm font-medium leading-normal transition-colors" href="#">Trang chủ</a>
+<a class="text-primary text-sm font-semibold leading-normal border-b-2 border-primary pb-0.5" href="#">Quản lý hội nghị</a>
+<a class="text-[#4c739a] dark:text-slate-400 hover:text-primary dark:hover:text-primary text-sm font-medium leading-normal transition-colors" href="#">Danh sách bài nộp</a>
+<a class="text-[#4c739a] dark:text-slate-400 hover:text-primary dark:hover:text-primary text-sm font-medium leading-normal transition-colors" href="#">Thành viên Hội đồng</a>
+<a class="text-[#4c739a] dark:text-slate-400 hover:text-primary dark:hover:text-primary text-sm font-medium leading-normal transition-colors" href="#">Cài đặt</a>
+</nav>
+<div class="flex items-center gap-3 pl-4 border-l border-slate-200 dark:border-slate-700">
+<button class="flex items-center gap-2 cursor-pointer bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full pr-4 pl-1 py-1 transition-colors border border-slate-200 dark:border-slate-700">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-8" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDfhbHJnerOzKpZyB3yyMQy0pDT_DksP4mTRXx1TYq479pxxdMT9ygbol00adVPrZ54HU57s-GUEXAlxD8k6yMuFxFycw1J_X2sGTwHD1fj7cqRygNEI5O9oqi35K1NvaEhVkEML5fOtn8XbqVu5I06DwcKz3170NTi8JuPCTsjLpYcEc2eraLdwVAlEb1oyCadpDMwfRAG2VelyR98cnUYmxJ406PVeqfTQzx0TwqNJS41d1vtHZNL6yca4J2pIGrP7csknd1qsQ");'></div>
+<div class="flex flex-col items-start">
+<span class="text-[#0d141b] dark:text-white text-xs font-bold leading-none">Nguyễn Văn B</span>
+<span class="text-primary text-[10px] font-medium leading-none mt-1 uppercase tracking-wider">Chủ tọa</span>
+</div>
+</button>
+</div>
+</div>
+</header>
+<main class="flex-1 px-6 py-8 md:px-10 lg:px-20 max-w-[1440px] mx-auto w-full">
+<div class="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
+<div class="max-w-4xl">
+<h1 class="text-[#0d141b] dark:text-white text-3xl font-black leading-tight tracking-[-0.033em]">Quản lý lộ trình hội nghị</h1>
+<p class="text-[#4c739a] dark:text-slate-400 text-base font-normal mt-2 leading-relaxed">
+                    Cấu hình chi tiết các mốc thời gian quan trọng từ khâu mở cổng nộp bài đến khi hoàn tất kỷ yếu, kèm thiết lập múi giờ hệ thống.
+                </p>
+</div>
+<div class="flex gap-3 shrink-0">
+<button class="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-semibold hover:bg-slate-50 transition-colors">
+<span class="material-symbols-outlined text-lg">visibility</span> Xem trang web
+                </button>
+<button class="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg text-sm font-semibold hover:bg-[#002855] transition-colors shadow-sm">
+<span class="material-symbols-outlined text-lg">save</span> Lưu thay đổi
+                </button>
+</div>
+</div>
+<div class="border-b border-slate-200 dark:border-slate-800 mb-8">
+<nav class="flex gap-8 overflow-x-auto">
+<button class="tab-inactive whitespace-nowrap py-4 border-b-2 text-sm font-semibold transition-all">Thông tin chung</button>
+<button class="tab-inactive whitespace-nowrap py-4 border-b-2 text-sm font-semibold transition-all">Phân ban (Tracks)</button>
+<button class="tab-active whitespace-nowrap py-4 border-b-2 text-sm font-semibold transition-all">Lộ trình mốc thời gian</button>
+<button class="tab-inactive whitespace-nowrap py-4 border-b-2 text-sm font-semibold transition-all">Cấu hình hệ thống</button>
+<button class="tab-inactive whitespace-nowrap py-4 border-b-2 text-sm font-semibold transition-all">Mẫu Email</button>
+</nav>
+</div>
+<div class="flex flex-col gap-6">
+<div class="bg-white dark:bg-[#1a2632] rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+<div class="p-6 border-b border-slate-100 dark:border-slate-700 flex flex-wrap justify-between items-center gap-4 bg-slate-50/50 dark:bg-slate-800/50">
+<div>
+<h3 class="text-lg font-bold text-[#0d141b] dark:text-white">Chi tiết lộ trình các mốc thời gian</h3>
+<p class="text-xs text-[#4c739a] dark:text-slate-400 mt-0.5">Xác định các giai đoạn vận hành chính của hội nghị</p>
+</div>
+<div class="flex items-center gap-3">
+<div class="flex items-center gap-2 px-3 py-1.5 bg-slate-100 dark:bg-slate-700 rounded-lg">
+<span class="material-symbols-outlined text-sm text-[#4c739a]">language</span>
+<span class="text-xs font-semibold">UTC+7 (Hanoi)</span>
+</div>
+<button class="flex items-center gap-1.5 px-4 py-2 bg-primary text-white hover:bg-[#002855] rounded-lg text-sm font-bold transition-all shadow-md">
+<span class="material-symbols-outlined text-sm">add</span> Thêm mốc mới
+                        </button>
+</div>
+</div>
+<div class="p-0 overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-slate-50 dark:bg-slate-800/30 text-[#4c739a] dark:text-slate-400 text-xs font-bold uppercase tracking-wider border-b border-slate-200 dark:border-slate-700">
+<th class="px-6 py-4">Mốc thời gian</th>
+<th class="px-6 py-4">Ngày bắt đầu</th>
+<th class="px-6 py-4">Hạn cuối</th>
+<th class="px-6 py-4">Múi giờ</th>
+<th class="px-6 py-4">Trạng thái</th>
+<th class="px-6 py-4 text-right">Thao tác</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+<tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="size-8 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-slate-500">
+<span class="material-symbols-outlined text-lg">door_open</span>
+</div>
+<div class="flex flex-col">
+<span class="text-sm font-semibold text-[#0d141b] dark:text-white">1. Mở cổng nộp bài</span>
+<span class="text-xs text-[#4c739a]">Bắt đầu nhận bài báo</span>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 text-sm">01/09/2024</td>
+<td class="px-6 py-4 text-sm font-medium">15/09/2024</td>
+<td class="px-6 py-4 text-xs text-[#4c739a]">Hanoi (UTC+7)</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700">Đã qua</span>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="p-2 text-slate-400 hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-xl">edit</span>
+</button>
+</td>
+</tr>
+<tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="size-8 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600">
+<span class="material-symbols-outlined text-lg">upload_file</span>
+</div>
+<div class="flex flex-col">
+<span class="text-sm font-semibold text-[#0d141b] dark:text-white">2. Hạn cuối nộp bài</span>
+<span class="text-xs text-[#4c739a]">Ngừng nhận đăng ký mới</span>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 text-sm">16/09/2024</td>
+<td class="px-6 py-4 text-sm font-bold text-red-500">15/10/2024</td>
+<td class="px-6 py-4 text-xs text-[#4c739a]">Hanoi (UTC+7)</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800">Đang mở</span>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="p-2 text-slate-400 hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-xl">edit</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</main>
+<div class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 transition-opacity"></div>
+<aside class="fixed right-0 top-0 h-full w-full max-w-[500px] bg-white dark:bg-[#1a2632] z-[60] shadow-2xl flex flex-col transform transition-transform duration-300 translate-x-0">
+<div class="flex items-center justify-between px-6 py-5 border-b border-slate-100 dark:border-slate-800">
+<div>
+<h2 class="text-xl font-bold text-primary dark:text-white">Thêm mốc thời gian mới</h2>
+<p class="text-xs text-[#4c739a] dark:text-slate-400">Thiết lập giai đoạn vận hành mới cho hội nghị</p>
+</div>
+<button class="size-9 flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-600 transition-colors">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<div class="flex-1 overflow-y-auto p-6 space-y-8 custom-scrollbar">
+<div class="space-y-5">
+<div class="space-y-1.5">
+<label class="text-sm font-bold text-slate-700 dark:text-slate-200">Tên mốc thời gian <span class="text-red-500">*</span></label>
+<input class="w-full rounded-lg border-slate-200 dark:border-slate-700 dark:bg-slate-800 focus:ring-primary focus:border-primary py-2.5 text-sm" placeholder="VD: Hạn cuối nộp bản chỉnh sửa" type="text"/>
+</div>
+<div class="space-y-1.5">
+<label class="text-sm font-bold text-slate-700 dark:text-slate-200">Giai đoạn hội nghị</label>
+<select class="w-full rounded-lg border-slate-200 dark:border-slate-700 dark:bg-slate-800 focus:ring-primary focus:border-primary py-2.5 text-sm">
+<option>Nộp bài báo (Submission)</option>
+<option>Phản biện (Reviewing)</option>
+<option>Phản hồi (Rebuttal)</option>
+<option>Thông báo kết quả (Notification)</option>
+<option>Hoàn thiện (Camera-ready)</option>
+</select>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div class="space-y-1.5">
+<label class="text-sm font-bold text-slate-700 dark:text-slate-200">Ngày bắt đầu</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg">calendar_today</span>
+<input class="w-full pl-10 rounded-lg border-slate-200 dark:border-slate-700 dark:bg-slate-800 focus:ring-primary focus:border-primary py-2.5 text-sm" type="date" value="2024-11-01"/>
+</div>
+</div>
+<div class="space-y-1.5">
+<label class="text-sm font-bold text-slate-700 dark:text-slate-200">Ngày kết thúc</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg">event_busy</span>
+<input class="w-full pl-10 rounded-lg border-slate-200 dark:border-slate-700 dark:bg-slate-800 focus:ring-primary focus:border-primary py-2.5 text-sm" type="date" value="2024-11-15"/>
+</div>
+</div>
+</div>
+<div class="space-y-1.5">
+<label class="text-sm font-bold text-slate-700 dark:text-slate-200">Mô tả ngắn</label>
+<textarea class="w-full rounded-lg border-slate-200 dark:border-slate-700 dark:bg-slate-800 focus:ring-primary focus:border-primary py-2.5 text-sm" placeholder="Ghi chú chi tiết cho mốc thời gian này..." rows="2"></textarea>
+</div>
+</div>
+<div class="bg-slate-50 dark:bg-slate-900/40 p-5 rounded-xl border border-slate-100 dark:border-slate-800">
+<div class="flex items-center gap-2 mb-4">
+<span class="material-symbols-outlined text-primary text-lg">preview</span>
+<h4 class="text-sm font-bold text-slate-800 dark:text-slate-200">Xem trước hiển thị (Timeline)</h4>
+</div>
+<div class="relative pl-8 border-l-2 border-primary/20">
+<div class="absolute -left-[9px] top-0 size-4 rounded-full bg-primary ring-4 ring-primary/10"></div>
+<div class="bg-white dark:bg-slate-800 p-4 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700">
+<div class="flex justify-between items-start mb-2">
+<span class="text-sm font-bold text-primary">Nộp bài báo</span>
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-green-100 text-green-700">Tiếp theo</span>
+</div>
+<h5 class="text-sm font-semibold text-slate-900 dark:text-white mb-1">Hạn cuối nộp bản chỉnh sửa</h5>
+<p class="text-xs text-slate-500 mb-3">01/11/2024 - 15/11/2024</p>
+<div class="flex items-center gap-1.5 text-[10px] text-slate-400 italic">
+<span class="material-symbols-outlined text-[12px]">schedule</span>
+                            Hạn còn 24 ngày 12 giờ
+                        </div>
+</div>
+</div>
+</div>
+<div class="space-y-4">
+<label class="flex items-center gap-3 cursor-pointer group">
+<input checked="" class="size-4 rounded border-slate-300 text-primary focus:ring-primary" type="checkbox"/>
+<div class="flex flex-col">
+<span class="text-sm font-semibold text-slate-700 dark:text-slate-200 group-hover:text-primary transition-colors">Thông báo tự động</span>
+<span class="text-xs text-slate-500">Gửi email nhắc nhở cho các bên liên quan khi gần đến hạn</span>
+</div>
+</label>
+<label class="flex items-center gap-3 cursor-pointer group">
+<input class="size-4 rounded border-slate-300 text-primary focus:ring-primary" type="checkbox"/>
+<div class="flex flex-col">
+<span class="text-sm font-semibold text-slate-700 dark:text-slate-200 group-hover:text-primary transition-colors">Công khai trên website</span>
+<span class="text-xs text-slate-500">Hiển thị mốc này trên trang chủ hội nghị ngay khi lưu</span>
+</div>
+</label>
+</div>
+</div>
+<div class="p-6 border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-[#1a2632] flex gap-3">
+<button class="flex-1 px-4 py-2.5 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-lg text-sm font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition-all">
+                Đóng
+            </button>
+<button class="flex-[2] px-4 py-2.5 bg-primary text-white rounded-lg text-sm font-bold hover:bg-[#002855] transition-all shadow-md shadow-primary/20">
+                Lưu mốc thời gian
+            </button>
+</div>
+</aside>
+</div>
+
+</body></html>

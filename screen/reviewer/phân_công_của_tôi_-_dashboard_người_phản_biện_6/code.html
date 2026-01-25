@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html class="light" lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Trang Chủ - Cổng Thông Tin Hệ Thống - UTH-ConfMS</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+<style type="text/tailwindcss">
+        body {
+            font-family: "Inter", sans-serif
+        }
+        .material-symbols-outlined {
+            font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24
+        }
+        .hero-banner {
+            background-image: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url(https://lh3.googleusercontent.com/aida-public/AB6AXuAT_fsF91ZKYlmYx2ix-b2rTJfYT51CSU9Hjm_XLB8pK175SyYHVOt9Kc2cFyNsrbg6RGJL-M4lKQot_jLl7YLj3N4kmmBMCISid6vRGAJ3jlrtPUg8nEzAz_qRbnsGp44J_BzxEZEHDzaaQYbn7Ewj31vZbDOzq7jOuS1tivaUXB1sKLZZigoe1zXHjLOWXb50D-Jq-biTW0V7i-wvTt8oy1QjpTNsIc9GRTwQR7EHkkewdYSrZDEfr1n2cTq06ut2Z9pmpyz6ag);
+            background-size: cover;
+            background-position: center
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-[#0d141b] dark:text-white min-h-screen flex flex-col font-display">
+<header class="sticky top-0 z-50 w-full border-b border-[#e7edf3] dark:border-gray-800 bg-white dark:bg-[#1a2634] px-4 py-3 shadow-sm">
+<div class="mx-auto flex h-14 max-w-7xl items-center justify-between">
+<div class="flex items-center gap-10">
+<div class="flex items-center gap-3">
+<div class="flex size-10 items-center justify-center rounded-lg bg-primary text-white">
+<span class="material-symbols-outlined text-2xl">school</span>
+</div>
+<h1 class="text-xl font-bold tracking-tight text-primary">UTH-ConfMS</h1>
+</div>
+<nav class="hidden md:flex items-center gap-8">
+<a class="text-sm font-bold text-primary border-b-2 border-primary pb-1" href="#">Trang chủ</a>
+<a class="text-sm font-medium text-[#4c739a] hover:text-primary transition-colors dark:text-gray-400 dark:hover:text-primary" href="#">Hội nghị</a>
+<a class="text-sm font-medium text-[#4c739a] hover:text-primary transition-colors dark:text-gray-400 dark:hover:text-primary" href="#">Bài báo của tôi</a>
+<a class="text-sm font-medium text-[#4c739a] hover:text-primary transition-colors dark:text-gray-400 dark:hover:text-primary" href="#">Hướng dẫn</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<div class="hidden md:flex flex-col items-end">
+<span class="text-sm font-bold text-[#0d141b] dark:text-white">Nguyễn Văn A</span>
+<span class="text-xs text-[#4c739a] dark:text-gray-400">Tác giả / Người dùng</span>
+</div>
+<button class="relative size-10 overflow-hidden rounded-full border border-[#e7edf3] dark:border-gray-700">
+<div class="absolute inset-0 bg-cover bg-center" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCEEGfcZQUPQmvrXaaUWXfspcTta3tgvcSqioAP26pBp7tDSfxMigy2FwgteZ7NbvIV8uQWgfC17CzLShvXtMABf9PagrpZxn8rU9hbGCuBowWEJU4x_xyQZVan360XUDbQTU8X92xKxhnM9hd-wcaFVuZF-mkgjiUYI5syVdsXFNMYkupc_GXRd6rSX2kQuc1wm9h7QujzJMivilwOB05LsqElQentpDkfyKQ0qQ8-OMy3CLgYabE0zJSWtiRQkqfvIBjQJP_vEQ');"></div>
+</button>
+</div>
+</div>
+</header>
+<main class="flex-1">
+<section class="hero-banner h-[450px] flex items-center justify-center text-center px-4">
+<div class="max-w-4xl">
+<h2 class="text-4xl md:text-5xl font-extrabold text-white mb-6 drop-shadow-lg">Chào mừng đến với Hệ thống Quản lý Hội nghị Khoa học UTH</h2>
+<p class="text-lg text-white/95 mb-8 max-w-2xl mx-auto drop-shadow-md">Cổng thông tin tập hợp các hoạt động nghiên cứu khoa học, hội nghị chuyên môn và công bố học thuật tại Đại học Công nghệ TP.HCM.</p>
+<div class="flex justify-center">
+<button class="bg-primary hover:bg-blue-600 text-white px-10 py-4 rounded-lg font-bold text-lg shadow-xl transition-all transform hover:scale-105 flex items-center gap-2">
+<span class="material-symbols-outlined">explore</span>
+                        Khám phá hội nghị
+                    </button>
+</div>
+</div>
+</section>
+<div class="mx-auto max-w-7xl px-4 py-12">
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-10">
+<section class="lg:col-span-8 space-y-8">
+<div class="flex items-center justify-between">
+<h3 class="text-2xl font-bold flex items-center gap-3">
+<span class="material-symbols-outlined text-primary p-2 bg-primary/10 rounded-lg">newspaper</span>
+                            Tin tức &amp; Thông báo mới nhất
+                        </h3>
+<a class="text-primary font-semibold hover:underline text-sm flex items-center gap-1" href="#">
+                            Xem tất cả tin tức <span class="material-symbols-outlined text-sm">arrow_forward</span>
+</a>
+</div>
+<div class="grid grid-cols-1 gap-6">
+<div class="bg-white dark:bg-[#1a2634] rounded-2xl border border-[#e7edf3] dark:border-gray-700 overflow-hidden hover:shadow-lg transition-all flex flex-col md:flex-row h-auto md:h-56">
+<div class="md:w-1/3 h-48 md:h-full shrink-0">
+<img alt="News" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC8zfLxbl-LVnFn55uqjF7ULJrKna3aOioRkwsI4p33NhoA_MQoSra08JWE3D3BP7NkfKhbefsD6aIrfKU3YCr5iHlrKCPCnxaHtblsHJjQg0xoNQ0hR6JMao0ATWhrf1Fl4O7z7E0EzWGQVjTOeqpI1xa2zImvX_a3-0be3-EyX5Z32opD5ycLxUJJhaTeqlxpgiPBgoHLZNx1xRaIb5-uR62xhrGzedGUKyFy8eJ8BFyrXH4Y42OzvpVGjBdlICiiKbkCcibmAg"/>
+</div>
+<div class="p-6 flex flex-col justify-center">
+<div class="flex items-center gap-2 mb-2">
+<span class="text-[10px] bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400 font-bold px-2 py-0.5 rounded uppercase">Quan trọng</span>
+<span class="text-xs text-gray-400">12 tháng 10, 2023</span>
+</div>
+<h4 class="font-bold text-xl mb-3 hover:text-primary cursor-pointer transition-colors line-clamp-2">Hướng dẫn quy trình nộp bài và thẩm định bài báo khoa học năm học 2023-2024</h4>
+<p class="text-sm text-[#4c739a] dark:text-gray-400 line-clamp-2 mb-4">Hội đồng Khoa học thông báo các điều chỉnh mới trong quy trình xét duyệt hồ sơ và định dạng văn bản cho các hội nghị sắp tới...</p>
+<div class="mt-auto">
+<button class="text-primary text-sm font-bold flex items-center gap-1 hover:translate-x-1 transition-transform">Đọc tiếp <span class="material-symbols-outlined text-sm">chevron_right</span></button>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div class="bg-white dark:bg-[#1a2634] p-5 rounded-xl border border-[#e7edf3] dark:border-gray-700 hover:border-primary/50 transition-colors group">
+<div class="text-xs text-green-600 font-bold mb-2 uppercase">Sự kiện</div>
+<h5 class="font-bold text-base mb-2 group-hover:text-primary transition-colors">Workshop: Kỹ năng công bố quốc tế chuẩn Scopus/ISI</h5>
+<p class="text-xs text-[#4c739a] dark:text-gray-400 line-clamp-2">Chương trình đào tạo chuyên sâu dành cho giảng viên trẻ và nghiên cứu sinh...</p>
+<div class="text-[10px] text-gray-400 mt-3 flex justify-between items-center">
+<span>10 tháng 10, 2023</span>
+<span class="material-symbols-outlined text-base">open_in_new</span>
+</div>
+</div>
+<div class="bg-white dark:bg-[#1a2634] p-5 rounded-xl border border-[#e7edf3] dark:border-gray-700 hover:border-primary/50 transition-colors group">
+<div class="text-xs text-orange-600 font-bold mb-2 uppercase">Thông báo</div>
+<h5 class="font-bold text-base mb-2 group-hover:text-primary transition-colors">Gia hạn thời gian nộp bài cho Hội nghị Khoa học Trẻ 2024</h5>
+<p class="text-xs text-[#4c739a] dark:text-gray-400 line-clamp-2">Do số lượng yêu cầu lớn, BTC quyết định gia hạn thêm 02 tuần cho tất cả các tiểu ban...</p>
+<div class="text-[10px] text-gray-400 mt-3 flex justify-between items-center">
+<span>08 tháng 10, 2023</span>
+<span class="material-symbols-outlined text-base">open_in_new</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<aside class="lg:col-span-4 space-y-8">
+<div class="bg-white dark:bg-[#1a2634] p-8 rounded-2xl border border-[#e7edf3] dark:border-gray-700 shadow-sm">
+<h3 class="text-lg font-bold mb-6 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">analytics</span>
+                            Thống kê hệ thống
+                        </h3>
+<div class="grid grid-cols-1 gap-4">
+<div class="flex items-center gap-4 p-4 bg-primary/5 rounded-xl border border-primary/10">
+<div class="size-12 rounded-full bg-primary text-white flex items-center justify-center">
+<span class="material-symbols-outlined">event</span>
+</div>
+<div>
+<div class="text-2xl font-black text-primary">124</div>
+<div class="text-xs font-medium text-gray-500 uppercase tracking-wider">Hội nghị tổ chức</div>
+</div>
+</div>
+<div class="flex items-center gap-4 p-4 bg-green-500/5 rounded-xl border border-green-500/10">
+<div class="size-12 rounded-full bg-green-600 text-white flex items-center justify-center">
+<span class="material-symbols-outlined">description</span>
+</div>
+<div>
+<div class="text-2xl font-black text-green-600">3,582</div>
+<div class="text-xs font-medium text-gray-500 uppercase tracking-wider">Bài báo khoa học</div>
+</div>
+</div>
+<div class="flex items-center gap-4 p-4 bg-orange-500/5 rounded-xl border border-orange-500/10">
+<div class="size-12 rounded-full bg-orange-600 text-white flex items-center justify-center">
+<span class="material-symbols-outlined">group</span>
+</div>
+<div>
+<div class="text-2xl font-black text-orange-600">8,920</div>
+<div class="text-xs font-medium text-gray-500 uppercase tracking-wider">Thành viên tham gia</div>
+</div>
+</div>
+</div>
+</div>
+<div class="bg-primary text-white p-8 rounded-2xl shadow-lg relative overflow-hidden group">
+<span class="material-symbols-outlined absolute -right-4 -bottom-4 text-9xl opacity-10 group-hover:scale-110 transition-transform">help_center</span>
+<h4 class="font-bold text-lg mb-4">Hướng dẫn nhanh</h4>
+<ul class="space-y-4">
+<li><a class="flex items-center gap-3 text-sm hover:translate-x-2 transition-transform" href="#"><span class="material-symbols-outlined text-[20px]">play_circle</span> Video hướng dẫn nộp bài</a></li>
+<li><a class="flex items-center gap-3 text-sm hover:translate-x-2 transition-transform" href="#"><span class="material-symbols-outlined text-[20px]">download</span> Tải bộ mẫu Template (Word/Latex)</a></li>
+<li><a class="flex items-center gap-3 text-sm hover:translate-x-2 transition-transform" href="#"><span class="material-symbols-outlined text-[20px]">contact_support</span> Liên hệ Trung tâm CNTT</a></li>
+</ul>
+</div>
+</aside>
+</div>
+<section class="mt-16 border-t border-[#e7edf3] dark:border-gray-800 pt-12">
+<div class="flex items-center justify-between mb-8">
+<h3 class="text-2xl font-bold flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">event_available</span>
+                        Hội nghị đang mở nộp bài tiêu biểu
+                    </h3>
+<a class="bg-white dark:bg-[#1a2634] border border-[#e7edf3] dark:border-gray-700 px-5 py-2 rounded-lg text-primary font-bold hover:bg-primary hover:text-white transition-all text-sm" href="#">Xem tất cả hội nghị</a>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+<div class="bg-white dark:bg-[#1a2634] rounded-xl border border-[#e7edf3] dark:border-gray-700 overflow-hidden hover:shadow-xl transition-shadow group flex flex-col">
+<div class="h-32 bg-gray-200 dark:bg-gray-800 relative overflow-hidden shrink-0">
+<img alt="Tech" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAGXQSFN_pvzAgqT32QQnTcUU7GKHl3hIRsJFhAvd2ek33qDJ_KcMHIGzLeLHGmd7Xk4ix1a5hfes-HiZYOpwp8Wlq6HAia-DK5q9chLA7hZcitAuhsovDwwipX3dpVtT2NGUapgeIDlj0-ALwUn-9J4F0B3KCWcjEe2YUEwitfE9GagSfqR-d_E5p09b0aBtoW_SCZydlcZXhGYLigrI75bXBvoacfJrMFyFiRwJeMgSImFvtDgIiz3scKIVoTbupg1f_IaPo15Q"/>
+<div class="absolute top-2 left-2 bg-primary text-white text-[9px] uppercase font-bold px-2 py-1 rounded shadow-sm">Công nghệ</div>
+</div>
+<div class="p-5 flex flex-col flex-1">
+<h4 class="font-bold text-base mb-2 line-clamp-2 min-h-[3rem]">Hội nghị Khoa học trẻ UTH-IT 2024: Đổi mới sáng tạo</h4>
+<div class="flex items-center gap-2 text-xs text-[#4c739a] dark:text-gray-400 mb-4">
+<span class="material-symbols-outlined text-[16px]">calendar_today</span>
+<span>Thời hạn: 15/12/2023</span>
+</div>
+<button class="mt-auto w-full py-2 bg-primary/10 text-primary hover:bg-primary hover:text-white rounded-lg font-bold text-sm transition-colors">Nộp bài ngay</button>
+</div>
+</div>
+<div class="bg-white dark:bg-[#1a2634] rounded-xl border border-[#e7edf3] dark:border-gray-700 overflow-hidden hover:shadow-xl transition-shadow group flex flex-col">
+<div class="h-32 bg-gray-200 dark:bg-gray-800 relative overflow-hidden shrink-0">
+<img alt="Economy" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA2HelikzPl41CNt4Vh_1n7eH-nKi8BixrEb3YXvOxMTVyUVtk0lXpUz3w2HngOvwMOYrEwxP7H3PO-YorDdEirxGklIv9RqRJppYDB--K_PVQYGHCMYzDcfN68ZJZ21ywhh0in5usTu0E5I2wH2MdRaDMFQD1jZVpjw-wv9LlXBAtO4gSOmhcGyQHxXsrrCNK9fU6v9z7YYOZfkeMgHqmPhOe1wZCYUYxyWQvk8YBN2PeQQxU5J-ebufhdYAlw2U5DVkLS-4d_nw"/>
+<div class="absolute top-2 left-2 bg-green-600 text-white text-[9px] uppercase font-bold px-2 py-1 rounded shadow-sm">Kinh tế</div>
+</div>
+<div class="p-5 flex flex-col flex-1">
+<h4 class="font-bold text-base mb-2 line-clamp-2 min-h-[3rem]">Diễn đàn Kinh tế UTH: Cơ hội khởi nghiệp sáng tạo</h4>
+<div class="flex items-center gap-2 text-xs text-[#4c739a] dark:text-gray-400 mb-4">
+<span class="material-symbols-outlined text-[16px]">calendar_today</span>
+<span>Thời hạn: 20/12/2023</span>
+</div>
+<button class="mt-auto w-full py-2 bg-primary/10 text-primary hover:bg-primary hover:text-white rounded-lg font-bold text-sm transition-colors">Nộp bài ngay</button>
+</div>
+</div>
+<div class="bg-white dark:bg-[#1a2634] rounded-xl border border-[#e7edf3] dark:border-gray-700 overflow-hidden hover:shadow-xl transition-shadow group flex flex-col">
+<div class="h-32 bg-gray-200 dark:bg-gray-800 relative overflow-hidden shrink-0">
+<img alt="Engineering" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA9YVYA70dTMopSpr1UiZXJftRpYKa8yMbpZIowQ5NQPFBob9JJnNna-6oXmKeXRyIG042DyW6KmsHsLkVbkoA126cjn3k9LI4BubRo4CgaJVRsWclvJvmmQIcQcCYQ1fKa7gTQ09bYeDKA9MF3oqS0S3nhxQtqPh2UVBpTf_bmA8Wr7q9vWmQibbi3aOe03C_mgM6_v1Yn7cqcyc0HDCeztsKOfhzfFNnm05yGSaXDUGZA1cpowxorw3MA0jQkejPC3p6oY-UGEw"/>
+<div class="absolute top-2 left-2 bg-orange-600 text-white text-[9px] uppercase font-bold px-2 py-1 rounded shadow-sm">Kỹ thuật</div>
+</div>
+<div class="p-5 flex flex-col flex-1">
+<h4 class="font-bold text-base mb-2 line-clamp-2 min-h-[3rem]">Hội thảo Quốc tế về Năng lượng tái tạo và Phát triển</h4>
+<div class="flex items-center gap-2 text-xs text-[#4c739a] dark:text-gray-400 mb-4">
+<span class="material-symbols-outlined text-[16px]">calendar_today</span>
+<span>Thời hạn: 05/01/2024</span>
+</div>
+<button class="mt-auto w-full py-2 bg-primary/10 text-primary hover:bg-primary hover:text-white rounded-lg font-bold text-sm transition-colors">Nộp bài ngay</button>
+</div>
+</div>
+</div>
+</section>
+</div>
+</main>
+<footer class="bg-white dark:bg-[#1a2634] border-t border-[#e7edf3] dark:border-gray-800 pt-12 pb-6">
+<div class="mx-auto max-w-7xl px-4">
+<div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
+<div class="col-span-1 md:col-span-1">
+<div class="flex items-center gap-3 mb-6">
+<div class="flex size-10 items-center justify-center rounded-lg bg-primary text-white">
+<span class="material-symbols-outlined text-2xl">school</span>
+</div>
+<h2 class="text-xl font-bold tracking-tight text-primary">UTH-ConfMS</h2>
+</div>
+<p class="text-sm text-[#4c739a] dark:text-gray-400 mb-4">
+                        Hệ thống quản lý hội nghị khoa học - Đại học Công nghệ TP.HCM (UTH). Nâng tầm tri thức Việt qua các công bố chất lượng cao.
+                    </p>
+</div>
+<div>
+<h4 class="font-bold mb-6">Khám phá</h4>
+<ul class="space-y-4 text-sm text-[#4c739a] dark:text-gray-400">
+<li><a class="hover:text-primary transition-colors" href="#">Về hệ thống</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Tìm kiếm hội nghị</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Tạp chí khoa học</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Thư viện điện tử</a></li>
+</ul>
+</div>
+<div>
+<h4 class="font-bold mb-6">Quy định</h4>
+<ul class="space-y-4 text-sm text-[#4c739a] dark:text-gray-400">
+<li><a class="hover:text-primary transition-colors" href="#">Chính sách bảo mật</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Điều khoản sử dụng</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Quy định bản quyền</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Đạo đức khoa học</a></li>
+</ul>
+</div>
+<div>
+<h4 class="font-bold mb-6">Liên hệ</h4>
+<ul class="space-y-4 text-sm text-[#4c739a] dark:text-gray-400">
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-[20px] text-primary">location_on</span>
+<span>475A Điện Biên Phủ, P.25, Q.Bình Thạnh, TP.HCM</span>
+</li>
+<li class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[20px] text-primary">call</span>
+<span>(028) 5445 7777</span>
+</li>
+<li class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[20px] text-primary">mail</span>
+<span>khoahoc@uth.edu.vn</span>
+</li>
+</ul>
+</div>
+</div>
+<div class="border-t border-[#e7edf3] dark:border-gray-800 pt-6 flex flex-col md:flex-row justify-between items-center gap-4">
+<p class="text-xs text-[#4c739a] dark:text-gray-400">© 2023 UTH-ConfMS. All rights reserved.</p>
+<div class="flex gap-6">
+<a class="text-gray-400 hover:text-primary flex items-center gap-1" href="#"><span class="material-symbols-outlined text-sm">language</span> Vietnam</a>
+<a class="text-gray-400 hover:text-primary" href="#"><span class="material-symbols-outlined">public</span></a>
+</div>
+</div>
+</div>
+</footer>
+
+</body></html>

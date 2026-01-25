@@ -1,5 +1,5 @@
 from flask import Blueprint
-from src.api.controllers import auth_controller
+from api.controllers import auth_controller
 
 api_bp = Blueprint('api', __name__)
 

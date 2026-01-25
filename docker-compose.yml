@@ -1,0 +1,88 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  database:
+    image: postgres:17.6-alpine
+    container_name: uth-confms-db
+    environment:
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres123}
+      POSTGRES_DB: ${DB_NAME:-uth_confms}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - confms-network
+    restart: unless-stopped
+
+  # Backend API (Flask)
+  backend:
+    build:
+      context: ./Backend
+      dockerfile: Dockerfile
+    container_name: uth-confms-backend
+    environment:
+      - FLASK_ENV=${FLASK_ENV:-development}
+      - DATABASE_URL=postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-postgres123}@database:5432/${DB_NAME:-uth_confms}
+      - SECRET_KEY=${SECRET_KEY:-your-secret-key-change-in-production}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-your-jwt-secret-key-change-in-production}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./Backend:/app
+      - backend_uploads:/app/uploads
+    depends_on:
+      database:
+        condition: service_healthy
+    networks:
+      - confms-network
+    restart: unless-stopped
+    command: python -m flask run --host=0.0.0.0 --port=5000
+
+  # Frontend (React + Vite)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: uth-confms-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - confms-network
+    restart: unless-stopped
+
+  # Redis Cache (Optional - for sessions, rate limiting)
+  redis:
+    image: redis:7-alpine
+    container_name: uth-confms-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - confms-network
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+
+networks:
+  confms-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  backend_uploads:
+    driver: local
