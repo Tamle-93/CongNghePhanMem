@@ -24,7 +24,7 @@ class ConferenceService:
         try:
             # Verify chair exists
             chair = db.query(User).filter(User.id == chair_id).first()
-            if not chair or chair.role not in ['Chair', 'Admin']:
+            if not chair or not (chair.has_role('Chair') or chair.has_role('Admin')):
                 return None, "Invalid chair or insufficient permissions"
             
             conference = Conference(
@@ -78,6 +78,7 @@ class ConferenceService:
             db.close()
     
     @staticmethod
+    @staticmethod
     def list_conferences(page=1, per_page=10):
         """List all conferences"""
         db = SessionLocal()
@@ -96,6 +97,11 @@ class ConferenceService:
                 'page': page,
                 'per_page': per_page
             }, None
+        except Exception as e:
+            print(f"Error in list_conferences: {str(e)}")
+            import traceback
+            traceback.print_exc()
+            return None, f"Error listing conferences: {str(e)}"
         finally:
             db.close()
     
@@ -114,7 +120,7 @@ class ConferenceService:
             
             # Check permission
             user = db.query(User).filter(User.id == user_id).first()
-            if conference.chair_id != user_id and user.role != 'Admin':
+            if conference.chair_id != user_id and 'Admin' not in user.roles:
                 return None, "Permission denied"
             
             # Update fields
@@ -143,7 +149,7 @@ class ConferenceService:
                 return False, "Conference not found"
             
             user = db.query(User).filter(User.id == user_id).first()
-            if conference.chair_id != user_id and user.role != 'Admin':
+            if conference.chair_id != user_id and 'Admin' not in user.roles:
                 return False, "Permission denied"
             
             conference.is_deleted = True
@@ -167,7 +173,7 @@ class ConferenceService:
             
             # Check permission
             user = db.query(User).filter(User.id == user_id).first()
-            if conference.chair_id != user_id and user.role != 'Admin':
+            if conference.chair_id != user_id and 'Admin' not in user.roles:
                 return None, "Permission denied"
             
             track = Track(
@@ -212,17 +218,52 @@ class ConferenceService:
             db.close()
     
     @staticmethod
+    @staticmethod
     def _serialize_conference(conference):
-        """Serialize conference object"""
-        return {
-            'id': conference.id,
-            'name': conference.name,
-            'description': conference.description,
-            'chair_id': conference.chair_id,
-            'submission_deadline': conference.submission_deadline.isoformat(),
-            'review_deadline': conference.review_deadline.isoformat(),
-            'start_date': conference.start_date.isoformat() if conference.start_date else None,
-            'end_date': conference.end_date.isoformat() if conference.end_date else None,
-            'is_blind_review': conference.is_blind_review,
-            'created_at': conference.created_at.isoformat()
-        }
+        """Serialize conference object - BULLETPROOF"""
+        try:
+            result = {}
+            
+            # Basic fields
+            result['id'] = getattr(conference, 'id', None)
+            result['name'] = getattr(conference, 'name', 'Untitled')
+            result['description'] = getattr(conference, 'description', None)
+            result['location'] = getattr(conference, 'location', None)
+            result['website_url'] = getattr(conference, 'website_url', None)
+            result['chair_id'] = getattr(conference, 'chair_id', None)
+            
+            # Datetime fields - safe conversion
+            def safe_iso(dt):
+                try:
+                    return dt.isoformat() if dt else None
+                except:
+                    return str(dt) if dt else None
+            
+            result['submission_deadline'] = safe_iso(getattr(conference, 'submission_deadline', None))
+            result['review_deadline'] = safe_iso(getattr(conference, 'review_deadline', None))
+            result['decision_deadline'] = safe_iso(getattr(conference, 'decision_deadline', None))
+            result['camera_ready_deadline'] = safe_iso(getattr(conference, 'camera_ready_deadline', None))
+            result['registration_deadline'] = safe_iso(getattr(conference, 'registration_deadline', None))
+            result['conference_start_date'] = safe_iso(getattr(conference, 'conference_start_date', None))
+            result['conference_end_date'] = safe_iso(getattr(conference, 'conference_end_date', None))
+            result['created_at'] = safe_iso(getattr(conference, 'created_at', None))
+            result['updated_at'] = safe_iso(getattr(conference, 'updated_at', None))
+            
+            # Boolean/Enum fields
+            result['blind_review_type'] = getattr(conference, 'blind_review_type', 'double-blind')
+            result['is_active'] = getattr(conference, 'is_active', True)
+            result['is_deleted'] = getattr(conference, 'is_deleted', False)
+            result['max_reviewers_per_paper'] = getattr(conference, 'max_reviewers_per_paper', 3)
+            result['min_reviewers_per_paper'] = getattr(conference, 'min_reviewers_per_paper', 2)
+            
+            return result
+        except Exception as e:
+            print(f"Error serializing conference: {str(e)}")
+            import traceback
+            traceback.print_exc()
+            # Return minimal valid response
+            return {
+                'id': getattr(conference, 'id', 'unknown'),
+                'name': getattr(conference, 'name', 'Error'),
+                'error': str(e)
+            }

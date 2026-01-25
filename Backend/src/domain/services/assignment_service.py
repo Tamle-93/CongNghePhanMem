@@ -428,8 +428,64 @@ class AssignmentService:
             'review_score': review.score if review else None,
             'assigned_at': assignment.assigned_at.isoformat(),
             'created_at': assignment.created_at.isoformat()
-<<<<<<< HEAD
         }
-=======
-        }
->>>>>>> main
+    
+    @staticmethod
+    def get_reviewer_assignments(reviewer_id, status=None, conference_id=None):
+        """
+        Get all assignments for a specific reviewer
+        """
+        db = SessionLocal()
+        
+        try:
+            query = db.query(Assignment).filter(
+                Assignment.reviewer_id == reviewer_id,
+                Assignment.is_deleted == False
+            ).join(Paper).join(Conference)
+            
+            if status:
+                query = query.filter(Assignment.status == status)
+            
+            if conference_id:
+                query = query.filter(Assignment.conference_id == conference_id)
+            
+            assignments = query.all()
+            
+            result = []
+            for assignment in assignments:
+                # Get review if submitted
+                review = db.query(Review).filter(
+                    Review.assignment_id == assignment.id
+                ).first()
+                
+                # Determine status based on review
+                if review and review.score:
+                    assign_status = 'completed'
+                elif review:
+                    assign_status = 'in_progress'
+                else:
+                    assign_status = 'pending'
+                
+                result.append({
+                    'assignment_id': assignment.id,
+                    'paper_id': assignment.paper_id,
+                    'paper_code': f"UTH{assignment.paper.created_at.year}-{str(assignment.paper_id).zfill(3)}",
+                    'paper_title': assignment.paper.title,
+                    'abstract': assignment.paper.abstract,
+                    'keywords': assignment.paper.keywords.split(',') if assignment.paper.keywords else [],
+                    'conference_name': assignment.conference.name,
+                    'conference_id': assignment.conference_id,
+                    'track': assignment.paper.track.name if assignment.paper.track else None,
+                    'status': assign_status,
+                    'assigned_date': assignment.assigned_at.isoformat() if assignment.assigned_at else None,
+                    'deadline': assignment.conference.review_deadline.isoformat() if assignment.conference.review_deadline else None,
+                    'review_submitted': review is not None,
+                    'review_score': review.score if review else None
+                })
+            
+            return result, None
+            
+        except Exception as e:
+            return None, f"Error fetching assignments: {str(e)}"
+        finally:
+            db.close()

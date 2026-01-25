@@ -1,8 +1,4 @@
-<<<<<<< HEAD
 # Backend/src/infrastructure/models/conference_model.py
-=======
- # File: src/infrastructure/models/conference_model.py
->>>>>>> main
 """
 Conference Model - Hội nghị khoa học
 """

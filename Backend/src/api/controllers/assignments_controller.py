@@ -17,6 +17,54 @@ assignments_bp = Blueprint('assignments', __name__)
 create_schema = AssignmentCreateSchema()
 response_schema = AssignmentResponseSchema()
 
+@assignments_bp.route('/my-assignments', methods=['GET'])
+@require_auth
+@require_role('Reviewer')
+def get_my_assignments():
+    """
+    Get assignments for current reviewer
+    ---
+    tags:
+      - Assignments
+    security:
+      - Bearer: []
+    parameters:
+      - in: query
+        name: status
+        type: string
+        required: false
+        description: Filter by status (pending, in_progress, completed)
+      - in: query
+        name: conference_id
+        type: integer
+        required: false
+        description: Filter by conference
+    responses:
+      200:
+        description: List of assignments
+    """
+    try:
+        reviewer_id = request.current_user['user_id']
+        status_filter = request.args.get('status')
+        conference_id = request.args.get('conference_id', type=int)
+        
+        assignments, error = AssignmentService.get_reviewer_assignments(
+            reviewer_id=reviewer_id,
+            status=status_filter,
+            conference_id=conference_id
+        )
+        
+        if error:
+            return jsonify({'status': 'error', 'message': error}), 400
+        
+        return jsonify({
+            'status': 'success',
+            'data': {'assignments': assignments}
+        }), 200
+        
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
 @assignments_bp.route('', methods=['POST'])
 @require_auth
 @require_role('Chair', 'Admin')
@@ -222,26 +270,6 @@ def get_paper_assignments(paper_id):
                 'assignments': assignments
             }
         }), 200
-        
-    except Exception as e:
-        return jsonify({'status': 'error', 'message': str(e)}), 500
-
-@assignments_bp.route('/my-assignments', methods=['GET'])
-@require_auth
-def get_my_assignments():
-    """Get assignments for current user (reviewer)"""
-    try:
-        conference_id = request.args.get('conference_id', type=int)
-        
-        assignments, error = AssignmentService.get_assignments_for_reviewer(
-            request.current_user['user_id'],
-            conference_id
-        )
-        
-        if error:
-            return jsonify({'status': 'error', 'message': error}), 400
-        
-        return jsonify({'status': 'success', 'data': assignments}), 200
         
     except Exception as e:
         return jsonify({'status': 'error', 'message': str(e)}), 500

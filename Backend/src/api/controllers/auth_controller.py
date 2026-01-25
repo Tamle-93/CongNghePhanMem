@@ -380,4 +380,82 @@ def reset_password():
             'status': 'error',
             'message': str(e)
         }), 500
-  
+
+
+@auth_bp.route('/refresh', methods=['POST'])
+def refresh_token():
+    """
+    ✅ Refresh access token using refresh token
+    ---
+    tags:
+      - Authentication
+    parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          required:
+            - refresh_token
+          properties:
+            refresh_token:
+              type: string
+              example: "long-refresh-token-string"
+    responses:
+      200:
+        description: Token refreshed successfully
+        schema:
+          type: object
+          properties:
+            status:
+              type: string
+              example: "success"
+            data:
+              type: object
+              properties:
+                access_token:
+                  type: string
+                token_type:
+                  type: string
+                  example: "Bearer"
+                expires_in:
+                  type: integer
+                  example: 3600
+      400:
+        description: Invalid or expired refresh token
+      401:
+        description: Unauthorized
+    """
+    try:
+        data = request.json
+        if not data or 'refresh_token' not in data:
+            return jsonify({
+                'status': 'error',
+                'message': 'refresh_token is required'
+            }), 400
+        
+        refresh_token_str = data['refresh_token']
+        
+        # Refresh access token
+        new_access_token, error = AuthService.refresh_access_token(refresh_token_str)
+        
+        if error:
+            return jsonify({
+                'status': 'error',
+                'message': error
+            }), 401
+        
+        return jsonify({
+            'status': 'success',
+            'data': {
+                'access_token': new_access_token,
+                'token_type': 'Bearer',
+                'expires_in': 3600  # 1 hour
+            }
+        }), 200
+        
+    except Exception as e:
+        return jsonify({
+            'status': 'error',
+            'message': str(e)
+        }), 500

@@ -21,10 +21,21 @@ from .review_model import Review
 from .decision_model import Decision
 from .conflict_of_interest_model import ConflictOfInterest
 
-# ========== SYSTEM ==========
+# ========== SYSTEM & AUDIT ==========
 from .brow_history_model import BrowHistory
 from .audit_log_ai_model import AuditLogAI
+from .audit_log_model import AuditLog
 from .umcauthres_model import UMCAuthRES
+
+# ========== SUBMISSION MANAGEMENT ==========
+from .submission_version_model import SubmissionVersion
+from .email_log_model import EmailLog
+
+# ========== FEATURE MANAGEMENT ==========
+from .feature_flag_model import FeatureFlag
+
+# ========== TOKEN MANAGEMENT ==========
+from .refresh_token_model import RefreshToken
 
 __all__ = [
     # Core
@@ -46,8 +57,19 @@ __all__ = [
     'Decision',
     'ConflictOfInterest',
     
-    # System
+    # System & Audit
     'BrowHistory',
     'AuditLogAI',
+    'AuditLog',
     'UMCAuthRES',
+    
+    # Submission Management
+    'SubmissionVersion',
+    'EmailLog',
+    
+    # Feature Management
+    'FeatureFlag',
+    
+    # Token Management
+    'RefreshToken',
 ]

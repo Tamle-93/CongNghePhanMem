@@ -5,7 +5,7 @@ Database Base và Engine - Multi-database support
 
 from sqlalchemy import create_engine, text, inspect
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker, scoped_session  # ⭐ THÊM scoped_session
+from sqlalchemy.orm import sessionmaker, scoped_session
 from config import get_config
 import os
 
