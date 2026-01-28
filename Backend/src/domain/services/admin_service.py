@@ -69,7 +69,6 @@ class AdminService:
         try:
             query = db.query(User).filter(User.is_deleted == False)
             
-<<<<<<< HEAD
             # Role filter - specify explicit join condition
             if role_filter:
                 query = query.join(UserRole, User.id == UserRole.user_id)\
@@ -402,17 +401,12 @@ class AdminService:
             'email': user.email,
             'full_name': user.full_name,
             'roles': user.roles,
-<<<<<<< HEAD
             'expertise': getattr(user, 'expertise', None),
             'affiliation': getattr(user, 'affiliation', None),
             'created_at': user.created_at.isoformat(),
             'is_deleted': user.is_deleted,
             'is_active': not getattr(user, 'is_blocked', False),
             'is_blocked': getattr(user, 'is_blocked', False)
-=======
-            'created_at': user.created_at.isoformat(),
-            'is_deleted': user.is_deleted
->>>>>>> origin/main
         }
     
     @staticmethod
