@@ -1,9 +1,6 @@
 # Python cache
 __pycache__/
 *.pyc
-*.pyo
-*.pyd
-.Python
 
 # Visual Studio / VS Code
 .vs/
