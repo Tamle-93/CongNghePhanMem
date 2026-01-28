@@ -38,7 +38,8 @@ const PaperSubmitPage = () => {
   const fetchConferences = async () => {
     try {
       const response = await api.listConferences();
-      setConferences(response.data?.conferences || []);
+      console.log('Conferences response:', response.data); // Debug
+      setConferences(response.data?.data?.conferences || []);
     } catch (err) {
       console.error('Error:', err);
     }
@@ -362,7 +363,7 @@ const PaperSubmitPage = () => {
                     >
                       <option value="">-- Chọn hội nghị --</option>
                       {conferences.map((conf) => (
-                        <option key={conf.conference_id} value={conf.conference_id}>
+                        <option key={conf.id} value={conf.id}>
                           {conf.name}
                         </option>
                       ))}
