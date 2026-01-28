@@ -120,3 +120,109 @@ class ReviewService:
         
         return data
 
+    @staticmethod
+    def get_reviews_by_reviewer(reviewer_id, conference_id=None):
+        """Get all reviews submitted by a specific reviewer"""
+        db = SessionLocal()
+        
+        try:
+            query = db.query(Review).join(Assignment).filter(
+                Assignment.reviewer_id == reviewer_id,
+                Review.is_deleted == False
+            )
+            
+            if conference_id:
+                query = query.filter(Assignment.conference_id == conference_id)
+            
+            reviews = query.order_by(Review.created_at.desc()).all()
+            
+            return {
+                'reviews': [ReviewService._serialize_review(db, r) for r in reviews],
+                'total': len(reviews)
+            }, None
+            
+        except Exception as e:
+            return None, str(e)
+        finally:
+            db.close()
+
+    @staticmethod
+    def get_review_by_id(review_id):
+        """Get a specific review by ID"""
+        db = SessionLocal()
+        
+        try:
+            review = db.query(Review).filter(
+                Review.id == review_id,
+                Review.is_deleted == False
+            ).first()
+            
+            if not review:
+                return None, "Review not found"
+            
+            return ReviewService._serialize_review(db, review), None
+            
+        except Exception as e:
+            return None, str(e)
+        finally:
+            db.close()
+
+    @staticmethod
+    def get_reviews_for_paper(paper_id):
+        """Get all reviews for a specific paper"""
+        db = SessionLocal()
+        
+        try:
+            reviews = db.query(Review).filter(
+                Review.paper_id == paper_id,
+                Review.is_deleted == False
+            ).all()
+            
+            return {
+                'reviews': [ReviewService._serialize_review(db, r, show_confidential=False) for r in reviews],
+                'total': len(reviews)
+            }, None
+            
+        except Exception as e:
+            return None, str(e)
+        finally:
+            db.close()
+
+    @staticmethod
+    def get_conference_statistics(conference_id):
+        """Get review statistics for a conference"""
+        db = SessionLocal()
+        
+        try:
+            from sqlalchemy import func
+            
+            # Get total assignments
+            total_assignments = db.query(func.count(Assignment.id)).filter(
+                Assignment.conference_id == conference_id,
+                Assignment.is_deleted == False
+            ).scalar()
+            
+            # Get completed reviews
+            completed_reviews = db.query(func.count(Review.id)).join(Assignment).filter(
+                Assignment.conference_id == conference_id,
+                Review.is_deleted == False
+            ).scalar()
+            
+            # Get average score
+            avg_score = db.query(func.avg(Review.score)).join(Assignment).filter(
+                Assignment.conference_id == conference_id,
+                Review.is_deleted == False
+            ).scalar()
+            
+            return {
+                'total_assignments': total_assignments,
+                'completed_reviews': completed_reviews,
+                'pending_reviews': total_assignments - completed_reviews,
+                'completion_rate': (completed_reviews / total_assignments * 100) if total_assignments > 0 else 0,
+                'average_score': round(float(avg_score), 2) if avg_score else 0
+            }, None
+            
+        except Exception as e:
+            return None, str(e)
+        finally:
+            db.close()
