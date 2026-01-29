@@ -9,13 +9,14 @@ from marshmallow import Schema, fields, validate
 
 class PaperSubmissionSchema(Schema):
     """Schema for paper submission"""
-    title = fields.Str(required=True, validate=validate.Length(min=10, max=500))
-    abstract = fields.Str(required=True, validate=validate.Length(min=100, max=5000))
+    title = fields.Str(required=True, validate=validate.Length(min=5, max=500))
+    abstract = fields.Str(required=True, validate=validate.Length(min=50, max=10000))
     keywords = fields.Str()
     conference_id = fields.Int(required=True)
-    track_id = fields.Int()
+    track_id = fields.Int(allow_none=True)
     authors = fields.List(fields.Dict(), required=True)
-    # authors format: [{"user_id": 1, "order": 1, "is_corresponding": True, "affiliation": "UTH"}]
+    # authors format: [{"name": "...", "email": "...", "order": 1, "is_corresponding": True, "affiliation": "UTH"}]
+    # OR [{"user_id": 1, "order": 1, "is_corresponding": True, "affiliation": "UTH"}]
 
 class PaperResponseSchema(Schema):
     """Schema for paper response"""

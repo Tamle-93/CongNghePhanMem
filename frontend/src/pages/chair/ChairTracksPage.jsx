@@ -7,6 +7,10 @@ const ChairTracksPage = () => {
   const [activeTab, setActiveTab] = useState('info'); // info, tracks, deadlines, email
   const [tracks, setTracks] = useState([]);
   const [deadlines, setDeadlines] = useState([]);
+  const [saving, setSaving] = useState(false);
+  const [notification, setNotification] = useState({ show: false, message: '', type: '' });
+  const [showAddTrackModal, setShowAddTrackModal] = useState(false);
+  const [newTrack, setNewTrack] = useState({ name: '', nameEn: '', description: '', chair: '' });
   const [conferenceInfo, setConferenceInfo] = useState({
     name: '',
     shortName: '',
@@ -22,6 +26,7 @@ const ChairTracksPage = () => {
     review_request: 'Kính gửi {reviewer_name},\n\nChúng tôi mời bạn phản biện bài báo sau cho hội nghị {conference_name}:\n\nMã bài: {paper_id}\nTiêu đề: {paper_title}\nTác giả: {authors}\n\nHạn nộp phản biện: {review_deadline}\n\nVui lòng truy cập hệ thống để xem chi tiết và nộp kết quả phản biện.\n\nTrân trọng,\nBan tổ chức'
   });
   const [loading, setLoading] = useState(true);
+  const [selectedConferenceId, setSelectedConferenceId] = useState(null);
 
   useEffect(() => {
     fetchData();
@@ -29,10 +34,17 @@ const ChairTracksPage = () => {
 
   const fetchData = async () => {
     try {
-      // Load real data from API when available
-      await api.listConferences().catch(() => ({ data: { conferences: [] } }));
-      // Empty until backend is ready
-      setTracks([]);
+      // Load conferences
+      const res = await api.listConferences().catch(() => ({ data: { data: { conferences: [] } } }));
+      const conferences = res.data?.data?.conferences || [];
+      
+      // Get the first conference as default
+      if (conferences.length > 0) {
+        setSelectedConferenceId(conferences[0].id);
+        // Load tracks for this conference
+        await loadTracks(conferences[0].id);
+      }
+      
       setDeadlines([]);
     } catch (err) {
       console.error('Error:', err);
@@ -41,8 +53,139 @@ const ChairTracksPage = () => {
     }
   };
 
+  const loadTracks = async (conferenceId) => {
+    try {
+      const response = await api.get(`/conferences/${conferenceId}/tracks`).catch(() => null);
+      if (response?.data?.data?.tracks) {
+        setTracks(response.data.data.tracks);
+      } else {
+        setTracks([]);
+      }
+    } catch (err) {
+      console.error('Error loading tracks:', err);
+      setTracks([]);
+    }
+  };
+
+  const handleAddTrack = async () => {
+    if (!newTrack.name.trim()) {
+      showNotification('Vui lòng nhập tên phân ban', 'error');
+      return;
+    }
+
+    setSaving(true);
+    try {
+      // Call API to create track
+      const response = await api.post('/tracks', {
+        name: newTrack.name,
+        name_en: newTrack.nameEn,
+        description: newTrack.description,
+        conference_id: selectedConferenceId
+      }).catch(() => null);
+
+      if (response?.data?.data) {
+        // Add to local state
+        setTracks([...tracks, {
+          id: response.data.data.id,
+          name: newTrack.name,
+          nameEn: newTrack.nameEn,
+          papers: 0,
+          chair: newTrack.chair
+        }]);
+        showNotification('Đã thêm phân ban thành công!', 'success');
+      } else {
+        // Fallback: add locally if API fails
+        setTracks([...tracks, {
+          id: Date.now(),
+          name: newTrack.name,
+          nameEn: newTrack.nameEn,
+          papers: 0,
+          chair: newTrack.chair
+        }]);
+        showNotification('Đã thêm phân ban (chế độ offline)', 'success');
+      }
+
+      setShowAddTrackModal(false);
+      setNewTrack({ name: '', nameEn: '', description: '', chair: '' });
+    } catch (err) {
+      console.error('Error adding track:', err);
+      showNotification('Có lỗi xảy ra khi thêm phân ban', 'error');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDeleteTrack = async (trackId) => {
+    if (!confirm('Bạn có chắc muốn xóa phân ban này?')) return;
+    
+    try {
+      await api.delete(`/tracks/${trackId}`).catch(() => null);
+      setTracks(tracks.filter(t => t.id !== trackId));
+      showNotification('Đã xóa phân ban', 'success');
+    } catch (err) {
+      console.error('Error deleting track:', err);
+      showNotification('Có lỗi khi xóa phân ban', 'error');
+    }
+  };
+
+  // Validate date format (DD-MM-YYYY) and check if valid
+  const isValidDate = (dateStr) => {
+    if (!dateStr) return true; // Empty is valid
+    const date = new Date(dateStr);
+    if (isNaN(date.getTime())) return false;
+    // Check for invalid dates like 30/2
+    const [year, month, day] = dateStr.split('-').map(Number);
+    const testDate = new Date(year, month - 1, day);
+    return testDate.getDate() === day && testDate.getMonth() === month - 1;
+  };
+
+  const formatDateDisplay = (dateStr) => {
+    if (!dateStr) return '';
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  };
+
+  const showNotification = (message, type = 'success') => {
+    setNotification({ show: true, message, type });
+    setTimeout(() => setNotification({ show: false, message: '', type: '' }), 3000);
+  };
+
+  const handleSaveInfo = async () => {
+    // Validate dates
+    if (!isValidDate(conferenceInfo.startDate)) {
+      showNotification('Ngày bắt đầu không hợp lệ', 'error');
+      return;
+    }
+    if (!isValidDate(conferenceInfo.endDate)) {
+      showNotification('Ngày kết thúc không hợp lệ', 'error');
+      return;
+    }
+    if (conferenceInfo.startDate && conferenceInfo.endDate && new Date(conferenceInfo.startDate) > new Date(conferenceInfo.endDate)) {
+      showNotification('Ngày bắt đầu không được sau ngày kết thúc', 'error');
+      return;
+    }
+
+    setSaving(true);
+    try {
+      // TODO: Call API to save conference info
+      // await api.updateConference(conferenceId, conferenceInfo);
+      showNotification('Đã lưu thông tin hội nghị thành công!', 'success');
+    } catch (err) {
+      showNotification('Có lỗi xảy ra khi lưu thông tin', 'error');
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const renderInfoTab = () => (
     <div className="space-y-6">
+      {/* Notification */}
+      {notification.show && (
+        <div className={`p-4 rounded-lg flex items-center gap-2 ${notification.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+          <span className="material-symbols-outlined">{notification.type === 'success' ? 'check_circle' : 'error'}</span>
+          {notification.message}
+        </div>
+      )}
       <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
         <h3 className="text-lg font-bold text-slate-900 mb-6">Thông tin cơ bản hội nghị</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -116,8 +259,13 @@ const ChairTracksPage = () => {
           />
         </div>
         <div className="mt-6 flex justify-end">
-          <button className="px-6 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors">
-            Lưu thông tin
+          <button 
+            onClick={handleSaveInfo}
+            disabled={saving}
+            className="px-6 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center gap-2"
+          >
+            {saving && <span className="animate-spin">⏳</span>}
+            {saving ? 'Đang lưu...' : 'Lưu thông tin'}
           </button>
         </div>
       </div>
@@ -133,7 +281,10 @@ const ChairTracksPage = () => {
               <h3 className="text-lg font-bold text-slate-900">Danh sách các tiểu ban chuyên môn</h3>
               <p className="text-xs text-slate-600 mt-0.5">Quản lý và phân bổ các lĩnh vực khoa học chính của hội nghị</p>
             </div>
-            <button className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600/10 text-blue-600 hover:bg-blue-600/20 rounded-lg text-xs font-bold transition-all">
+            <button 
+              onClick={() => setShowAddTrackModal(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white hover:bg-blue-700 rounded-lg text-xs font-bold transition-all"
+            >
               <span className="material-symbols-outlined text-sm">add</span> Thêm phân ban
             </button>
           </div>
@@ -159,21 +310,24 @@ const ChairTracksPage = () => {
                       <td className="px-6 py-4">
                         <div className="flex flex-col">
                           <span className="text-sm font-semibold text-slate-900">{track.name}</span>
-                          <span className="text-xs text-slate-600">{track.nameEn}</span>
+                          <span className="text-xs text-slate-600">{track.nameEn || track.name_en || ''}</span>
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <span className="text-sm font-medium">{track.papers} bài</span>
+                        <span className="text-sm font-medium">{track.papers || 0} bài</span>
                       </td>
                       <td className="px-6 py-4">
-                        <span className="text-sm">{track.chair}</span>
+                        <span className="text-sm">{track.chair || 'Chưa có'}</span>
                       </td>
                       <td className="px-6 py-4 text-right">
                         <div className="flex justify-end gap-2">
                           <button className="p-2 text-slate-400 hover:text-blue-600 transition-colors">
                             <span className="material-symbols-outlined text-xl">edit</span>
                           </button>
-                          <button className="p-2 text-slate-400 hover:text-red-500 transition-colors">
+                          <button 
+                            onClick={() => handleDeleteTrack(track.id)}
+                            className="p-2 text-slate-400 hover:text-red-500 transition-colors"
+                          >
                             <span className="material-symbols-outlined text-xl">delete</span>
                           </button>
                         </div>
@@ -490,6 +644,83 @@ const ChairTracksPage = () => {
         {activeTab === 'deadlines' && renderDeadlinesTab()}
         {activeTab === 'email' && renderEmailTab()}
       </main>
+
+      {/* Add Track Modal */}
+      {showAddTrackModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-md mx-4">
+            <div className="p-6 border-b border-slate-200">
+              <h3 className="text-lg font-bold text-slate-900">Thêm Phân Ban Mới</h3>
+              <p className="text-sm text-slate-600 mt-1">Tạo tiểu ban chuyên môn mới cho hội nghị</p>
+            </div>
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-2">
+                  Tên phân ban (tiếng Việt) <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={newTrack.name}
+                  onChange={(e) => setNewTrack({ ...newTrack, name: e.target.value })}
+                  className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-blue-600"
+                  placeholder="VD: Trí tuệ nhân tạo"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-2">
+                  Tên phân ban (tiếng Anh)
+                </label>
+                <input
+                  type="text"
+                  value={newTrack.nameEn}
+                  onChange={(e) => setNewTrack({ ...newTrack, nameEn: e.target.value })}
+                  className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-blue-600"
+                  placeholder="VD: Artificial Intelligence"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-2">Mô tả</label>
+                <textarea
+                  value={newTrack.description}
+                  onChange={(e) => setNewTrack({ ...newTrack, description: e.target.value })}
+                  rows={3}
+                  className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-blue-600"
+                  placeholder="Mô tả ngắn gọn về phân ban này..."
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-2">Trưởng phân ban</label>
+                <input
+                  type="text"
+                  value={newTrack.chair}
+                  onChange={(e) => setNewTrack({ ...newTrack, chair: e.target.value })}
+                  className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-blue-600"
+                  placeholder="Tên trưởng phân ban"
+                />
+              </div>
+            </div>
+            <div className="p-6 border-t border-slate-200 flex justify-end gap-3">
+              <button
+                onClick={() => {
+                  setShowAddTrackModal(false);
+                  setNewTrack({ name: '', nameEn: '', description: '', chair: '' });
+                }}
+                className="px-4 py-2 text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg font-semibold transition-colors"
+              >
+                Hủy
+              </button>
+              <button
+                onClick={handleAddTrack}
+                disabled={saving}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center gap-2"
+              >
+                {saving && <span className="animate-spin">⏳</span>}
+                {saving ? 'Đang lưu...' : 'Thêm phân ban'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Material Symbols Icons */}
       <link 

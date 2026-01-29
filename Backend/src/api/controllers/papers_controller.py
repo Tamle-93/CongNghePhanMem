@@ -269,3 +269,57 @@ def withdraw_paper(paper_id):
             'status': 'error',
             'message': str(e)
         }), 500
+
+
+@papers_bp.route('/<int:paper_id>/decision', methods=['POST'])
+@require_auth
+@require_role('Chair', 'Admin')
+def make_paper_decision(paper_id):
+    """
+    Make decision on a paper (alternative endpoint)
+    ---
+    POST /api/papers/{paper_id}/decision
+    Headers: Authorization: Bearer <token>
+    Body:
+    {
+        "decision": "accepted",  // accepted, revision_required, rejected
+        "feedback": "Congratulations...",
+        "decision_date": "2024-01-15T10:00:00Z"
+    }
+    """
+    from domain.services.decision_service import DecisionService
+    
+    try:
+        data = request.json
+        
+        # Map frontend decision values to backend
+        decision_map = {
+            'accepted': 'Accept',
+            'revision_required': 'Revision', 
+            'rejected': 'Reject',
+            # Also accept backend values directly
+            'Accept': 'Accept',
+            'Revision': 'Revision',
+            'Reject': 'Reject'
+        }
+        
+        result = decision_map.get(data.get('decision'), 'Accept')
+        
+        decision, error = DecisionService.make_decision(
+            paper_id=paper_id,
+            chair_user_id=request.current_user['user_id'],
+            result=result,
+            final_comment=data.get('feedback', '')
+        )
+        
+        if error:
+            return jsonify({'status': 'error', 'message': error}), 400
+        
+        return jsonify({
+            'status': 'success',
+            'message': 'Decision saved successfully',
+            'data': decision
+        }), 201
+        
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 500

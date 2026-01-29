@@ -226,5 +226,3 @@ class ReviewService:
             return None, str(e)
         finally:
             db.close()
-=======
->>>>>>> origin/main

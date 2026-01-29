@@ -1,0 +1,19 @@
+﻿    @staticmethod
+    def _serialize_user(user):
+        """Serialize user with roles"""
+        return {
+            'id': user.id,
+            'username': user.username,
+            'email': user.email,
+            'full_name': user.full_name,
+            'roles': user.roles,
+            'expertise': getattr(user, 'expertise', None),
+            'affiliation': getattr(user, 'affiliation', None),
+            'created_at': user.created_at.isoformat(),
+            'is_deleted': user.is_deleted,
+            'is_active': not getattr(user, 'is_blocked', False),
+            'is_blocked': getattr(user, 'is_blocked', False)
+        }
+
+    @staticmethod
+    def _serialize_log(log):

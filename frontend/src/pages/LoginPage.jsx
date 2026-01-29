@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
@@ -10,6 +10,29 @@ const LoginPage = () => {
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({ username: '', password: '' });
+  
+  // Auto-clear error after 8 seconds
+  useEffect(() => {
+    if (error) {
+      const timer = setTimeout(() => {
+        setError('');
+      }, 8000);
+      return () => clearTimeout(timer);
+    }
+  }, [error]);
+  
+  // State for role selection modal
+  const [showRoleModal, setShowRoleModal] = useState(false);
+  const [availableRoles, setAvailableRoles] = useState([]);
+  const [selectedRole, setSelectedRole] = useState('');
+  const [pendingLoginData, setPendingLoginData] = useState(null);
+
+  const navigateByRole = (role) => {
+    if (role === 'Admin') navigate('/admin');
+    else if (role === 'Chair') navigate('/chair');
+    else if (role === 'Reviewer') navigate('/reviewer');
+    else navigate('/home');
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -22,24 +45,60 @@ const LoginPage = () => {
       
       if (response.data?.data?.token && response.data?.data?.user) {
         const { token, user } = response.data.data;
+        
+        // If user has multiple roles, show role selection modal
+        if (user.roles && user.roles.length > 1) {
+          setPendingLoginData({ token, user });
+          setAvailableRoles(user.roles);
+          setSelectedRole(user.roles[0]);
+          setShowRoleModal(true);
+          setLoading(false);
+          return;
+        }
+        
+        // Single role - proceed normally
         login(token, user);
-        
-        const role = user?.roles?.[0] || 'Author';
-        console.log('User role:', role);
-        
-        if (role === 'Admin') navigate('/admin');
-        else if (role === 'Chair') navigate('/chair');
-        else if (role === 'Reviewer') navigate('/reviewer');
-        else navigate('/home');
+        navigateByRole(user.roles?.[0] || 'Author');
       } else {
         setError('Đăng nhập thất bại. Vui lòng thử lại.');
       }
     } catch (err) {
       console.error('Login error:', err);
-      setError(err.response?.data?.message || 'Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.');
+      const errorMessage = err.response?.data?.message || 'Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.';
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleRoleSelection = () => {
+    if (pendingLoginData && selectedRole) {
+      const { token, user } = pendingLoginData;
+      const updatedUser = { ...user, selectedRole: selectedRole };
+      login(token, updatedUser);
+      setShowRoleModal(false);
+      navigateByRole(selectedRole);
+    }
+  };
+
+  const getRoleDisplayName = (role) => {
+    const roleNames = {
+      'Admin': 'Quản trị viên',
+      'Chair': 'Chủ tọa hội nghị',
+      'Reviewer': 'Phản biện',
+      'Author': 'Tác giả'
+    };
+    return roleNames[role] || role;
+  };
+
+  const getRoleIcon = (role) => {
+    const icons = {
+      'Admin': '👑',
+      'Chair': '🎓',
+      'Reviewer': '📝',
+      'Author': '✍️'
+    };
+    return icons[role] || '👤';
   };
 
   return (
@@ -53,20 +112,26 @@ const LoginPage = () => {
           </div>
 
           {error && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm">
-              {error}
+            <div className="mb-4 p-4 bg-red-50 border-l-4 border-red-500 rounded-lg">
+              <div className="flex items-start gap-3">
+                <span className="text-red-500 text-xl">⚠️</span>
+                <div>
+                  <p className="text-red-700 font-semibold">Lỗi đăng nhập</p>
+                  <p className="text-red-600 text-sm mt-1">{error}</p>
+                </div>
+              </div>
             </div>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Tên đăng nhập</label>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Tên đăng nhập hoặc Email</label>
               <input
                 type="text"
                 value={formData.username}
                 onChange={(e) => setFormData({ ...formData, username: e.target.value })}
                 className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                placeholder="Nhập tên đăng nhập"
+                placeholder="Nhập tên đăng nhập hoặc email"
                 required
               />
             </div>
@@ -128,6 +193,77 @@ const LoginPage = () => {
           </div>
         </div>
       </div>
+
+      {/* Role Selection Modal */}
+      {showRoleModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
+            <div className="text-center mb-6">
+              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span className="text-3xl">🎭</span>
+              </div>
+              <h2 className="text-xl font-bold text-slate-900">Chọn vai trò đăng nhập</h2>
+              <p className="text-slate-500 text-sm mt-2">
+                Tài khoản của bạn có nhiều vai trò. Vui lòng chọn vai trò để tiếp tục.
+              </p>
+            </div>
+
+            <div className="space-y-3 mb-6">
+              {availableRoles.map((role) => (
+                <label
+                  key={role}
+                  className={`flex items-center p-4 rounded-xl border-2 cursor-pointer transition-all ${
+                    selectedRole === role
+                      ? 'border-blue-500 bg-blue-50'
+                      : 'border-slate-200 hover:border-blue-300 hover:bg-slate-50'
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="role"
+                    value={role}
+                    checked={selectedRole === role}
+                    onChange={(e) => setSelectedRole(e.target.value)}
+                    className="sr-only"
+                  />
+                  <span className="text-2xl mr-4">{getRoleIcon(role)}</span>
+                  <div className="flex-1">
+                    <p className="font-semibold text-slate-900">{getRoleDisplayName(role)}</p>
+                    <p className="text-xs text-slate-500">
+                      {role === 'Admin' && 'Quản trị toàn bộ hệ thống'}
+                      {role === 'Chair' && 'Quản lý hội nghị và quyết định bài báo'}
+                      {role === 'Reviewer' && 'Phản biện và đánh giá bài báo'}
+                      {role === 'Author' && 'Nộp và theo dõi bài báo'}
+                    </p>
+                  </div>
+                  {selectedRole === role && (
+                    <span className="text-blue-500">
+                      <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      </svg>
+                    </span>
+                  )}
+                </label>
+              ))}
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowRoleModal(false)}
+                className="flex-1 py-3 border border-slate-300 text-slate-700 font-semibold rounded-lg hover:bg-slate-50 transition-colors"
+              >
+                Hủy bỏ
+              </button>
+              <button
+                onClick={handleRoleSelection}
+                className="flex-1 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition-colors"
+              >
+                Tiếp tục
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

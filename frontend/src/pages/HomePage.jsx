@@ -23,14 +23,14 @@ const HomePage = () => {
   const fetchData = async () => {
     try {
       const [conferencesRes, papersRes, usersRes] = await Promise.all([
-        api.listConferences().catch(() => ({ data: { conferences: [] } })),
-        api.listPapers().catch(() => ({ data: { papers: [] } })),
-        api.listUsers().catch(() => ({ data: { users: [] } }))
+        api.listConferences().catch(() => ({ data: { data: { conferences: [] } } })),
+        api.listPapers().catch(() => ({ data: { data: { papers: [] } } })),
+        api.listUsers().catch(() => ({ data: { data: { users: [] } } }))
       ]);
 
-      const conferencesData = conferencesRes.data?.conferences || [];
-      const papersData = papersRes.data?.papers || [];
-      const usersData = usersRes.data?.users || [];
+      const conferencesData = conferencesRes.data?.data?.conferences || conferencesRes.data?.conferences || [];
+      const papersData = papersRes.data?.data?.papers || papersRes.data?.papers || [];
+      const usersData = usersRes.data?.data?.users || usersRes.data?.users || [];
 
       // Filter active conferences (upcoming submission deadlines)
       const now = new Date();

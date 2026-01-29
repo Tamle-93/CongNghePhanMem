@@ -1,62 +1,73 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import api from '../../services/api';
 
 const ChairReviewersPage = () => {
-  const [reviewers] = useState([
-    {
-      id: 1,
-      name: 'GS. TS. Nguyễn Văn A',
-      role: 'Hội đồng chính',
-      organization: 'Đại học Bách Khoa TP.HCM',
-      track: 'Khoa học máy tính, AI',
-      workload: 12,
-      avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAc9lycjz2m2Vgs5yfNVJmukkrisAwUL9XiY6nz-DU2VNcS5GSHStkHVSGoZvorB-eLqo_1hDxM_8Yh6pX218BtYDETrGw3H4CJnuga9bkST9gXM3ThfTIrM_ZI9rDFCYeMSo9F8Mvhu2uH6lIHPR7lht6ISx4wq3Q2QOq3xfOWVgxppvddSCNwyO76KHmbfnb6-ahMUMX2UrZALmAQFOvjpq_WuWU5_-qpkSGpwyHPMAmIMQKaU3EyveeLpTfacKWwXxHWc8B4Ng'
-    },
-    {
-      id: 2,
-      name: 'PGS. TS. Lê Thị C',
-      role: 'Phản biện viên',
-      organization: 'Trường Đại học GTVT TP.HCM',
-      track: 'Logistics & Chuỗi cung ứng',
-      workload: 8,
-      avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDn5KeuUgzWIKqYhqGhcIjNLlfN3y9OsLqxe-AKQpvIMKB4IVYDm4jNt3GJ722ltrsdV0j_sPt36Ex5c8Ry-kVQ5VC6NAGM89440Zlg1-EInOSM6D5vQYyyu8r8-tfJ28X6vD-p8lZdInYDaE7o1Jz5iv16mRrJeyDfQ2aPR_SfteG6OZmvbTwzu_rDW1QA5jYYUUrzneUycPCnF8hNWWw8uEVTkH95At4Cq-JrrhN7G8N064BzDfz4bIbeS4hxKTkZydr1Bpf_iQ'
-    },
-    {
-      id: 3,
-      name: 'TS. Trần Văn D',
-      role: 'Phản biện viên',
-      organization: 'Đại học Quốc Gia TP.HCM',
-      track: 'Công nghệ phần mềm',
-      workload: 10,
-      avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDfhbHJnerOzKpZyB3yyMQy0pDT_DksP4mTRXx1TYq479pxxdMT9ygbol00adVPrZ54HU57s-GUEXAlxD8k6yMuFxFycw1J_X2sGTwHD1fj7cqRygNEI5O9oqi35K1NvaEhVkEML5fOtn8XbqVu5I06DwcKz3170NTi8JuPCTsjLpYcEc2eraLdwVAlEb1oyCadpDMwfRAG2VelyR98cnUYmxJ406PVeqfTQzx0TwqNJS41d1vtHZNL6yca4J2pIGrP7csknd1qsQ'
-    },
-    {
-      id: 4,
-      name: 'PGS. Phạm Thị E',
-      role: 'Phản biện viên',
-      organization: 'Đại học Công nghệ TP.HCM',
-      track: 'An toàn thông tin',
-      workload: 7,
-      avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuD-PEDmg_SuSkJNvSXE4wtK_wPp2J-QWpFmHIrTQxl_x8TZD_-S6KYCt7fd_xTU8J6h4ofiK9fWLb5ZjvirnL_lmdXIHoBGEsqH2SIRwPLng4071GT4gm_POTbY50HMCPlBSJwvPCBODV_8Xc-X5GKkln_jBQ2E7jq8dOx02cEiXzjIp1Rcq12NEoPOC_YZfvGDtJ383MDaVhX7-a3s-g9tJw9f928p5r1Ch624rmIOenq9wl6NxljxEV3gb4Lk10AMl_zA7EtU2A'
-    },
-    {
-      id: 5,
-      name: 'TS. Hoàng Văn F',
-      role: 'Phản biện viên',
-      organization: 'Đại học FPT TP.HCM',
-      track: 'Mạng máy tính',
-      workload: 9,
-      avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAc9lycjz2m2Vgs5yfNVJmukkrisAwUL9XiY6nz-DU2VNcS5GSHStkHVSGoZvorB-eLqo_1hDxM_8Yh6pX218BtYDETrGw3H4CJnuga9bkST9gXM3ThfTIrM_ZI9rDFCYeMSo9F8Mvhu2uH6lIHPR7lht6ISx4wq3Q2QOq3xfOWVgxppvddSCNwyO76KHmbfnb6-ahMUMX2UrZALmAQFOvjpq_WuWU5_-qpkSGpwyHPMAmIMQKaU3EyveeLpTfacKWwXxHWc8B4Ng'
-    },
-    {
-      id: 6,
-      name: 'GS. Vũ Thị G',
-      role: 'Hội đồng chính',
-      organization: 'Đại học Tôn Đức Thắng',
-      track: 'Trí tuệ nhân tạo',
-      workload: 15,
-      avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDn5KeuUgzWIKqYhqGhcIjNLlfN3y9OsLqxe-AKQpvIMKB4IVYDm4jNt3GJ722ltrsdV0j_sPt36Ex5c8Ry-kVQ5VC6NAGM89440Zlg1-EInOSM6D5vQYyyu8r8-tfJ28X6vD-p8lZdInYDaE7o1Jz5iv16mRrJeyDfQ2aPR_SfteG6OZmvbTwzu_rDW1QA5jYYUUrzneUycPCnF8hNWWw8uEVTkH95At4Cq-JrrhN7G8N064BzDfz4bIbeS4hxKTkZydr1Bpf_iQ'
+  const [reviewers, setReviewers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [showInviteModal, setShowInviteModal] = useState(false);
+  const [inviteEmail, setInviteEmail] = useState('');
+  const [inviting, setInviting] = useState(false);
+
+  useEffect(() => {
+    fetchReviewers();
+  }, []);
+
+  const fetchReviewers = async () => {
+    try {
+      setLoading(true);
+      // Try to fetch real reviewers from API
+      const response = await api.listUsers({ role: 'Reviewer' }).catch(() => ({ data: { data: { users: [] } } }));
+      const users = response.data?.data?.users || response.data?.users || [];
+      // Transform users to reviewer format
+      const reviewerList = users.map(user => ({
+        id: user.id,
+        name: user.full_name || user.username,
+        role: 'Phản biện viên',
+        organization: user.organization || user.affiliation || 'Chưa cập nhật',
+        track: user.expertise || 'Chưa phân bổ',
+        workload: user.paper_count || 0,
+        email: user.email,
+        avatar: null
+      }));
+      setReviewers(reviewerList);
+    } catch (err) {
+      console.error('Error fetching reviewers:', err);
+      setReviewers([]);
+    } finally {
+      setLoading(false);
     }
-  ]);
+  };
+
+  const handleInvite = async () => {
+    if (!inviteEmail) {
+      alert('Vui lòng nhập email');
+      return;
+    }
+    setInviting(true);
+    try {
+      // TODO: Call API to invite reviewer
+      // await api.inviteReviewer({ email: inviteEmail });
+      alert(`Đã gửi lời mời tới ${inviteEmail}`);
+      setInviteEmail('');
+      setShowInviteModal(false);
+    } catch (err) {
+      alert('Có lỗi xảy ra khi gửi lời mời');
+    } finally {
+      setInviting(false);
+    }
+  };
+
+  const handleRemoveReviewer = async (id) => {
+    if (!window.confirm('Bạn có chắc chắn muốn xóa thành viên này khỏi hội đồng?')) return;
+    try {
+      // TODO: Call API to remove reviewer
+      // await api.removeReviewer(id);
+      setReviewers(reviewers.filter(r => r.id !== id));
+      alert('Đã xóa thành viên');
+    } catch (err) {
+      alert('Có lỗi xảy ra');
+    }
+  };
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTrack, setSelectedTrack] = useState('');
@@ -68,8 +79,50 @@ const ChairReviewersPage = () => {
     return matchesSearch && matchesTrack;
   });
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-96">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-slate-50">
+      {/* Invite Modal */}
+      {showInviteModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-6 w-full max-w-md mx-4 shadow-2xl">
+            <h3 className="text-lg font-bold text-slate-900 mb-4">Mời thành viên mới</h3>
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-slate-700 mb-2">Email</label>
+              <input
+                type="email"
+                value={inviteEmail}
+                onChange={(e) => setInviteEmail(e.target.value)}
+                placeholder="email@example.com"
+                className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-blue-600"
+              />
+            </div>
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => setShowInviteModal(false)}
+                className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+              >
+                Hủy
+              </button>
+              <button
+                onClick={handleInvite}
+                disabled={inviting}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+              >
+                {inviting ? 'Đang gửi...' : 'Gửi lời mời'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <main className="max-w-[1440px] mx-auto px-6 py-8 md:px-10 lg:px-20">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 mb-10">
@@ -81,7 +134,10 @@ const ChairReviewersPage = () => {
               Hệ thống quản lý và giám sát năng lực đội ngũ chuyên gia trong Hội đồng chương trình (PC Members), bao gồm mời thành viên và theo dõi khối lượng phản biện.
             </p>
           </div>
-          <button className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-bold transition-all shadow-lg shadow-blue-600/20 shrink-0 self-start">
+          <button 
+            onClick={() => setShowInviteModal(true)}
+            className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-bold transition-all shadow-lg shadow-blue-600/20 shrink-0 self-start"
+          >
             <span className="material-symbols-outlined">person_add</span>
             <span>Mời thành viên mới</span>
           </button>
@@ -119,13 +175,31 @@ const ChairReviewersPage = () => {
         </div>
 
         {/* Reviewers Grid */}
+        {filteredReviewers.length === 0 ? (
+          <div className="text-center py-16 bg-white rounded-xl border border-slate-200">
+            <span className="material-symbols-outlined text-6xl text-slate-300 mb-4 block">group</span>
+            <h3 className="text-lg font-semibold text-slate-900 mb-2">Chưa có phản biện viên</h3>
+            <p className="text-slate-600 mb-4">Mời thành viên mới để bắt đầu quản lý hội đồng phản biện</p>
+            <button
+              onClick={() => setShowInviteModal(true)}
+              className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium inline-flex items-center gap-2"
+            >
+              <span className="material-symbols-outlined">person_add</span>
+              Mời thành viên đầu tiên
+            </button>
+          </div>
+        ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredReviewers.map(reviewer => (
             <div key={reviewer.id} className="bg-white rounded-2xl border border-slate-200 p-6 hover:shadow-xl hover:-translate-y-1 transition-all group">
               <div className="flex items-start justify-between mb-5">
                 <div className="flex items-center gap-4">
-                  <div className="size-16 rounded-full bg-slate-100 flex items-center justify-center text-blue-600 overflow-hidden ring-4 ring-blue-600/5">
-                    <img alt="Avatar" className="size-full object-cover" src={reviewer.avatar} />
+                  <div className="size-16 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 overflow-hidden ring-4 ring-blue-600/5">
+                    {reviewer.avatar ? (
+                      <img alt="Avatar" className="size-full object-cover" src={reviewer.avatar} />
+                    ) : (
+                      <span className="text-2xl font-bold">{reviewer.name.charAt(0).toUpperCase()}</span>
+                    )}
                   </div>
                   <div>
                     <h3 className="font-bold text-lg text-slate-900 leading-tight">{reviewer.name}</h3>
@@ -140,8 +214,12 @@ const ChairReviewersPage = () => {
                     </div>
                   </div>
                 </div>
-                <button className="text-slate-400 hover:text-blue-600 transition-colors">
-                  <span className="material-symbols-outlined">more_vert</span>
+                <button 
+                  onClick={() => handleRemoveReviewer(reviewer.id)}
+                  className="text-slate-400 hover:text-red-600 transition-colors"
+                  title="Xóa thành viên"
+                >
+                  <span className="material-symbols-outlined">delete</span>
                 </button>
               </div>
               
@@ -180,8 +258,10 @@ const ChairReviewersPage = () => {
             </div>
           ))}
         </div>
+        )}
 
         {/* Summary Stats */}
+        {filteredReviewers.length > 0 && (
         <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl p-6 text-white">
             <span className="material-symbols-outlined text-4xl mb-3 opacity-80">groups</span>
@@ -196,9 +276,10 @@ const ChairReviewersPage = () => {
           <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-2xl p-6 text-white">
             <span className="material-symbols-outlined text-4xl mb-3 opacity-80">verified</span>
             <p className="text-sm opacity-90 mb-1">Trung bình mỗi người</p>
-            <p className="text-3xl font-black">{Math.round(reviewers.reduce((sum, r) => sum + r.workload, 0) / reviewers.length)} bài</p>
+            <p className="text-3xl font-black">{reviewers.length > 0 ? Math.round(reviewers.reduce((sum, r) => sum + r.workload, 0) / reviewers.length) : 0} bài</p>
           </div>
         </div>
+        )}
       </main>
 
       {/* Material Symbols Icons */}

@@ -22,10 +22,10 @@ const ChairHomePage = () => {
   const fetchData = async () => {
     try {
       const [papersRes] = await Promise.all([
-        api.listPapers().catch(() => ({ data: { papers: [] } }))
+        api.listPapers().catch(() => ({ data: { data: { papers: [] } } }))
       ]);
 
-      const papersData = papersRes.data?.papers || [];
+      const papersData = papersRes.data?.data?.papers || papersRes.data?.papers || [];
 
       // Calculate real stats from data
       setStats({
@@ -56,10 +56,13 @@ const ChairHomePage = () => {
     );
   }
 
-  const pendingPercent = Math.round((stats.totalPapers - stats.underReview - stats.completed) / stats.totalPapers * 100) || 25;
-  const reviewingPercent = Math.round(stats.underReview / stats.totalPapers * 100) || 35;
-  const acceptedPercent = Math.round((stats.completed / 2) / stats.totalPapers * 100) || 20;
-  const rejectedPercent = Math.round((stats.completed / 2) / stats.totalPapers * 100) || 20;
+  // Calculate percentages only if there are papers, otherwise show 0
+  const total = stats.totalPapers || 0;
+  const pendingCount = total - stats.underReview - stats.completed;
+  const pendingPercent = total > 0 ? Math.round(pendingCount / total * 100) : 0;
+  const reviewingPercent = total > 0 ? Math.round(stats.underReview / total * 100) : 0;
+  const acceptedPercent = total > 0 ? Math.round((stats.completed / 2) / total * 100) : 0;
+  const rejectedPercent = total > 0 ? Math.round((stats.completed / 2) / total * 100) : 0;
 
   return (
     <div className="min-h-screen bg-slate-50">

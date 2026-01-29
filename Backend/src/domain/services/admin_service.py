@@ -30,11 +30,11 @@ class AdminService:
             total_conferences = db.query(Conference).filter(Conference.is_deleted == False).count()
             
             # Paper stats
-            total_papers = db.query(Paper).count()
+            total_papers = db.query(Paper).filter(Paper.is_deleted == False).count()
             papers_by_status = db.query(
                 Paper.status,
                 func.count(Paper.id).label('count')
-            ).group_by(Paper.status).all()
+            ).filter(Paper.is_deleted == False).group_by(Paper.status).all()
             
             # Review stats
             total_reviews = db.query(Review).filter(Review.is_deleted == False).count()
@@ -69,7 +69,6 @@ class AdminService:
         try:
             query = db.query(User).filter(User.is_deleted == False)
             
-<<<<<<< HEAD
             # Role filter - specify explicit join condition
             if role_filter:
                 query = query.join(UserRole, User.id == UserRole.user_id)\
@@ -163,6 +162,24 @@ class AdminService:
             
         except Exception as e:
             db.rollback()
+            return None, str(e)
+        finally:
+            db.close()
+    
+    @staticmethod
+    def get_user_by_id(user_id):
+        """Get single user by ID"""
+        db = SessionLocal()
+        
+        try:
+            user = db.query(User).filter(User.id == user_id).first()
+            
+            if not user:
+                return None, "User not found"
+            
+            return AdminService._serialize_user(user), None
+            
+        except Exception as e:
             return None, str(e)
         finally:
             db.close()
@@ -396,23 +413,21 @@ class AdminService:
     @staticmethod
     def _serialize_user(user):
         """Serialize user with roles"""
+        # Determine status from is_blocked field - handle None/False properly
+        is_blocked = getattr(user, 'is_blocked', None)
+        if is_blocked is None:
+            is_blocked = False
+        
         return {
             'id': user.id,
             'username': user.username,
             'email': user.email,
             'full_name': user.full_name,
+            'organization': getattr(user, 'organization', None) or getattr(user, 'affiliation', None),
             'roles': user.roles,
-<<<<<<< HEAD
-            'expertise': getattr(user, 'expertise', None),
-            'affiliation': getattr(user, 'affiliation', None),
-            'created_at': user.created_at.isoformat(),
-            'is_deleted': user.is_deleted,
-            'is_active': not getattr(user, 'is_blocked', False),
-            'is_blocked': getattr(user, 'is_blocked', False)
-=======
+            'status': 'blocked' if is_blocked else 'active',
             'created_at': user.created_at.isoformat(),
             'is_deleted': user.is_deleted
->>>>>>> origin/main
         }
     
     @staticmethod

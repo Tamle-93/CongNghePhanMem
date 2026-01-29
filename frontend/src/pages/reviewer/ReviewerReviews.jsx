@@ -15,9 +15,22 @@ const ReviewerReviews = () => {
   const fetchReviews = async () => {
     try {
       setLoading(true);
-      // Assuming there's an endpoint to get all reviews by reviewer
-      const response = await api.get('/reviews/my-reviews');
-      let fetchedReviews = response.data.data || [];
+      // Get reviews from assignments endpoint
+      const response = await api.get('/assignments/my-assignments');
+      const data = response.data?.data || response.data || {};
+      let assignments = Array.isArray(data) ? data : (data.assignments || []);
+      
+      // Map assignments to review format
+      let fetchedReviews = assignments.map(a => ({
+        id: a.id,
+        paper_id: a.paper_id,
+        paper_title: a.paper_title || a.paper?.title || 'Untitled',
+        conference_name: a.conference_name || a.conference?.name || '',
+        submitted_at: a.review_submitted_at || a.submitted_at,
+        deadline: a.deadline,
+        score: a.review_score || a.overall_score || null,
+        status: a.status
+      }));
       
       if (filter === 'pending') {
         fetchedReviews = fetchedReviews.filter(r => !r.submitted_at);
@@ -28,22 +41,7 @@ const ReviewerReviews = () => {
       setReviews(fetchedReviews);
     } catch (error) {
       console.error('Error fetching reviews:', error);
-      // Fallback to assignments if reviews endpoint doesn't exist
-      try {
-        const response = await api.get('/assignments/my-assignments');
-        const assignments = response.data.data.assignments || [];
-        setReviews(assignments.map(a => ({
-          id: a.id,
-          paper_id: a.paper_id,
-          paper_title: a.paper_title,
-          conference_name: a.conference_name,
-          submitted_at: a.review_submitted_at,
-          deadline: a.deadline,
-          score: a.review_score || null
-        })));
-      } catch (err) {
-        console.error('Error fetching assignments:', err);
-      }
+      setReviews([]);
     } finally {
       setLoading(false);
     }

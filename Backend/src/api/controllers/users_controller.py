@@ -288,3 +288,57 @@ def get_user_statistics():
         return jsonify({'status': 'error', 'message': str(e)}), 500
     finally:
         db.close()
+
+@users_bp.route('/change-password', methods=['PUT'])
+@require_auth
+def change_password():
+    """Change current user's password"""
+    from werkzeug.security import check_password_hash
+    
+    db = SessionLocal()
+    
+    try:
+        data = request.json
+        current_password = data.get('current_password')
+        new_password = data.get('new_password')
+        
+        if not current_password or not new_password:
+            return jsonify({'status': 'error', 'message': 'Vui lòng nhập đầy đủ mật khẩu'}), 400
+        
+        if len(new_password) < 6:
+            return jsonify({'status': 'error', 'message': 'Mật khẩu mới phải có ít nhất 6 ký tự'}), 400
+        
+        user_id = request.current_user['user_id']
+        user = db.query(User).filter(User.id == user_id).first()
+        
+        if not user:
+            return jsonify({'status': 'error', 'message': 'Người dùng không tồn tại'}), 404
+        
+        # Verify current password
+        if not check_password_hash(user.password_hash, current_password):
+            return jsonify({'status': 'error', 'message': 'Mật khẩu hiện tại không đúng'}), 400
+        
+        # Update password
+        user.password_hash = hash_password(new_password)
+        db.commit()
+        
+        # Log
+        AuditLogAI.log(
+            db_session=db,
+            user_id=user_id,
+            action_type='password_changed',
+            table_name='users',
+            record_id=user_id,
+            data=json.dumps({})
+        )
+        
+        return jsonify({
+            'status': 'success',
+            'message': 'Đổi mật khẩu thành công!'
+        }), 200
+        
+    except Exception as e:
+        db.rollback()
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+    finally:
+        db.close()

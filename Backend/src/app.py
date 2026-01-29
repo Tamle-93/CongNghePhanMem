@@ -71,7 +71,11 @@ def create_app(config_name=None):
     # CORS CONFIGURATION - Allow all for development
     # ========================================
     from flask_cors import cross_origin
-    CORS(app, resources={r"/*": {"origins": "*"}})
+    CORS(app, 
+         resources={r"/*": {"origins": "*"}},
+         allow_headers=["Content-Type", "Authorization"],
+         methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+         supports_credentials=False)
    
     # ========================================
     # REGISTER BLUEPRINTS
@@ -91,6 +95,8 @@ def create_app(config_name=None):
     from api.controllers.feature_flags_controller import feature_flags_bp
     from api.controllers.reports_controller import reports_bp
     from api.controllers.ai_controller import ai_bp
+    from api.controllers.notifications_controller import notifications_bp
+    from api.controllers.tracks_controller import tracks_bp
     
     app.register_blueprint(auth_bp, url_prefix='/api/auth')
     app.register_blueprint(papers_bp, url_prefix='/api/papers')
@@ -105,8 +111,10 @@ def create_app(config_name=None):
     app.register_blueprint(feature_flags_bp, url_prefix='/api/feature-flags')
     app.register_blueprint(reports_bp, url_prefix='/api/reports')
     app.register_blueprint(ai_bp, url_prefix='/api/ai')
+    app.register_blueprint(notifications_bp, url_prefix='/api/notifications')
+    app.register_blueprint(tracks_bp, url_prefix='/api/tracks')
     
-    print("✅ All API blueprints registered (including COI, Audit, Feature Flags, Reports, AI)")
+    print("✅ All API blueprints registered (including COI, Audit, Feature Flags, Reports, AI, Notifications, Tracks)")
     
     # ========================================
     # API DOCUMENTATION - MANUAL
