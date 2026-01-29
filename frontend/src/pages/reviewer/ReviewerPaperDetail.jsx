@@ -16,12 +16,13 @@ const ReviewerPaperDetail = () => {
     try {
       setLoading(true);
       const response = await api.get(`/papers/${id}`);
-      if (response.data.status === 'success') {
-        setPaper(response.data.data.paper);
-      }
+      const data = response.data?.data || response.data;
+      // Handle different response formats
+      const paperData = data.paper || data;
+      setPaper(paperData);
     } catch (error) {
       console.error('Error fetching paper:', error);
-      alert('Không thể tải thông tin bài báo');
+      // Don't alert, just show the empty state
     } finally {
       setLoading(false);
     }

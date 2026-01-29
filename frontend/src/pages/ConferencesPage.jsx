@@ -12,7 +12,8 @@ const ConferencesPage = () => {
   const fetchConferences = async () => {
     try {
       const response = await api.listConferences();
-      setConferences(response.data?.conferences || []);
+      console.log('Conferences response:', response.data);
+      setConferences(response.data?.data?.conferences || []);
     } catch (err) {
       console.error('Error fetching conferences:', err);
     } finally {

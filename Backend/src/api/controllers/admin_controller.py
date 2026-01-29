@@ -79,13 +79,19 @@ def list_conferences():
                 ))
             
             if status:
-                query = query.filter(Conference.status == status)
+                if status == 'active':
+                    query = query.filter(Conference.is_active == True)
+                elif status == 'inactive':
+                    query = query.filter(Conference.is_active == False)
             
             conferences = query.all()
             
             result = []
             for conf in conferences:
                 chair = db.query(User).filter(User.id == conf.chair_id).first() if conf.chair_id else None
+                
+                # Determine status from is_active field
+                conf_status = 'active' if conf.is_active else 'inactive'
                 
                 result.append({
                     'id': conf.id,
@@ -94,7 +100,7 @@ def list_conferences():
                     'year': conf.year if hasattr(conf, 'year') else None,
                     'organization': conf.organization if hasattr(conf, 'organization') else '',
                     'chair_name': chair.full_name if chair else None,
-                    'status': conf.status if hasattr(conf, 'status') else 'active',
+                    'status': conf_status,
                     'paper_count': len(conf.papers) if hasattr(conf, 'papers') else 0,
                     'created_at': conf.created_at.isoformat() if hasattr(conf, 'created_at') else None
                 })
@@ -119,36 +125,50 @@ def create_conference():
         from infrastructure.models import Conference
         from datetime import datetime
         
-        data = request.form.to_dict() if request.files else request.json
+        # Handle both JSON and form-data
+        if request.content_type and 'multipart/form-data' in request.content_type:
+            data = request.form.to_dict()
+        elif request.content_type and 'application/json' in request.content_type:
+            data = request.json
+        else:
+            # Try form first, then JSON
+            data = request.form.to_dict() if request.form else (request.json or {})
+        
+        if not data:
+            return jsonify({'status': 'error', 'message': 'No data provided'}), 400
         
         db = SessionLocal()
         try:
+            # Parse datetime strings
+            def parse_datetime(dt_str):
+                if not dt_str:
+                    return None
+                try:
+                    # Handle various formats
+                    dt_str = dt_str.replace('Z', '+00:00')
+                    if 'T' in dt_str:
+                        return datetime.fromisoformat(dt_str)
+                    return datetime.strptime(dt_str, '%Y-%m-%d %H:%M:%S')
+                except:
+                    try:
+                        return datetime.strptime(dt_str, '%Y-%m-%d')
+                    except:
+                        return None
+            
             conference = Conference(
-                name=data['name'],
-                acronym=data.get('acronym', ''),
-                year=int(data.get('year', datetime.now().year)),
+                name=data.get('name', ''),
                 chair_id=int(data['chair_id']) if data.get('chair_id') else None,
                 description=data.get('description', ''),
-                submission_deadline=datetime.fromisoformat(data['submission_deadline'].replace('Z', '+00:00')) if data.get('submission_deadline') else None,
-                review_deadline=datetime.fromisoformat(data['review_deadline'].replace('Z', '+00:00')) if data.get('review_deadline') else None,
+                location=data.get('organization', ''),
+                website_url=data.get('website', ''),
+                submission_deadline=parse_datetime(data.get('submission_deadline')),
+                review_deadline=parse_datetime(data.get('review_deadline')),
+                decision_deadline=parse_datetime(data.get('notification_date')),
+                conference_start_date=parse_datetime(data.get('conference_start')),
+                conference_end_date=parse_datetime(data.get('conference_end')),
+                is_active=True,
                 created_at=datetime.now()
             )
-            
-            # Add optional fields if they exist in the model
-            if hasattr(Conference, 'organization') and data.get('organization'):
-                conference.organization = data['organization']
-            if hasattr(Conference, 'field') and data.get('field'):
-                conference.field = data['field']
-            if hasattr(Conference, 'website') and data.get('website'):
-                conference.website = data['website']
-            if hasattr(Conference, 'notification_date') and data.get('notification_date'):
-                conference.notification_date = datetime.fromisoformat(data['notification_date'].replace('Z', '+00:00'))
-            if hasattr(Conference, 'conference_start') and data.get('conference_start'):
-                conference.conference_start = datetime.fromisoformat(data['conference_start']).date()
-            if hasattr(Conference, 'conference_end') and data.get('conference_end'):
-                conference.conference_end = datetime.fromisoformat(data['conference_end']).date()
-            if hasattr(Conference, 'status'):
-                conference.status = 'active'
             
             db.add(conference)
             db.commit()
@@ -161,7 +181,7 @@ def create_conference():
                 action_type='admin_conference_created',
                 table_name='conferences',
                 record_id=conference.id,
-                data=json.dumps({'name': conference.name, 'acronym': conference.acronym})
+                data=json.dumps({'name': conference.name})
             )
             
             return jsonify({
@@ -169,6 +189,107 @@ def create_conference():
                 'message': 'Conference created successfully',
                 'data': {'conference_id': conference.id}
             }), 201
+        finally:
+            db.close()
+        
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
+@admin_bp.route('/conferences/<int:conference_id>', methods=['GET'])
+@require_auth
+@require_role('Admin')
+def get_conference(conference_id):
+    """Get single conference details"""
+    try:
+        from infrastructure.databases.base import SessionLocal
+        from infrastructure.models import Conference, User
+        
+        db = SessionLocal()
+        try:
+            conference = db.query(Conference).filter(Conference.id == conference_id).first()
+            
+            if not conference:
+                return jsonify({'status': 'error', 'message': 'Conference not found'}), 404
+            
+            # Get chair info
+            chair = db.query(User).filter(User.id == conference.chair_id).first() if conference.chair_id else None
+            
+            return jsonify({
+                'status': 'success',
+                'data': {
+                    'id': conference.id,
+                    'name': conference.name,
+                    'acronym': conference.acronym,
+                    'description': conference.description,
+                    'chair_id': conference.chair_id,
+                    'chair_name': chair.full_name if chair else None,
+                    'submission_deadline': conference.submission_deadline.isoformat() if conference.submission_deadline else None,
+                    'review_deadline': conference.review_deadline.isoformat() if conference.review_deadline else None,
+                    'is_active': conference.is_active if hasattr(conference, 'is_active') else True,
+                    'created_at': conference.created_at.isoformat() if conference.created_at else None
+                }
+            }), 200
+        finally:
+            db.close()
+        
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
+@admin_bp.route('/conferences/<int:conference_id>', methods=['PUT'])
+@require_auth
+@require_role('Admin')
+def update_conference(conference_id):
+    """Update conference details"""
+    try:
+        from infrastructure.databases.base import SessionLocal
+        from infrastructure.models import Conference
+        from datetime import datetime
+        
+        # Get data from JSON or form
+        if request.content_type and 'application/json' in request.content_type:
+            data = request.get_json()
+        else:
+            data = request.form.to_dict()
+        
+        db = SessionLocal()
+        try:
+            conference = db.query(Conference).filter(Conference.id == conference_id).first()
+            
+            if not conference:
+                return jsonify({'status': 'error', 'message': 'Conference not found'}), 404
+            
+            # Update fields
+            if 'name' in data:
+                conference.name = data['name']
+            if 'acronym' in data:
+                conference.acronym = data['acronym']
+            if 'description' in data:
+                conference.description = data.get('description')
+            if 'chair_id' in data and data['chair_id']:
+                conference.chair_id = int(data['chair_id'])
+            if 'submission_deadline' in data and data['submission_deadline']:
+                conference.submission_deadline = datetime.fromisoformat(data['submission_deadline'].replace('Z', '+00:00'))
+            if 'review_deadline' in data and data['review_deadline']:
+                conference.review_deadline = datetime.fromisoformat(data['review_deadline'].replace('Z', '+00:00'))
+            if 'is_active' in data:
+                conference.is_active = data['is_active'] in [True, 'true', '1', 1]
+            
+            db.commit()
+            
+            # Log
+            AuditLogAI.log(
+                db_session=db,
+                user_id=request.current_user['user_id'],
+                action_type='admin_conference_updated',
+                table_name='conferences',
+                record_id=conference_id,
+                data=json.dumps({'name': conference.name})
+            )
+            
+            return jsonify({
+                'status': 'success',
+                'message': 'Conference updated successfully'
+            }), 200
         finally:
             db.close()
         
@@ -191,19 +312,18 @@ def activate_conference(conference_id):
             if not conference:
                 return jsonify({'status': 'error', 'message': 'Conference not found'}), 404
             
-            if hasattr(conference, 'status'):
-                conference.status = 'active'
-                db.commit()
-                
-                # Log
-                AuditLogAI.log(
-                    db_session=db,
-                    user_id=request.current_user['user_id'],
-                    action_type='admin_conference_activated',
-                    table_name='conferences',
-                    record_id=conference_id,
-                    data=json.dumps({'name': conference.name})
-                )
+            conference.is_active = True
+            db.commit()
+            
+            # Log
+            AuditLogAI.log(
+                db_session=db,
+                user_id=request.current_user['user_id'],
+                action_type='admin_conference_activated',
+                table_name='conferences',
+                record_id=conference_id,
+                data=json.dumps({'name': conference.name})
+            )
             
             return jsonify({
                 'status': 'success',
@@ -231,17 +351,16 @@ def deactivate_conference(conference_id):
             if not conference:
                 return jsonify({'status': 'error', 'message': 'Conference not found'}), 404
             
-            if hasattr(conference, 'status'):
-                conference.status = 'inactive'
-                db.commit()
-                
-                # Log
-                AuditLogAI.log(
-                    db_session=db,
-                    user_id=request.current_user['user_id'],
-                    action_type='admin_conference_deactivated',
-                    table_name='conferences',
-                    record_id=conference_id,
+            conference.is_active = False
+            db.commit()
+            
+            # Log
+            AuditLogAI.log(
+                db_session=db,
+                user_id=request.current_user['user_id'],
+                action_type='admin_conference_deactivated',
+                table_name='conferences',
+                record_id=conference_id,
                     data=json.dumps({'name': conference.name})
                 )
             
@@ -275,10 +394,24 @@ def create_user():
     try:
         data = request.json
         
-        required = ['username', 'password', 'email', 'full_name', 'roles']
-        for field in required:
-            if field not in data:
-                return jsonify({'status': 'error', 'message': f'{field} is required'}), 400
+        # Validate required fields first
+        if not data.get('email'):
+            return jsonify({'status': 'error', 'message': 'Email is required'}), 400
+        if not data.get('full_name'):
+            return jsonify({'status': 'error', 'message': 'Full name is required'}), 400
+        if not data.get('roles') or len(data.get('roles', [])) == 0:
+            return jsonify({'status': 'error', 'message': 'At least one role is required'}), 400
+        
+        # Generate username from email if not provided
+        if not data.get('username'):
+            data['username'] = data['email'].split('@')[0]
+        
+        # Auto generate password if needed
+        if data.get('auto_generate_password') or not data.get('password'):
+            import secrets
+            import string
+            alphabet = string.ascii_letters + string.digits + '!@#$%'
+            data['password'] = ''.join(secrets.choice(alphabet) for _ in range(12))
         
         user, error = AdminService.create_user(
             username=data['username'],
@@ -300,53 +433,69 @@ def create_user():
     except Exception as e:
         return jsonify({'status': 'error', 'message': str(e)}), 500
 
-@admin_bp.route('/users/<int:user_id>', methods=['PUT'])
+@admin_bp.route('/users/<int:user_id>', methods=['GET', 'PUT', 'DELETE'])
 @require_auth
 @require_role('Admin')
-def update_user(user_id):
-    """Update user"""
-    try:
-        data = request.json
-        
-        user, error = AdminService.update_user(
-            user_id,
-            request.current_user['user_id'],
-            **data
-        )
-        
-        if error:
-            return jsonify({'status': 'error', 'message': error}), 400
-        
-        return jsonify({
-            'status': 'success',
-            'message': 'User updated successfully',
-            'data': user
-        }), 200
-        
-    except Exception as e:
-        return jsonify({'status': 'error', 'message': str(e)}), 500
-
-@admin_bp.route('/users/<int:user_id>', methods=['DELETE'])
-@require_auth
-@require_role('Admin')
-def delete_user(user_id):
-    """Delete user"""
-    try:
-        success, error = AdminService.delete_user(
-            user_id,
-            request.current_user['user_id']
-        )
-        
-        if error:
-            return jsonify({'status': 'error', 'message': error}), 400
-        
-        return jsonify({
-            'status': 'success',
-            'message': 'User deleted successfully'
-        }), 200
-        
-    except Exception as e:
-        return jsonify({'status': 'error', 'message': str(e)}), 500
+def manage_user(user_id):
+    """Get, Update, or Delete user by ID"""
+    
+    # GET - Get user by ID
+    if request.method == 'GET':
+        try:
+            user, error = AdminService.get_user_by_id(user_id)
+            
+            if error:
+                return jsonify({'status': 'error', 'message': error}), 404
+            
+            return jsonify({
+                'status': 'success',
+                'data': user
+            }), 200
+            
+        except Exception as e:
+            return jsonify({'status': 'error', 'message': str(e)}), 500
+    
+    # PUT - Update user
+    elif request.method == 'PUT':
+        try:
+            data = request.json
+            
+            user, error = AdminService.update_user(
+                user_id,
+                request.current_user['user_id'],
+                **data
+            )
+            
+            if error:
+                return jsonify({'status': 'error', 'message': error}), 400
+            
+            return jsonify({
+                'status': 'success',
+                'message': 'User updated successfully',
+                'data': user
+            }), 200
+            
+        except Exception as e:
+            return jsonify({'status': 'error', 'message': str(e)}), 500
+    
+    # DELETE - Delete user
+    elif request.method == 'DELETE':
+        try:
+            success, error = AdminService.delete_user(
+                user_id,
+                request.current_user['user_id']
+            )
+            
+            if error:
+                return jsonify({'status': 'error', 'message': error}), 400
+            
+            return jsonify({
+                'status': 'success',
+                'message': 'User deleted successfully'
+            }), 200
+            
+        except Exception as e:
+            return jsonify({'status': 'error', 'message': str(e)}), 500
 
 @admin_bp.route('/users/<int:user_id>/block', methods=['PUT'])
 @require_auth

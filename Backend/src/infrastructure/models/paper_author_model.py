@@ -16,6 +16,7 @@ class PaperAuthor(Base):
     - Multiple authors per paper
     - Author order
     - Corresponding author
+    - Guest authors (without user account)
     """
 
     __tablename__ = "paper_authors"
@@ -31,8 +32,12 @@ class PaperAuthor(Base):
     user_id = Column(
         Integer,
         ForeignKey("users.id", ondelete="CASCADE"),
-        nullable=False
+        nullable=True  # Allow NULL for guest authors
     )
+    
+    # Guest author fields (when user_id is NULL)
+    guest_name = Column(String(255), nullable=True)
+    guest_email = Column(String(255), nullable=True)
 
     author_order = Column(Integer, nullable=False)
 

@@ -10,11 +10,11 @@ const ChairDashboard = () => {
     const fetchData = async () => {
       try {
         const [papersRes, assignmentsRes] = await Promise.all([
-          api.listPapers().catch(() => ({ data: { papers: [] } })),
-          api.listAssignments().catch(() => ({ data: { assignments: [] } }))
+          api.listPapers().catch(() => ({ data: { data: { papers: [] } } })),
+          api.listAssignments().catch(() => ({ data: { data: { assignments: [] } } }))
         ]);
-        setPapers(papersRes.data?.papers || []);
-        setAssignments(assignmentsRes.data?.assignments || []);
+        setPapers(papersRes.data?.data?.papers || papersRes.data?.papers || []);
+        setAssignments(assignmentsRes.data?.data?.assignments || assignmentsRes.data?.assignments || []);
       } catch (err) {
         console.error('Error:', err);
       } finally {

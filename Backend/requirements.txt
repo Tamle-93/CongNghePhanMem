@@ -39,6 +39,9 @@ Flask-Limiter>=3.3,<4
 # PDF
 PyPDF2>=3.0,<4
 
+# HTTP client
+requests>=2.31,<3
+
 # Dev
 pytest>=7,<8
 pytest-flask>=1.2,<2

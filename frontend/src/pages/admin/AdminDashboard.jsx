@@ -10,17 +10,17 @@ const AdminDashboard = () => {
     const fetchData = async () => {
       try {
         const [usersRes, conferencesRes, papersRes] = await Promise.all([
-          api.listUsers().catch(() => ({ data: { users: [] } })),
-          api.listConferences().catch(() => ({ data: { conferences: [] } })),
-          api.listPapers().catch(() => ({ data: { papers: [] } }))
+          api.listUsers().catch(() => ({ data: { data: { users: [] } } })),
+          api.listConferences().catch(() => ({ data: { data: { conferences: [] } } })),
+          api.listPapers().catch(() => ({ data: { data: { papers: [] } } }))
         ]);
         
-        const usersList = usersRes.data?.users || [];
+        const usersList = usersRes.data?.data?.users || usersRes.data?.users || [];
         setUsers(usersList);
         setStats({
           users: usersList.length,
-          conferences: (conferencesRes.data?.conferences || []).length,
-          papers: (papersRes.data?.papers || []).length
+          conferences: (conferencesRes.data?.data?.conferences || []).length,
+          papers: (papersRes.data?.data?.papers || papersRes.data?.papers || []).length
         });
       } catch (err) {
         console.error('Error:', err);

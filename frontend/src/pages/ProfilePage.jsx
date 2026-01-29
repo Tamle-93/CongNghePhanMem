@@ -9,8 +9,16 @@ const ProfilePage = () => {
     email: '',
     username: ''
   });
+  const [passwordData, setPasswordData] = useState({
+    current_password: '',
+    new_password: '',
+    confirm_password: ''
+  });
+  const [showPasswordForm, setShowPasswordForm] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [passwordLoading, setPasswordLoading] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
+  const [passwordMessage, setPasswordMessage] = useState({ type: '', text: '' });
 
   useEffect(() => {
     if (user) {
@@ -34,6 +42,44 @@ const ProfilePage = () => {
       setMessage({ type: 'error', text: err.response?.data?.message || 'Cập nhật thất bại!' });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handlePasswordChange = async (e) => {
+    e.preventDefault();
+    setPasswordMessage({ type: '', text: '' });
+    
+    // Validate
+    if (!passwordData.current_password) {
+      setPasswordMessage({ type: 'error', text: 'Vui lòng nhập mật khẩu hiện tại' });
+      return;
+    }
+    if (!passwordData.new_password) {
+      setPasswordMessage({ type: 'error', text: 'Vui lòng nhập mật khẩu mới' });
+      return;
+    }
+    if (passwordData.new_password.length < 6) {
+      setPasswordMessage({ type: 'error', text: 'Mật khẩu mới phải có ít nhất 6 ký tự' });
+      return;
+    }
+    if (passwordData.new_password !== passwordData.confirm_password) {
+      setPasswordMessage({ type: 'error', text: 'Mật khẩu xác nhận không khớp' });
+      return;
+    }
+
+    setPasswordLoading(true);
+    try {
+      await api.put('/users/change-password', {
+        current_password: passwordData.current_password,
+        new_password: passwordData.new_password
+      });
+      setPasswordMessage({ type: 'success', text: 'Đổi mật khẩu thành công!' });
+      setPasswordData({ current_password: '', new_password: '', confirm_password: '' });
+      setShowPasswordForm(false);
+    } catch (err) {
+      setPasswordMessage({ type: 'error', text: err.response?.data?.message || 'Đổi mật khẩu thất bại!' });
+    } finally {
+      setPasswordLoading(false);
     }
   };
 
@@ -168,9 +214,84 @@ const ProfilePage = () => {
               <p className="text-sm text-slate-500 mb-4">
                 Để bảo mật tài khoản, vui lòng sử dụng mật khẩu mạnh và thay đổi định kỳ.
               </p>
-              <button className="px-6 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-lg transition-colors">
-                Đổi mật khẩu
-              </button>
+              
+              {passwordMessage.text && (
+                <div className={`mb-4 p-4 rounded-lg ${
+                  passwordMessage.type === 'success' 
+                    ? 'bg-green-50 text-green-700 border border-green-200' 
+                    : 'bg-red-50 text-red-700 border border-red-200'
+                }`}>
+                  {passwordMessage.text}
+                </div>
+              )}
+
+              {!showPasswordForm ? (
+                <button 
+                  onClick={() => setShowPasswordForm(true)}
+                  className="px-6 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-lg transition-colors"
+                >
+                  Đổi mật khẩu
+                </button>
+              ) : (
+                <form onSubmit={handlePasswordChange} className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                      Mật khẩu hiện tại <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="password"
+                      value={passwordData.current_password}
+                      onChange={(e) => setPasswordData({ ...passwordData, current_password: e.target.value })}
+                      className="w-full px-4 py-3 rounded-lg border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                      placeholder="Nhập mật khẩu hiện tại"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                      Mật khẩu mới <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="password"
+                      value={passwordData.new_password}
+                      onChange={(e) => setPasswordData({ ...passwordData, new_password: e.target.value })}
+                      className="w-full px-4 py-3 rounded-lg border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                      placeholder="Nhập mật khẩu mới (ít nhất 6 ký tự)"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                      Xác nhận mật khẩu mới <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="password"
+                      value={passwordData.confirm_password}
+                      onChange={(e) => setPasswordData({ ...passwordData, confirm_password: e.target.value })}
+                      className="w-full px-4 py-3 rounded-lg border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                      placeholder="Nhập lại mật khẩu mới"
+                    />
+                  </div>
+                  <div className="flex gap-3">
+                    <button
+                      type="submit"
+                      disabled={passwordLoading}
+                      className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors disabled:opacity-50"
+                    >
+                      {passwordLoading ? 'Đang xử lý...' : 'Xác nhận đổi mật khẩu'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowPasswordForm(false);
+                        setPasswordData({ current_password: '', new_password: '', confirm_password: '' });
+                        setPasswordMessage({ type: '', text: '' });
+                      }}
+                      className="px-6 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-lg transition-colors"
+                    >
+                      Hủy
+                    </button>
+                  </div>
+                </form>
+              )}
             </div>
           </div>
         </div>

@@ -52,10 +52,6 @@ const AdminAddUser = () => {
       alert('Vui lòng nhập email hợp lệ');
       return false;
     }
-    if (!formData.organization) {
-      alert('Vui lòng chọn đơn vị công tác');
-      return false;
-    }
     if (!formData.auto_generate_password && !formData.password) {
       alert('Vui lòng nhập mật khẩu hoặc chọn tự động tạo');
       return false;
@@ -108,16 +104,16 @@ const AdminAddUser = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background-light dark:bg-background-dark flex items-center justify-center p-4">
-      <div className="bg-surface-light dark:bg-surface-dark w-full max-w-2xl rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-800 overflow-hidden flex flex-col">
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      <div className="bg-white w-full max-w-2xl rounded-2xl shadow-xl border border-gray-200 overflow-hidden flex flex-col">
         {/* Header */}
-        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between bg-white dark:bg-surface-dark">
+        <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between bg-white">
           <div className="flex items-center gap-3">
-            <div className="flex items-center justify-center size-10 rounded-full bg-primary/10 text-primary">
+            <div className="flex items-center justify-center size-10 rounded-full bg-blue-100 text-blue-600">
               <span className="material-symbols-outlined">person_add</span>
             </div>
             <div>
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white">
+              <h3 className="text-xl font-bold text-gray-900">
                 Biểu Mẫu Thêm Người Dùng Mới
               </h3>
               <p className="text-xs text-text-sub">Hệ thống quản trị UTH-ConfMS</p>
@@ -125,7 +121,7 @@ const AdminAddUser = () => {
           </div>
           <button 
             onClick={handleCancel}
-            className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
+            className="text-gray-400 hover:text-gray-600  transition-colors"
           >
             <span className="material-symbols-outlined">close</span>
           </button>
@@ -136,7 +132,7 @@ const AdminAddUser = () => {
           {/* Basic Info */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
-              <label className="text-sm font-semibold text-gray-700 dark:text-gray-300" htmlFor="full_name">
+              <label className="text-sm font-semibold text-gray-700 " htmlFor="full_name">
                 Họ và tên <span className="text-red-500">*</span>
               </label>
               <input
@@ -145,14 +141,14 @@ const AdminAddUser = () => {
                 name="full_name"
                 value={formData.full_name}
                 onChange={handleInputChange}
-                className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-primary transition-all"
+                className="w-full px-4 py-2.5 bg-gray-50  border-gray-200  rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
                 placeholder="Ví dụ: Nguyễn Văn A"
                 required
               />
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-semibold text-gray-700 dark:text-gray-300" htmlFor="email">
+              <label className="text-sm font-semibold text-gray-700 " htmlFor="email">
                 Địa chỉ Email <span className="text-red-500">*</span>
               </label>
               <input
@@ -161,7 +157,7 @@ const AdminAddUser = () => {
                 name="email"
                 value={formData.email}
                 onChange={handleInputChange}
-                className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-primary transition-all"
+                className="w-full px-4 py-2.5 bg-gray-50  border-gray-200  rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
                 placeholder="email@uth.edu.vn"
                 required
               />
@@ -170,7 +166,7 @@ const AdminAddUser = () => {
 
           {/* Organization */}
           <div className="space-y-2">
-            <label className="text-sm font-semibold text-gray-700 dark:text-gray-300" htmlFor="organization">
+            <label className="text-sm font-semibold text-gray-700 " htmlFor="organization">
               Đơn vị / Khoa <span className="text-red-500">*</span>
             </label>
             <select
@@ -178,7 +174,7 @@ const AdminAddUser = () => {
               name="organization"
               value={formData.organization}
               onChange={handleInputChange}
-              className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-primary transition-all"
+              className="w-full px-4 py-2.5 bg-gray-50  border-gray-200  rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
               required
             >
               <option value="">Chọn đơn vị công tác</option>
@@ -193,7 +189,7 @@ const AdminAddUser = () => {
           {/* Password */}
           <div className="space-y-4 pt-2">
             <div className="flex items-center justify-between">
-              <label className="text-sm font-semibold text-gray-700 dark:text-gray-300" htmlFor="password">
+              <label className="text-sm font-semibold text-gray-700 " htmlFor="password">
                 Mật khẩu
               </label>
               <div className="flex items-center gap-2">
@@ -203,9 +199,9 @@ const AdminAddUser = () => {
                   name="auto_generate_password"
                   checked={formData.auto_generate_password}
                   onChange={handleInputChange}
-                  className="w-4 h-4 text-primary bg-gray-100 border-gray-300 rounded focus:ring-primary dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                  className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500  focus:ring-2  "
                 />
-                <label className="text-xs font-medium text-gray-500 dark:text-gray-400" htmlFor="auto_generate_password">
+                <label className="text-xs font-medium text-gray-500 " htmlFor="auto_generate_password">
                   Tự động tạo và gửi qua email
                 </label>
               </div>
@@ -218,7 +214,7 @@ const AdminAddUser = () => {
                 value={formData.password}
                 onChange={handleInputChange}
                 disabled={formData.auto_generate_password}
-                className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-primary transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full px-4 py-2.5 bg-gray-50  border-gray-200  rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 placeholder="Nhập mật khẩu hoặc để trống nếu tự động tạo"
               />
               <span
@@ -231,55 +227,49 @@ const AdminAddUser = () => {
           </div>
 
           {/* Roles */}
-          <div className="bg-gray-50 dark:bg-gray-800/50 p-4 rounded-xl border border-gray-200 dark:border-gray-700 space-y-4">
+          <div className="bg-gray-50  p-4 rounded-xl border border-gray-200  space-y-4">
             <div className="flex items-center gap-2 mb-2">
-              <span className="material-symbols-outlined text-primary text-[20px]">shield_person</span>
-              <h4 className="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider">
+              <span className="material-symbols-outlined text-blue-600 text-[20px]">shield_person</span>
+              <h4 className="text-sm font-bold text-gray-900  uppercase tracking-wider">
                 Phân quyền vai trò
               </h4>
             </div>
             
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <label className="relative flex items-center p-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-surface-dark cursor-pointer hover:border-primary/50 transition-all">
+              <label className="relative flex items-center p-3 rounded-lg border border-gray-300 bg-white cursor-pointer hover:border-blue-500 transition-all">
                 <input
                   type="checkbox"
                   name="roles"
                   value="Author"
                   checked={formData.roles.includes('Author')}
                   onChange={handleRoleChange}
-                  className="w-4 h-4 text-primary bg-gray-100 border-gray-300 rounded focus:ring-primary"
+                  className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
                 />
-                <div className="ml-3">
-                  <span className="block text-sm font-semibold text-gray-900 dark:text-white">Tác giả</span>
-                </div>
+                <span className="ml-3 text-sm font-semibold text-gray-900">Tác giả</span>
               </label>
 
-              <label className="relative flex items-center p-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-surface-dark cursor-pointer hover:border-primary/50 transition-all">
+              <label className="relative flex items-center p-3 rounded-lg border border-gray-300 bg-white cursor-pointer hover:border-blue-500 transition-all">
                 <input
                   type="checkbox"
                   name="roles"
                   value="Reviewer"
                   checked={formData.roles.includes('Reviewer')}
                   onChange={handleRoleChange}
-                  className="w-4 h-4 text-primary bg-gray-100 border-gray-300 rounded focus:ring-primary"
+                  className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
                 />
-                <div className="ml-3">
-                  <span className="block text-sm font-semibold text-gray-900 dark:text-white">Người phản biện</span>
-                </div>
+                <span className="ml-3 text-sm font-semibold text-gray-900">Phản biện</span>
               </label>
 
-              <label className="relative flex items-center p-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-surface-dark cursor-pointer hover:border-primary/50 transition-all">
+              <label className="relative flex items-center p-3 rounded-lg border border-gray-300 bg-white cursor-pointer hover:border-blue-500 transition-all">
                 <input
                   type="checkbox"
                   name="roles"
                   value="Chair"
                   checked={formData.roles.includes('Chair')}
                   onChange={handleRoleChange}
-                  className="w-4 h-4 text-primary bg-gray-100 border-gray-300 rounded focus:ring-primary"
+                  className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
                 />
-                <div className="ml-3">
-                  <span className="block text-sm font-semibold text-gray-900 dark:text-white">Chủ tọa phân ban</span>
-                </div>
+                <span className="ml-3 text-sm font-semibold text-gray-900">Chủ tọa</span>
               </label>
             </div>
 
@@ -290,18 +280,18 @@ const AdminAddUser = () => {
         </form>
 
         {/* Footer Actions */}
-        <div className="px-6 py-4 bg-gray-50 dark:bg-gray-800/30 border-t border-gray-200 dark:border-gray-800 flex flex-col sm:flex-row items-center justify-end gap-3">
+        <div className="px-6 py-4 bg-gray-50  border-t border-gray-200  flex flex-col sm:flex-row items-center justify-end gap-3">
           <button
             type="button"
             onClick={handleCancel}
-            className="w-full sm:w-auto px-6 py-2.5 text-sm font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg transition-all"
+            className="w-full sm:w-auto px-6 py-2.5 text-sm font-bold text-gray-600  hover:bg-gray-200  rounded-lg transition-all"
           >
             Hủy bỏ
           </button>
           <button
             onClick={handleSubmit}
             disabled={loading}
-            className="w-full sm:w-auto px-8 py-2.5 text-sm font-bold text-white bg-primary hover:bg-blue-600 rounded-lg shadow-lg shadow-primary/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full sm:w-auto px-8 py-2.5 text-sm font-bold text-white bg-blue-600 hover:bg-blue-600 rounded-lg shadow-lg shadow-primary/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <span className="material-symbols-outlined text-[18px]">person_add</span>
             {loading ? 'Đang xử lý...' : 'Xác nhận thêm người dùng'}
@@ -313,3 +303,4 @@ const AdminAddUser = () => {
 };
 
 export default AdminAddUser;
+

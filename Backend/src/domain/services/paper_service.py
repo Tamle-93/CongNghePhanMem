@@ -116,9 +116,22 @@ class PaperService:
             
             # Add authors
             for author_data in authors:
+                # Check if user_id provided, otherwise use guest fields
+                user_id = author_data.get('user_id')
+                
+                # If email provided but no user_id, try to find user by email
+                if not user_id and author_data.get('email'):
+                    existing_user = db.query(User).filter(
+                        User.email == author_data['email']
+                    ).first()
+                    if existing_user:
+                        user_id = existing_user.id
+                
                 author = PaperAuthor(
                     paper_id=paper.id,
-                    user_id=author_data['user_id'],
+                    user_id=user_id,  # Can be None for guest authors
+                    guest_name=author_data.get('name') if not user_id else None,
+                    guest_email=author_data.get('email') if not user_id else None,
                     author_order=author_data.get('order', 1),
                     is_corresponding=author_data.get('is_corresponding', False),
                     affiliation=author_data.get('affiliation', '')

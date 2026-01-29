@@ -2,7 +2,7 @@
 """
 Authentication Service - Business Logic with JWT and Refresh Token support
 """
-from werkzeug.security import generate_password_hash, check_password_hash
+from domain.utils.auth_utils import hash_password, verify_password, generate_token
 from infrastructure.models.user_model import User
 from infrastructure.models.role_model import Role
 from infrastructure.models.user_role_model import UserRole
@@ -10,12 +10,93 @@ from infrastructure.models.audit_log_ai_model import AuditLogAI
 from infrastructure.models.audit_log_model import AuditLog
 from infrastructure.models.refresh_token_model import RefreshToken
 from infrastructure.databases.base import db_session
-from domain.utils.auth_utils import generate_token
 from datetime import datetime, timedelta
 import json
 import hashlib
 
+# Login attempt tracking - in-memory cache (consider Redis for production)
+_login_attempts = {}  # {username: {'count': int, 'last_attempt': datetime, 'lockout_level': int}}
+
 class AuthService:
+    
+    # Lockout durations in minutes: 5 fails = 5min, +2 fails = 15min, then 30min, 1h, 2h, 8h
+    LOCKOUT_DURATIONS = [5, 15, 30, 60, 120, 480]  # minutes
+    MAX_ATTEMPTS_BEFORE_LOCKOUT = 5
+    ADDITIONAL_ATTEMPTS_PER_LEVEL = 2
+    
+    @staticmethod
+    def _get_lockout_duration(level):
+        """Get lockout duration in minutes for given level"""
+        if level <= 0:
+            return 0
+        idx = min(level - 1, len(AuthService.LOCKOUT_DURATIONS) - 1)
+        return AuthService.LOCKOUT_DURATIONS[idx]
+    
+    @staticmethod
+    def _check_account_lockout(username):
+        """
+        Check if account is locked out
+        Returns: (is_locked, remaining_seconds, message)
+        """
+        if username not in _login_attempts:
+            return False, 0, None
+        
+        attempt_info = _login_attempts[username]
+        lockout_level = attempt_info.get('lockout_level', 0)
+        
+        if lockout_level == 0:
+            return False, 0, None
+        
+        lockout_duration = AuthService._get_lockout_duration(lockout_level)
+        lockout_until = attempt_info['last_attempt'] + timedelta(minutes=lockout_duration)
+        
+        if datetime.utcnow() < lockout_until:
+            remaining = (lockout_until - datetime.utcnow()).total_seconds()
+            minutes = int(remaining // 60)
+            seconds = int(remaining % 60)
+            return True, remaining, f"Tài khoản bị khóa tạm thời. Vui lòng thử lại sau {minutes} phút {seconds} giây."
+        
+        # Lockout expired, reset for next level
+        return False, 0, None
+    
+    @staticmethod
+    def _record_failed_attempt(username):
+        """Record a failed login attempt"""
+        now = datetime.utcnow()
+        
+        if username not in _login_attempts:
+            _login_attempts[username] = {'count': 1, 'last_attempt': now, 'lockout_level': 0}
+        else:
+            info = _login_attempts[username]
+            # Check if previous lockout expired
+            if info['lockout_level'] > 0:
+                lockout_duration = AuthService._get_lockout_duration(info['lockout_level'])
+                lockout_until = info['last_attempt'] + timedelta(minutes=lockout_duration)
+                if now >= lockout_until:
+                    # Lockout expired, count this as additional attempt
+                    info['count'] = 1
+                else:
+                    info['count'] += 1
+            else:
+                info['count'] += 1
+            
+            info['last_attempt'] = now
+            
+            # Check if we should increase lockout level
+            if info['lockout_level'] == 0 and info['count'] >= AuthService.MAX_ATTEMPTS_BEFORE_LOCKOUT:
+                info['lockout_level'] = 1
+                info['count'] = 0
+            elif info['lockout_level'] > 0 and info['count'] >= AuthService.ADDITIONAL_ATTEMPTS_PER_LEVEL:
+                info['lockout_level'] += 1
+                info['count'] = 0
+        
+        return _login_attempts[username]
+    
+    @staticmethod
+    def _clear_login_attempts(username):
+        """Clear login attempts on successful login"""
+        if username in _login_attempts:
+            del _login_attempts[username]
     
     @staticmethod
     def register_user(username, password, email, full_name, roles=None):
@@ -121,6 +202,7 @@ class AuthService:
     def login_user(username, password):
         """
         Login user with username OR email
+        Includes account lockout after failed attempts
         
         Returns:
             (User, token) if success
@@ -130,16 +212,39 @@ class AuthService:
             # Strip whitespace from username/email
             username = username.strip()
             
+            # Check if account is locked
+            is_locked, remaining, lock_message = AuthService._check_account_lockout(username)
+            if is_locked:
+                return None, lock_message
+            
             # Try to find user by username OR email
             user = db_session.query(User).filter(
                 (User.username == username) | (User.email == username)
             ).first()
             
             if not user:
-                return None, "Invalid username/email or password"
+                AuthService._record_failed_attempt(username)
+                attempts_info = _login_attempts.get(username, {})
+                remaining_attempts = AuthService.MAX_ATTEMPTS_BEFORE_LOCKOUT - attempts_info.get('count', 0)
+                if attempts_info.get('lockout_level', 0) > 0:
+                    remaining_attempts = AuthService.ADDITIONAL_ATTEMPTS_PER_LEVEL - attempts_info.get('count', 0)
+                return None, f"Sai tài khoản hoặc mật khẩu. Còn {max(0, remaining_attempts)} lần thử."
             
-            if not check_password_hash(user.password_hash, password):
-                return None, "Invalid username/email or password"
+            # Check if user is blocked
+            if hasattr(user, 'is_blocked') and user.is_blocked:
+                return None, "Tài khoản đã bị khóa vĩnh viễn. Vui lòng liên hệ admin."
+            
+            if not verify_password(password, user.password_hash):
+                AuthService._record_failed_attempt(username)
+                attempts_info = _login_attempts.get(username, {})
+                if attempts_info.get('lockout_level', 0) > 0:
+                    lockout_duration = AuthService._get_lockout_duration(attempts_info['lockout_level'])
+                    return None, f"Sai mật khẩu. Tài khoản bị khóa {lockout_duration} phút."
+                remaining_attempts = AuthService.MAX_ATTEMPTS_BEFORE_LOCKOUT - attempts_info.get('count', 0)
+                return None, f"Sai tài khoản hoặc mật khẩu. Còn {max(0, remaining_attempts)} lần thử."
+            
+            # Login successful - clear attempts
+            AuthService._clear_login_attempts(username)
             
             # Audit log
             audit_log = AuditLogAI(

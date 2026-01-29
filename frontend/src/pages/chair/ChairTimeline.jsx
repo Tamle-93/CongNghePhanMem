@@ -7,22 +7,88 @@ const ChairTimeline = () => {
   const [milestones, setMilestones] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('timeline');
+  const [conference, setConference] = useState(null);
 
   useEffect(() => {
-    fetchMilestones();
+    fetchConferenceTimeline();
   }, []);
 
-  const fetchMilestones = async () => {
+  const fetchConferenceTimeline = async () => {
     try {
       setLoading(true);
-      // Mock data - replace with real API
-      setMilestones([
-        { id: 1, name: 'Hạn nộp bài', date: '2026-03-15T23:59:00', type: 'submission', status: 'upcoming', reminder_days: 7 },
-        { id: 2, name: 'Hạn phản biện', date: '2026-04-30T23:59:00', type: 'review', status: 'upcoming', reminder_days: 3 },
-        { id: 3, name: 'Thông báo kết quả', date: '2026-05-15T17:00:00', type: 'notification', status: 'upcoming', reminder_days: 1 }
-      ]);
+      // Fetch conferences that the chair manages
+      const response = await api.listConferences().catch(() => ({ data: { data: { conferences: [] } } }));
+      const conferences = response.data?.data?.conferences || response.data?.conferences || [];
+      
+      if (conferences.length > 0) {
+        const conf = conferences[0]; // Get first conference
+        setConference(conf);
+        
+        // Build milestones from conference deadlines
+        const timelineMilestones = [];
+        let id = 1;
+        
+        if (conf.submission_deadline) {
+          timelineMilestones.push({
+            id: id++,
+            name: 'Hạn nộp bài',
+            date: conf.submission_deadline,
+            type: 'submission',
+            status: new Date(conf.submission_deadline) > new Date() ? 'upcoming' : 'passed',
+            reminder_days: 7
+          });
+        }
+        
+        if (conf.review_deadline) {
+          timelineMilestones.push({
+            id: id++,
+            name: 'Hạn phản biện',
+            date: conf.review_deadline,
+            type: 'review',
+            status: new Date(conf.review_deadline) > new Date() ? 'upcoming' : 'passed',
+            reminder_days: 3
+          });
+        }
+        
+        if (conf.decision_deadline || conf.notification_date) {
+          timelineMilestones.push({
+            id: id++,
+            name: 'Thông báo kết quả',
+            date: conf.decision_deadline || conf.notification_date,
+            type: 'notification',
+            status: new Date(conf.decision_deadline || conf.notification_date) > new Date() ? 'upcoming' : 'passed',
+            reminder_days: 1
+          });
+        }
+        
+        if (conf.camera_ready_deadline) {
+          timelineMilestones.push({
+            id: id++,
+            name: 'Hạn nộp bản hoàn chỉnh',
+            date: conf.camera_ready_deadline,
+            type: 'submission',
+            status: new Date(conf.camera_ready_deadline) > new Date() ? 'upcoming' : 'passed',
+            reminder_days: 5
+          });
+        }
+        
+        if (conf.conference_start || conf.conference_start_date) {
+          timelineMilestones.push({
+            id: id++,
+            name: 'Ngày diễn ra hội nghị',
+            date: conf.conference_start || conf.conference_start_date,
+            type: 'conference',
+            status: new Date(conf.conference_start || conf.conference_start_date) > new Date() ? 'upcoming' : 'passed',
+            reminder_days: 14
+          });
+        }
+        
+        // Sort by date
+        timelineMilestones.sort((a, b) => new Date(a.date) - new Date(b.date));
+        setMilestones(timelineMilestones);
+      }
     } catch (error) {
-      console.error('Error fetching milestones:', error);
+      console.error('Error fetching timeline:', error);
     } finally {
       setLoading(false);
     }
