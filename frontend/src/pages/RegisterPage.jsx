@@ -100,17 +100,13 @@ const RegisterPage = () => {
               />
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Vai trò</label>
-              <select
-                value={formData.roles[0]}
-                onChange={(e) => setFormData({ ...formData, roles: [e.target.value] })}
-                className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-              >
-                <option value="Author">Tác giả (Author)</option>
-                <option value="Reviewer">Phản biện (Reviewer)</option>
-                <option value="Chair">Chủ tọa (Chair)</option>
-              </select>
+            {/* Note: Only Author role is available for self-registration */}
+            {/* Admin/Chair/Reviewer roles are assigned by administrators */}
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+              <p className="text-sm text-blue-700">
+                <span className="font-medium">📝 Lưu ý:</span> Tài khoản đăng ký mới sẽ có vai trò <strong>Tác giả (Author)</strong>. 
+                Các vai trò đặc biệt như Quản trị viên, Chủ tọa, Phản biện sẽ do Admin hệ thống cấp.
+              </p>
             </div>
 
             <div>
