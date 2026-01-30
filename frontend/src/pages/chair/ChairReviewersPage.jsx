@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../services/api';
+import { getErrorMessage } from '../../utils/errorHandler';
 
 const ChairReviewersPage = () => {
   const [reviewers, setReviewers] = useState([]);
@@ -51,7 +52,7 @@ const ChairReviewersPage = () => {
       setInviteEmail('');
       setShowInviteModal(false);
     } catch (err) {
-      alert('Có lỗi xảy ra khi gửi lời mời');
+      alert(getErrorMessage(err, 'Không thể gửi lời mời. Vui lòng thử lại.'));
     } finally {
       setInviting(false);
     }
@@ -65,7 +66,7 @@ const ChairReviewersPage = () => {
       setReviewers(reviewers.filter(r => r.id !== id));
       alert('Đã xóa thành viên');
     } catch (err) {
-      alert('Có lỗi xảy ra');
+      alert(getErrorMessage(err, 'Không thể xóa thành viên. Vui lòng thử lại.'));
     }
   };
 

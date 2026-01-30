@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../services/api';
+import { getRegisterErrorMessage } from '../utils/errorHandler';
 
 const RegisterPage = () => {
   const navigate = useNavigate();
@@ -39,7 +40,7 @@ const RegisterPage = () => {
       setSuccess('Đăng ký thành công! Đang chuyển đến trang đăng nhập...');
       setTimeout(() => navigate('/login'), 2000);
     } catch (err) {
-      setError(err.response?.data?.message || 'Đăng ký thất bại');
+      setError(getRegisterErrorMessage(err));
     } finally {
       setLoading(false);
     }

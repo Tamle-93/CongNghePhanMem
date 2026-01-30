@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
+import { getSaveErrorMessage } from '../../utils/errorHandler';
 
 const ChairAddMilestone = () => {
   const navigate = useNavigate();
@@ -36,7 +37,7 @@ const ChairAddMilestone = () => {
       navigate('/chair/timeline');
     } catch (error) {
       console.error('Error creating milestone:', error);
-      alert('Có lỗi xảy ra. Vui lòng thử lại.');
+      alert(getSaveErrorMessage(error));
     } finally {
       setLoading(false);
     }

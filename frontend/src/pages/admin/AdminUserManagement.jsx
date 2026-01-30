@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
+import { getErrorMessage } from '../../utils/errorHandler';
 
 const AdminUserManagement = () => {
   const navigate = useNavigate();
@@ -58,7 +59,7 @@ const AdminUserManagement = () => {
       fetchStats();
     } catch (error) {
       console.error('Error toggling block:', error);
-      alert('Có lỗi xảy ra. Vui lòng thử lại.');
+      alert(getErrorMessage(error, 'Không thể thay đổi trạng thái tài khoản. Vui lòng thử lại.'));
     }
   };
 

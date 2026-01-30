@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
+import { getSaveErrorMessage } from '../../utils/errorHandler';
 
 const AdminUserImport = () => {
   const navigate = useNavigate();
@@ -63,7 +64,7 @@ const AdminUserImport = () => {
       }
     } catch (error) {
       console.error('Error importing users:', error);
-      alert(error.response?.data?.message || 'Có lỗi xảy ra khi nhập dữ liệu');
+      alert(getSaveErrorMessage(error));
     } finally {
       setLoading(false);
     }

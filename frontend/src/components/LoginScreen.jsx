@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
+import { getLoginErrorMessage } from '../utils/errorHandler';
 
 const LoginScreen = () => {
   const navigate = useNavigate();
@@ -56,10 +57,10 @@ const LoginScreen = () => {
 
         setTimeout(() => navigate(dashboard, { replace: true }), 500);
       } else {
-        setError(response?.message || 'Tên đăng nhập/email hoặc mật khẩu không đúng');
+        setError('Tên đăng nhập/email hoặc mật khẩu không đúng');
       }
     } catch (err) {
-      setError(err?.message || 'Lỗi kết nối với server');
+      setError(getLoginErrorMessage(err));
     } finally {
       setLoading(false);
     }

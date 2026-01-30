@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../../services/api';
+import { getReviewErrorMessage } from '../../utils/errorHandler';
 
 const ReviewerReviewForm = () => {
   const { id } = useParams();
@@ -110,7 +111,7 @@ const ReviewerReviewForm = () => {
       }
     } catch (error) {
       console.error('Error submitting review:', error);
-      alert(error.response?.data?.message || 'Có lỗi xảy ra. Vui lòng thử lại');
+      alert(getReviewErrorMessage(error));
     } finally {
       setSubmitting(false);
     }

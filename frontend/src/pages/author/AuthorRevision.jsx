@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import api from '../../services/api';
+import { getSaveErrorMessage } from '../../utils/errorHandler';
 
 export default function AuthorRevision() {
   const { id } = useParams();
@@ -94,7 +95,7 @@ export default function AuthorRevision() {
       navigate(`/author/papers/${id}`);
     } catch (error) {
       console.error('Error submitting revision:', error);
-      alert('Có lỗi xảy ra khi gửi bản chỉnh sửa. Vui lòng thử lại.');
+      alert(getSaveErrorMessage(error));
     } finally {
       setSubmitting(false);
     }

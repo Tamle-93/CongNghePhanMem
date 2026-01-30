@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
+import { getSaveErrorMessage } from '../../utils/errorHandler';
 
 const AdminAddUser = () => {
   const navigate = useNavigate();
@@ -91,7 +92,7 @@ const AdminAddUser = () => {
       }
     } catch (error) {
       console.error('Error creating user:', error);
-      alert(error.response?.data?.message || 'Có lỗi xảy ra khi tạo người dùng. Vui lòng thử lại.');
+      alert(getSaveErrorMessage(error));
     } finally {
       setLoading(false);
     }

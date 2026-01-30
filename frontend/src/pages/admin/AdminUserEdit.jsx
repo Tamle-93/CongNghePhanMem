@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import api from '../../services/api';
+import { getSaveErrorMessage } from '../../utils/errorHandler';
 
 const AdminUserEdit = () => {
   const navigate = useNavigate();
@@ -82,7 +83,7 @@ const AdminUserEdit = () => {
       }
     } catch (error) {
       console.error('Error updating user:', error);
-      alert(error.response?.data?.message || 'Có lỗi xảy ra khi cập nhật người dùng');
+      alert(getSaveErrorMessage(error));
     } finally {
       setSaving(false);
     }
