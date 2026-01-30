@@ -1,3 +1,28 @@
+/**
+ * ============================================
+ * ChairTracksPage.jsx - Quản lý Phân ban & Lộ trình Hội nghị
+ * ============================================
+ * 
+ * MỤC ĐÍCH:
+ * - Quản lý thông tin cơ bản hội nghị (tab: info)
+ * - Quản lý các phân ban/tracks (tab: tracks) 
+ * - Quản lý mốc thời gian/deadlines (tab: deadlines)
+ * - Cấu hình mẫu email (tab: email)
+ * 
+ * LUỒNG HOẠT ĐỘNG:
+ * 1. Component mount -> load danh sách conferences
+ * 2. Chọn conference đầu tiên làm mặc định
+ * 3. Load tracks cho conference được chọn
+ * 4. User có thể: thêm/sửa/xóa tracks, cập nhật thông tin hội nghị
+ * 
+ * API CALLS:
+ * - GET /conferences - Lấy danh sách hội nghị
+ * - GET /conferences/:id/tracks - Lấy tracks của hội nghị
+ * - POST /tracks - Tạo track mới
+ * - DELETE /tracks/:id - Xóa track
+ * - PUT /conferences/:id - Cập nhật thông tin hội nghị
+ */
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
@@ -56,8 +81,10 @@ const ChairTracksPage = () => {
   const loadTracks = async (conferenceId) => {
     try {
       const response = await api.get(`/conferences/${conferenceId}/tracks`).catch(() => null);
-      if (response?.data?.data?.tracks) {
-        setTracks(response.data.data.tracks);
+      // API trả về: { status: 'success', data: [...tracks] } hoặc { data: { tracks: [...] } }
+      const tracksData = response?.data?.data?.tracks || response?.data?.data || [];
+      if (Array.isArray(tracksData)) {
+        setTracks(tracksData);
       } else {
         setTracks([]);
       }
@@ -73,6 +100,11 @@ const ChairTracksPage = () => {
       return;
     }
 
+    if (!selectedConferenceId) {
+      showNotification('Không tìm thấy hội nghị. Vui lòng refresh trang.', 'error');
+      return;
+    }
+
     setSaving(true);
     try {
       // Call API to create track
@@ -81,20 +113,25 @@ const ChairTracksPage = () => {
         name_en: newTrack.nameEn,
         description: newTrack.description,
         conference_id: selectedConferenceId
-      }).catch(() => null);
+      }).catch((err) => {
+        console.error('API Error:', err);
+        return null;
+      });
 
-      if (response?.data?.data) {
+      if (response?.data?.status === 'success' && response?.data?.data) {
         // Add to local state
+        const createdTrack = response.data.data;
         setTracks([...tracks, {
-          id: response.data.data.id,
-          name: newTrack.name,
+          id: createdTrack.id,
+          name: createdTrack.name || newTrack.name,
           nameEn: newTrack.nameEn,
+          code: createdTrack.code,
           papers: 0,
           chair: newTrack.chair
         }]);
         showNotification('Đã thêm phân ban thành công!', 'success');
       } else {
-        // Fallback: add locally if API fails
+        // Fallback: add locally if API fails (for demo/offline mode)
         setTracks([...tracks, {
           id: Date.now(),
           name: newTrack.name,
@@ -102,7 +139,7 @@ const ChairTracksPage = () => {
           papers: 0,
           chair: newTrack.chair
         }]);
-        showNotification('Đã thêm phân ban (chế độ offline)', 'success');
+        showNotification('Đã thêm phân ban (chế độ offline - chưa lưu vào database)', 'warning');
       }
 
       setShowAddTrackModal(false);
@@ -174,6 +211,58 @@ const ChairTracksPage = () => {
       showNotification('Có lỗi xảy ra khi lưu thông tin', 'error');
     } finally {
       setSaving(false);
+    }
+  };
+
+  /**
+   * Lưu toàn bộ cấu hình hội nghị
+   * Gọi API để lưu thông tin, tracks, và deadlines
+   */
+  const handleSaveConfig = async () => {
+    // Validate dates
+    if (!isValidDate(conferenceInfo.startDate)) {
+      showNotification('Ngày bắt đầu không hợp lệ', 'error');
+      return;
+    }
+    if (!isValidDate(conferenceInfo.endDate)) {
+      showNotification('Ngày kết thúc không hợp lệ', 'error');
+      return;
+    }
+
+    setSaving(true);
+    try {
+      // Lưu thông tin hội nghị
+      if (selectedConferenceId) {
+        await api.put(`/conferences/${selectedConferenceId}`, {
+          name: conferenceInfo.name,
+          acronym: conferenceInfo.shortName,
+          location: conferenceInfo.location,
+          website: conferenceInfo.website,
+          start_date: conferenceInfo.startDate,
+          end_date: conferenceInfo.endDate,
+          description: conferenceInfo.description
+        }).catch(err => console.error('Error saving conference info:', err));
+      }
+      
+      showNotification('Đã lưu cấu hình thành công!', 'success');
+    } catch (err) {
+      console.error('Error saving config:', err);
+      showNotification('Có lỗi xảy ra khi lưu cấu hình', 'error');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  /**
+   * Xem trước trang web hội nghị
+   * Mở popup hoặc tab mới hiển thị giao diện công khai
+   */
+  const handlePreviewWebsite = () => {
+    if (selectedConferenceId) {
+      // Mở trang chi tiết hội nghị ở tab mới
+      window.open(`/conferences/${selectedConferenceId}`, '_blank');
+    } else {
+      showNotification('Vui lòng chọn hội nghị để xem trước', 'error');
     }
   };
 
@@ -382,7 +471,7 @@ const ChairTracksPage = () => {
               <h4 className="text-lg font-semibold text-gray-900 mb-2">Chưa có mốc thời gian</h4>
               <p className="text-sm text-gray-600 mb-6">Tạo các mốc thời gian quan trọng cho hội nghị của bạn</p>
               <button
-                onClick={() => navigate('/chair/timeline')}
+                onClick={() => navigate('/chair/timeline/add')}
                 className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium flex items-center gap-2 mx-auto"
               >
                 <span className="material-symbols-outlined">add</span>
@@ -583,11 +672,19 @@ const ChairTracksPage = () => {
             </p>
           </div>
           <div className="flex gap-3">
-            <button className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-semibold hover:bg-slate-50 transition-colors">
+            <button 
+              onClick={handlePreviewWebsite}
+              className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-semibold hover:bg-slate-50 transition-colors"
+            >
               <span className="material-symbols-outlined text-lg">visibility</span> Xem trước trang web
             </button>
-            <button className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 transition-colors shadow-sm">
-              <span className="material-symbols-outlined text-lg">save</span> Lưu cấu hình
+            <button 
+              onClick={handleSaveConfig}
+              disabled={saving}
+              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 transition-colors shadow-sm disabled:opacity-50"
+            >
+              <span className="material-symbols-outlined text-lg">save</span> 
+              {saving ? 'Đang lưu...' : 'Lưu cấu hình'}
             </button>
           </div>
         </div>

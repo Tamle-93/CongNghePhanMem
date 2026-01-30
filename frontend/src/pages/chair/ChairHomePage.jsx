@@ -1,3 +1,24 @@
+/**
+ * ============================================
+ * ChairHomePage.jsx - Trang chủ Dashboard cho Chair
+ * ============================================
+ * 
+ * MỤC ĐÍCH:
+ * - Hiển thị tổng quan thống kê bài nộp của hội nghị
+ * - Biểu đồ phân bố trạng thái bài báo (pending, reviewing, accepted, rejected)
+ * - Nhật ký hoạt động gần đây
+ * - Các tác vụ cần xử lý khẩn cấp
+ * 
+ * LUỒNG HOẠT ĐỘNG:
+ * 1. Component mount -> gọi API lấy danh sách papers
+ * 2. Tính toán stats từ dữ liệu papers
+ * 3. Hiển thị biểu đồ donut và các card thống kê
+ * 
+ * ACTIONS:
+ * - "Xuất báo cáo": Export stats ra file CSV
+ * - "Phân công bài mới": Navigate đến trang quản lý bài nộp
+ */
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
@@ -18,6 +39,44 @@ const ChairHomePage = () => {
   useEffect(() => {
     fetchData();
   }, []);
+
+  /**
+   * Export báo cáo thống kê ra file CSV
+   * - Tạo file CSV từ dữ liệu papers
+   * - Tự động download file
+   */
+  const handleExportReport = () => {
+    try {
+      const csvContent = [
+        ['Báo cáo thống kê hội nghị', new Date().toLocaleDateString('vi-VN')].join(','),
+        [''],
+        ['Chỉ số', 'Giá trị'].join(','),
+        ['Tổng số bài nộp', stats.totalPapers].join(','),
+        ['Đang phản biện', stats.underReview].join(','),
+        ['Đã có kết quả', stats.completed].join(','),
+        ['Chờ phân công', stats.totalPapers - stats.underReview - stats.completed].join(','),
+        [''],
+        ['Danh sách bài nộp'],
+        ['STT', 'Tiêu đề', 'Trạng thái', 'Ngày nộp'].join(','),
+        ...papers.map((p, i) => [
+          i + 1,
+          `"${p.title?.replace(/"/g, '""') || ''}"`,
+          p.status || 'pending',
+          p.created_at ? new Date(p.created_at).toLocaleDateString('vi-VN') : ''
+        ].join(','))
+      ].join('\n');
+
+      const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `bao-cao-hoi-nghi-${new Date().toISOString().split('T')[0]}.csv`;
+      link.click();
+      URL.revokeObjectURL(link.href);
+    } catch (error) {
+      console.error('Export error:', error);
+      alert('Không thể xuất báo cáo. Vui lòng thử lại.');
+    }
+  };
 
   const fetchData = async () => {
     try {
@@ -78,12 +137,15 @@ const ChairHomePage = () => {
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <button className="flex items-center gap-2 bg-white border border-slate-200 px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-50 transition-colors">
+            <button 
+              onClick={handleExportReport}
+              className="flex items-center gap-2 bg-white border border-slate-200 px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-50 transition-colors"
+            >
               <span className="material-symbols-outlined text-lg text-slate-600">file_download</span>
               Xuất báo cáo
             </button>
             <button 
-              onClick={() => navigate('/chair/assignments')}
+              onClick={() => navigate('/chair/papers')}
               className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-blue-700 transition-colors shadow-sm"
             >
               <span className="material-symbols-outlined text-lg">add</span>

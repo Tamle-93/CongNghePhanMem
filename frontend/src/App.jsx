@@ -20,6 +20,7 @@ const RegisterPage = lazy(() => import('./pages/RegisterPage'));
 const ForgotPasswordPage = lazy(() => import('./pages/ForgotPasswordPage'));
 const HomePage = lazy(() => import('./pages/HomePage'));
 const ConferencesPage = lazy(() => import('./pages/ConferencesPage'));
+const ConferenceDetail = lazy(() => import('./pages/ConferenceDetail'));
 const GuidePage = lazy(() => import('./pages/GuidePage'));
 const ProfilePage = lazy(() => import('./pages/ProfilePage'));
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
@@ -54,6 +55,7 @@ const ChairDecisions = lazy(() => import('./pages/chair/ChairDecisions'));
 const ChairTimeline = lazy(() => import('./pages/chair/ChairTimeline'));
 const ChairAddMilestone = lazy(() => import('./pages/chair/ChairAddMilestone'));
 const ChairTimelineEdit = lazy(() => import('./pages/chair/ChairTimelineEdit'));
+const ChairPaperDetail = lazy(() => import('./pages/chair/ChairPaperDetail'));
 
 // Reviewer Pages
 const ReviewerDashboard = lazy(() => import('./pages/reviewer/ReviewerDashboard'));
@@ -82,6 +84,7 @@ function App() {
                 {/* Home */}
                 <Route path="/home" element={<HomePage />} />
                 <Route path="/conferences" element={<ConferencesPage />} />
+                <Route path="/conferences/:id" element={<ConferenceDetail />} />
                 <Route path="/guide" element={<GuidePage />} />
                 <Route path="/profile" element={<ProfilePage />} />
                 
@@ -107,6 +110,7 @@ function App() {
                 {/* Chair Routes */}
                 <Route path="/chair" element={<ChairHomePage />} />
                 <Route path="/chair/papers" element={<ChairPapersPage />} />
+                <Route path="/chair/papers/:id" element={<ChairPaperDetail />} />
                 <Route path="/chair/papers/:id/assign" element={<ChairAssignments />} />
                 <Route path="/chair/papers/:id/decision" element={<ChairDecision />} />
                 <Route path="/chair/decisions" element={<ChairDecisions />} />

@@ -1,6 +1,23 @@
 """
+============================================
 Backend/src/domain/utils/file_validator.py
-File Upload Validation
+============================================
+File Upload Validation - Kiểm tra tính hợp lệ của file upload
+
+MỤC ĐÍCH:
+- Validate PDF file uploads (check format, size)
+- Strip metadata từ PDF để bảo đảm double-blind review
+- Cảnh báo về các lỗi upload
+
+CHỨC NĂNG CHÍNH:
+1. allowed_file(): Kiểm tra extension của file
+2. validate_pdf(): Validate PDF (size, format, pages)
+3. strip_pdf_metadata(): Xóa metadata khỏi PDF
+
+SECURITY:
+- Max file size: 10 MB
+- Chỉ cho phép PDF
+- Xóa metadata để bảo vệ double-blind review
 """
 import os
 from werkzeug.utils import secure_filename
@@ -8,7 +25,11 @@ from PyPDF2 import PdfReader
 import io
 
 class FileValidator:
-    """File upload validation utilities"""
+    """
+    File Upload Validation
+    =====================
+    Kiểm tra tính hợp lệ của file upload từ tác giả
+    """
     
     ALLOWED_EXTENSIONS = {'pdf'}
     MAX_FILE_SIZE = 10 * 1024 * 1024  # 10 MB

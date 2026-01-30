@@ -9,8 +9,8 @@ from marshmallow import Schema, fields, validate
 
 class PaperSubmissionSchema(Schema):
     """Schema for paper submission"""
-    title = fields.Str(required=True, validate=validate.Length(min=5, max=500))
-    abstract = fields.Str(required=True, validate=validate.Length(min=50, max=10000))
+    title = fields.Str(required=True, validate=validate.Length(min=3, max=500))
+    abstract = fields.Str(required=True, validate=validate.Length(min=10, max=10000))
     keywords = fields.Str()
     conference_id = fields.Int(required=True)
     track_id = fields.Int(allow_none=True)
