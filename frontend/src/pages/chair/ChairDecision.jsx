@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../../services/api';
+import { getSaveErrorMessage } from '../../utils/errorHandler';
 
 export default function ChairDecision() {
   const { id } = useParams();
@@ -101,7 +102,7 @@ Ban Chương Trình`
       navigate('/chair/papers');
     } catch (error) {
       console.error('Error submitting decision:', error);
-      alert('Có lỗi xảy ra khi lưu quyết định');
+      alert(getSaveErrorMessage(error));
     } finally {
       setSubmitting(false);
     }

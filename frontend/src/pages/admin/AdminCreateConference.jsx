@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
+import { getSaveErrorMessage } from '../../utils/errorHandler';
 
 const AdminCreateConference = () => {
   const navigate = useNavigate();
@@ -108,7 +109,7 @@ const AdminCreateConference = () => {
       }
     } catch (error) {
       console.error('Error creating conference:', error);
-      alert(error.response?.data?.message || 'Có lỗi xảy ra khi tạo hội nghị. Vui lòng thử lại.');
+      alert(getSaveErrorMessage(error));
     } finally {
       setLoading(false);
     }

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../../services/api';
+import { getSaveErrorMessage, getLoadErrorMessage } from '../../utils/errorHandler';
 
 const AdminConferenceEdit = () => {
   const { id } = useParams();
@@ -81,7 +82,7 @@ const AdminConferenceEdit = () => {
       navigate('/admin/conferences');
     } catch (error) {
       console.error('Error updating conference:', error);
-      alert(error.response?.data?.message || 'Có lỗi xảy ra. Vui lòng thử lại.');
+      alert(getSaveErrorMessage(error));
     } finally {
       setSaving(false);
     }

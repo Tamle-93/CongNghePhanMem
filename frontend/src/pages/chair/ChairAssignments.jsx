@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../../services/api';
+import { getSaveErrorMessage } from '../../utils/errorHandler';
 
 export default function ChairAssignments() {
   const { id } = useParams(); // paper_id from URL or null for bulk assignment
@@ -79,7 +80,7 @@ export default function ChairAssignments() {
       navigate('/chair/papers');
     } catch (error) {
       console.error('Error assigning reviewers:', error);
-      alert('Có lỗi xảy ra khi phân công');
+      alert(getSaveErrorMessage(error));
     }
   };
 

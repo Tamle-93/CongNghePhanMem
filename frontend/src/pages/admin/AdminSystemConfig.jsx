@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../services/api';
+import { getSaveErrorMessage } from '../../utils/errorHandler';
 
 const AdminSystemConfig = () => {
   const [loading, setLoading] = useState(false);
@@ -57,7 +58,7 @@ const AdminSystemConfig = () => {
       alert('Đã lưu cấu hình thành công!');
     } catch (error) {
       console.error('Error saving config:', error);
-      alert('Lỗi khi lưu cấu hình!');
+      alert(getSaveErrorMessage(error));
     } finally {
       setSaving(false);
     }

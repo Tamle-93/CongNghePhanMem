@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
+import { getErrorMessage } from '../../utils/errorHandler';
 
 const AdminConferenceManagement = () => {
   const navigate = useNavigate();
@@ -44,7 +45,7 @@ const AdminConferenceManagement = () => {
       fetchConferences();
     } catch (error) {
       console.error('Error toggling conference status:', error);
-      alert('Có lỗi xảy ra. Vui lòng thử lại.');
+      alert(getErrorMessage(error, 'Không thể thay đổi trạng thái hội nghị. Vui lòng thử lại.'));
     }
   };
 

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../services/api';
+import { getErrorMessage } from '../../utils/errorHandler';
 
 const ReviewerBidding = () => {
   const [papers, setPapers] = useState([]);
@@ -77,7 +78,7 @@ const ReviewerBidding = () => {
       setSelectedPapers([]);
     } catch (error) {
       console.error('Error submitting bids:', error);
-      alert('Có lỗi xảy ra. Vui lòng thử lại');
+      alert(getErrorMessage(error, 'Không thể gửi đấu thầu. Vui lòng thử lại.'));
     } finally {
       setSubmitting(false);
     }

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../services/api';
+import { getErrorMessage } from '../utils/errorHandler';
 
 const ForgotPasswordPage = () => {
   const [loading, setLoading] = useState(false);
@@ -18,7 +19,7 @@ const ForgotPasswordPage = () => {
       await api.forgotPassword({ email });
       setSuccess('Đã gửi link đặt lại mật khẩu đến email của bạn. Vui lòng kiểm tra hộp thư.');
     } catch (err) {
-      setError(err.response?.data?.message || 'Có lỗi xảy ra. Vui lòng thử lại.');
+      setError(getErrorMessage(err, 'Không thể gửi email đặt lại mật khẩu. Vui lòng thử lại.'));
     } finally {
       setLoading(false);
     }

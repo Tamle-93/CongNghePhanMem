@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
+import { getErrorMessage } from '../../utils/errorHandler';
 
 const PaperSubmitPage = () => {
   const navigate = useNavigate();
@@ -137,7 +138,7 @@ const PaperSubmitPage = () => {
       navigate('/author/papers');
     } catch (err) {
       console.error('Submit error:', err);
-      alert(err.response?.data?.message || 'Có lỗi xảy ra khi nộp bài. Vui lòng thử lại.');
+      alert(getErrorMessage(err, 'Không thể nộp bài. Vui lòng thử lại sau.'));
     }
   };
 
@@ -233,12 +234,11 @@ const PaperSubmitPage = () => {
                               if (response.data?.status === 'success') {
                                 setSpellCheckResult(response.data.data);
                               } else {
-                                alert('Lỗi khi kiểm tra chính tả: ' + (response.data?.message || 'Unknown error'));
+                                alert('Lỗi kiểm tra chính tả. Vui lòng thử lại sau.');
                               }
                             } catch (err) {
                               console.error(err);
-                              const errorMsg = err.response?.data?.message || err.message || 'Lỗi kết nối với server';
-                              alert('Lỗi khi kiểm tra chính tả: ' + errorMsg);
+                              alert(getErrorMessage(err, 'Không thể kiểm tra chính tả. Vui lòng thử lại sau.'));
                             } finally {
                               setSpellChecking(false);
                             }

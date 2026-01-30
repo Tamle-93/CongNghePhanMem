@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
+import { getLoginErrorMessage } from '../utils/errorHandler';
 
 const LoginPage = () => {
   const navigate = useNavigate();
@@ -64,8 +65,7 @@ const LoginPage = () => {
       }
     } catch (err) {
       console.error('Login error:', err);
-      const errorMessage = err.response?.data?.message || 'Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.';
-      setError(errorMessage);
+      setError(getLoginErrorMessage(err));
     } finally {
       setLoading(false);
     }
