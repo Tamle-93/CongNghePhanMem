@@ -1,24 +1,58 @@
+/**
+ * ==============================================================================
+ * CHAIR REVIEWERS PAGE - Quản lý Đội ngũ Phản biện (PC)
+ * ==============================================================================
+ * 
+ * MỤC ĐÍCH:
+ * - Hiển thị danh sách phản biện viên (Reviewers)
+ * - Mời thành viên mới vào Hội đồng Phản biện
+ * - Quản lý và theo dõi khối lượng công việc
+ * 
+ * ROUTE: /chair/reviewers
+ * 
+ * API CALLS:
+ * - GET /api/admin/users?role=Reviewer - Lấy danh sách reviewer
+ * - POST /api/users/invite-reviewer - Mời reviewer mới
+ * 
+ * STATE:
+ * - reviewers: Danh sách phản biện viên
+ * - invitedReviewers: Danh sách người mới được mời (chưa trong DB)
+ * - showInviteModal: Hiển thị modal mời thành viên
+ */
+
 import React, { useState, useEffect } from 'react';
 import api from '../../services/api';
 import { getErrorMessage } from '../../utils/errorHandler';
 
 const ChairReviewersPage = () => {
+  // ============================================
+  // STATE MANAGEMENT
+  // ============================================
   const [reviewers, setReviewers] = useState([]);
+  const [invitedReviewers, setInvitedReviewers] = useState([]); // Lưu người mới mời
   const [loading, setLoading] = useState(true);
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [inviteEmail, setInviteEmail] = useState('');
+  const [inviteName, setInviteName] = useState('');
   const [inviting, setInviting] = useState(false);
 
+  // ============================================
+  // DATA FETCHING
+  // ============================================
   useEffect(() => {
     fetchReviewers();
   }, []);
 
+  /**
+   * Fetch danh sách reviewer từ API
+   * GET /api/admin/users?role=Reviewer
+   */
   const fetchReviewers = async () => {
     try {
       setLoading(true);
-      // Try to fetch real reviewers from API
       const response = await api.listUsers({ role: 'Reviewer' }).catch(() => ({ data: { data: { users: [] } } }));
       const users = response.data?.data?.users || response.data?.users || [];
+      
       // Transform users to reviewer format
       const reviewerList = users.map(user => ({
         id: user.id,
@@ -28,7 +62,8 @@ const ChairReviewersPage = () => {
         track: user.expertise || 'Chưa phân bổ',
         workload: user.paper_count || 0,
         email: user.email,
-        avatar: null
+        avatar: null,
+        isNew: false // Flag để phân biệt với người mới mời
       }));
       setReviewers(reviewerList);
     } catch (err) {
@@ -39,43 +74,107 @@ const ChairReviewersPage = () => {
     }
   };
 
+  // ============================================
+  // EVENT HANDLERS
+  // ============================================
+  
+  /**
+   * Xử lý mời reviewer mới
+   * POST /api/users/invite-reviewer
+   * Body: { email, name }
+   */
   const handleInvite = async () => {
     if (!inviteEmail) {
       alert('Vui lòng nhập email');
       return;
     }
+    
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(inviteEmail)) {
+      alert('Email không hợp lệ');
+      return;
+    }
+    
     setInviting(true);
     try {
-      // TODO: Call API to invite reviewer
-      // await api.inviteReviewer({ email: inviteEmail });
-      alert(`Đã gửi lời mời tới ${inviteEmail}`);
-      setInviteEmail('');
-      setShowInviteModal(false);
+      // Gọi API mời reviewer
+      const response = await api.post('/users/invite-reviewer', {
+        email: inviteEmail,
+        name: inviteName
+      });
+      
+      if (response.data.status === 'success') {
+        const { user, is_new, already_reviewer, temp_password } = response.data.data;
+        
+        if (already_reviewer) {
+          alert(`${inviteEmail} đã là thành viên Hội đồng Phản biện`);
+        } else if (is_new) {
+          // Người mới - hiển thị thông tin tạm thời
+          alert(`Đã mời ${inviteEmail} thành công!\n\nMật khẩu tạm thời: ${temp_password}\n\nVui lòng chia sẻ thông tin này cho người được mời.`);
+          
+          // Thêm vào danh sách hiển thị
+          setInvitedReviewers(prev => [...prev, {
+            id: user.id,
+            name: user.full_name || inviteName || inviteEmail.split('@')[0],
+            role: 'Phản biện viên (Mới)',
+            organization: 'Chưa cập nhật',
+            track: 'Chưa phân bổ',
+            workload: 0,
+            email: inviteEmail,
+            avatar: null,
+            isNew: true
+          }]);
+        } else {
+          // Người cũ được cập nhật role
+          alert(`Đã cập nhật ${inviteEmail} thành Phản biện viên`);
+          // Reload danh sách
+          fetchReviewers();
+        }
+        
+        // Reset form và đóng modal
+        setInviteEmail('');
+        setInviteName('');
+        setShowInviteModal(false);
+      }
     } catch (err) {
+      console.error('Error inviting reviewer:', err);
       alert(getErrorMessage(err, 'Không thể gửi lời mời. Vui lòng thử lại.'));
     } finally {
       setInviting(false);
     }
   };
 
+  /**
+   * Xử lý xóa reviewer khỏi hội đồng
+   * @param {number} id - ID của reviewer
+   */
   const handleRemoveReviewer = async (id) => {
     if (!window.confirm('Bạn có chắc chắn muốn xóa thành viên này khỏi hội đồng?')) return;
     try {
-      // TODO: Call API to remove reviewer
-      // await api.removeReviewer(id);
+      // TODO: Implement API to remove reviewer role
+      // await api.delete(`/users/${id}/reviewer-role`);
       setReviewers(reviewers.filter(r => r.id !== id));
+      setInvitedReviewers(invitedReviewers.filter(r => r.id !== id));
       alert('Đã xóa thành viên');
     } catch (err) {
       alert(getErrorMessage(err, 'Không thể xóa thành viên. Vui lòng thử lại.'));
     }
   };
 
+  // ============================================
+  // FILTERING
+  // ============================================
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTrack, setSelectedTrack] = useState('');
 
-  const filteredReviewers = reviewers.filter(reviewer => {
+  // Gộp danh sách reviewer từ DB và người mới mời
+  const allReviewers = [...reviewers, ...invitedReviewers];
+  
+  const filteredReviewers = allReviewers.filter(reviewer => {
     const matchesSearch = reviewer.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         reviewer.organization.toLowerCase().includes(searchQuery.toLowerCase());
+                         reviewer.organization.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         reviewer.email.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesTrack = !selectedTrack || reviewer.track.includes(selectedTrack);
     return matchesSearch && matchesTrack;
   });
@@ -95,8 +194,12 @@ const ChairReviewersPage = () => {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl p-6 w-full max-w-md mx-4 shadow-2xl">
             <h3 className="text-lg font-bold text-slate-900 mb-4">Mời thành viên mới</h3>
+            
+            {/* Email Input */}
             <div className="mb-4">
-              <label className="block text-sm font-medium text-slate-700 mb-2">Email</label>
+              <label className="block text-sm font-medium text-slate-700 mb-2">
+                Email <span className="text-red-500">*</span>
+              </label>
               <input
                 type="email"
                 value={inviteEmail}
@@ -105,19 +208,42 @@ const ChairReviewersPage = () => {
                 className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-blue-600"
               />
             </div>
+            
+            {/* Name Input */}
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-slate-700 mb-2">
+                Họ và tên
+              </label>
+              <input
+                type="text"
+                value={inviteName}
+                onChange={(e) => setInviteName(e.target.value)}
+                placeholder="Nguyễn Văn A"
+                className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-blue-600"
+              />
+              <p className="mt-1 text-xs text-slate-500">
+                Để trống nếu không biết tên đầy đủ
+              </p>
+            </div>
+            
+            {/* Action Buttons */}
             <div className="flex gap-3 justify-end">
               <button
-                onClick={() => setShowInviteModal(false)}
+                onClick={() => {
+                  setShowInviteModal(false);
+                  setInviteEmail('');
+                  setInviteName('');
+                }}
                 className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
               >
                 Hủy
               </button>
               <button
                 onClick={handleInvite}
-                disabled={inviting}
+                disabled={inviting || !inviteEmail}
                 className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
               >
-                {inviting ? 'Đang gửi...' : 'Gửi lời mời'}
+                {inviting ? 'Đang mời...' : 'Mời thành viên'}
               </button>
             </div>
           </div>

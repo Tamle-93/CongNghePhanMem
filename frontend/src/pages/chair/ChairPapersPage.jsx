@@ -7,6 +7,8 @@ const ChairPapersPage = () => {
   const [papers, setPapers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
   const [filters, setFilters] = useState({
     track: '',
     status: '',
@@ -57,6 +59,51 @@ const ChairPapersPage = () => {
     completed: papers.filter(p => p.status === 'accepted' || p.status === 'rejected').length
   };
 
+  // Pagination
+  const totalPages = Math.ceil(filteredPapers.length / itemsPerPage);
+  const paginatedPapers = filteredPapers.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  // Download all papers as ZIP
+  const handleDownloadAll = async () => {
+    try {
+      alert('Đang chuẩn bị file... Tính năng này sẽ được hoàn thiện.');
+      // TODO: Implement actual download
+    } catch (error) {
+      console.error('Download error:', error);
+      alert('Không thể tải xuống. Vui lòng thử lại.');
+    }
+  };
+
+  // Export to CSV/Excel
+  const handleExportReport = () => {
+    try {
+      const csvContent = [
+        ['Mã bài', 'Tiêu đề', 'Tác giả', 'Phân ban', 'Trạng thái', 'Ngày nộp'].join(','),
+        ...filteredPapers.map((paper, index) => [
+          `#${String(index + 1).padStart(3, '0')}`,
+          `"${paper.title?.replace(/"/g, '""') || ''}"`,
+          `"${typeof paper.authors === 'string' ? paper.authors : (Array.isArray(paper.authors) ? paper.authors.map(a => a.name || a.full_name).join('; ') : paper.submitter_name || '')}"`,
+          paper.track_name || paper.track || 'Chung',
+          paper.status || 'pending',
+          paper.created_at ? new Date(paper.created_at).toLocaleDateString('vi-VN') : ''
+        ].join(','))
+      ].join('\n');
+
+      const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `bao-cao-bai-nop-${new Date().toISOString().split('T')[0]}.csv`;
+      link.click();
+      URL.revokeObjectURL(link.href);
+    } catch (error) {
+      console.error('Export error:', error);
+      alert('Không thể xuất báo cáo. Vui lòng thử lại.');
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-96">
@@ -79,11 +126,17 @@ const ChairPapersPage = () => {
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-3">
-            <button className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-900 text-sm font-bold rounded-lg hover:bg-slate-50 transition-colors shadow-sm">
+            <button 
+              onClick={handleDownloadAll}
+              className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-900 text-sm font-bold rounded-lg hover:bg-slate-50 transition-colors shadow-sm"
+            >
               <span className="material-symbols-outlined text-lg">download</span>
               Tải tất cả bài báo
             </button>
-            <button className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-bold rounded-lg hover:bg-blue-700 transition-colors shadow-sm shadow-blue-600/20">
+            <button 
+              onClick={handleExportReport}
+              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-bold rounded-lg hover:bg-blue-700 transition-colors shadow-sm shadow-blue-600/20"
+            >
               <span className="material-symbols-outlined text-lg">export_notes</span>
               Xuất báo cáo (CSV/Excel)
             </button>
@@ -197,7 +250,11 @@ const ChairPapersPage = () => {
                 </div>
                 <div className="flex flex-col gap-1.5">
                   <label className="text-[10px] font-bold text-slate-500 uppercase px-1">Số lượng hiển thị</label>
-                  <select className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-600">
+                  <select 
+                    className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-600"
+                    value={itemsPerPage}
+                    onChange={(e) => { setItemsPerPage(Number(e.target.value)); setCurrentPage(1); }}
+                  >
                     <option value="10">10 bản ghi / trang</option>
                     <option value="20">20 bản ghi / trang</option>
                     <option value="50">50 bản ghi / trang</option>
@@ -241,10 +298,10 @@ const ChairPapersPage = () => {
                     </td>
                   </tr>
                 ) : (
-                  filteredPapers.map((paper, index) => (
+                  paginatedPapers.map((paper, index) => (
                     <tr key={paper.id} className="hover:bg-slate-50 transition-colors">
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900 border-b border-slate-100 text-center font-mono font-medium text-slate-500">
-                        #{String(index + 1).padStart(3, '0')}
+                        #{String((currentPage - 1) * itemsPerPage + index + 1).padStart(3, '0')}
                       </td>
                       <td className="px-6 py-4 text-sm text-slate-900 border-b border-slate-100">
                         <div className="flex flex-col max-w-md">
@@ -325,19 +382,39 @@ const ChairPapersPage = () => {
           {/* Pagination */}
           <div className="p-4 bg-slate-50/50 border-t border-slate-100 flex items-center justify-between">
             <span className="text-sm text-slate-600">
-              Hiển thị <span className="font-bold">{filteredPapers.length}</span> trong tổng số <span className="font-bold">{papers.length}</span> bài báo
+              Hiển thị <span className="font-bold">{paginatedPapers.length}</span> trong tổng số <span className="font-bold">{filteredPapers.length}</span> bài báo
             </span>
-            <div className="flex gap-2">
-              <button className="px-3 py-1.5 border border-slate-200 rounded-lg text-sm font-medium hover:bg-slate-50 transition-colors">
-                Trước
-              </button>
-              <button className="px-3 py-1.5 bg-blue-600 text-white rounded-lg text-sm font-medium">1</button>
-              <button className="px-3 py-1.5 border border-slate-200 rounded-lg text-sm font-medium hover:bg-slate-50 transition-colors">2</button>
-              <button className="px-3 py-1.5 border border-slate-200 rounded-lg text-sm font-medium hover:bg-slate-50 transition-colors">3</button>
-              <button className="px-3 py-1.5 border border-slate-200 rounded-lg text-sm font-medium hover:bg-slate-50 transition-colors">
-                Sau
-              </button>
-            </div>
+            {totalPages > 1 && (
+              <div className="flex gap-2">
+                <button 
+                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                  className="px-3 py-1.5 border border-slate-200 rounded-lg text-sm font-medium hover:bg-slate-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Trước
+                </button>
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                  <button
+                    key={page}
+                    onClick={() => setCurrentPage(page)}
+                    className={`px-3 py-1.5 rounded-lg text-sm font-medium ${
+                      currentPage === page 
+                        ? 'bg-blue-600 text-white' 
+                        : 'border border-slate-200 hover:bg-slate-50'
+                    } transition-colors`}
+                  >
+                    {page}
+                  </button>
+                ))}
+                <button 
+                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages}
+                  className="px-3 py-1.5 border border-slate-200 rounded-lg text-sm font-medium hover:bg-slate-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Sau
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </main>

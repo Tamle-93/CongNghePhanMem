@@ -2,10 +2,12 @@
 """
 Admin API Routes
 """
+import json
 from flask import Blueprint, request, jsonify
 from domain.services.admin_service import AdminService
 from domain.utils.auth_utils import require_auth, require_role
 from marshmallow import ValidationError
+from infrastructure.models import AuditLogAI
 
 admin_bp = Blueprint('admin', __name__)
 

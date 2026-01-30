@@ -1,6 +1,32 @@
 # Backend/src/domain/services/admin_service.py
 """
+============================================
 Admin Service - User & System Management
+============================================
+
+MỤC ĐÍCH:
+- Quản lý người dùng hệ thống (CRUD users)
+- Thống kê hệ thống
+- Quản lý audit logs
+
+CHỨC NĂNG CHÍNH:
+1. get_system_statistics(): Lấy thống kê tổng quan
+   - Số lượng users, papers, reviews, conferences
+   - Phân loại theo role, status
+
+2. list_users(): Lấy danh sách users với filter
+3. get_user(): Lấy chi tiết 1 user
+4. create_user(): Tạo user mới (Admin only)
+5. update_user(): Cập nhật thông tin user
+6. delete_user(): Soft delete user
+7. block_user() / unblock_user(): Khóa/mở khóa tài khoản
+8. update_user_roles(): Cập nhật roles của user
+9. get_audit_logs(): Lấy nhật ký hệ thống
+
+SECURITY:
+- Chỉ Admin mới có quyền truy cập các API này
+- Password được hash bằng werkzeug.security
+- Mọi action đều được ghi vào AuditLogAI
 """
 from infrastructure.databases.base import SessionLocal
 from infrastructure.models import User, Role, UserRole, Conference, Paper, Review, AuditLogAI
@@ -8,35 +34,57 @@ from werkzeug.security import generate_password_hash
 from datetime import datetime
 import json
  
+
 class AdminService:
-    """Admin management service"""
+    """
+    Admin Management Service
+    ========================
+    Service xử lý các nghiệp vụ quản trị hệ thống
+    
+    Tất cả methods đều là @staticmethod để dễ sử dụng
+    Pattern: (result, error) - trả về tuple
+    """
     
     @staticmethod
     def get_system_statistics():
-        """Get overall system statistics"""
+        """
+        Lấy thống kê tổng quan hệ thống
+        
+        RETURNS:
+        - dict chứa thống kê users, conferences, papers, reviews
+        - None và error message nếu có lỗi
+        
+        DATA STRUCTURE:
+        {
+            'users': { 'total': N, 'by_role': {...} },
+            'conferences': { 'total': N },
+            'papers': { 'total': N, 'by_status': {...} },
+            'reviews': { 'total': N }
+        }
+        """
         db = SessionLocal()
         
         try:
             from sqlalchemy import func
             
-            # User stats
+            # ===== USER STATS =====
             total_users = db.query(User).filter(User.is_deleted == False).count()
             user_by_role = db.query(
                 UserRole.role_id,
                 func.count(UserRole.user_id).label('count')
             ).filter(UserRole.is_active == True).group_by(UserRole.role_id).all()
             
-            # Conference stats
+            # ===== CONFERENCE STATS =====
             total_conferences = db.query(Conference).filter(Conference.is_deleted == False).count()
             
-            # Paper stats
+            # ===== PAPER STATS =====
             total_papers = db.query(Paper).filter(Paper.is_deleted == False).count()
             papers_by_status = db.query(
                 Paper.status,
                 func.count(Paper.id).label('count')
             ).filter(Paper.is_deleted == False).group_by(Paper.status).all()
             
-            # Review stats
+            # ===== REVIEW STATS =====
             total_reviews = db.query(Review).filter(Review.is_deleted == False).count()
             
             return {
@@ -379,15 +427,29 @@ class AdminService:
     
     @staticmethod
     def get_audit_logs(page=1, per_page=50, user_id=None, action_type=None):
-        """Get audit logs"""
+        """
+        Get audit logs with pagination and filters
+        
+        PARAMS:
+        - page: Số trang (default 1)
+        - per_page: Số bản ghi mỗi trang (default 50)
+        - user_id: Lọc theo user ID (optional)
+        - action_type: Lọc theo loại action (optional)
+        
+        RETURNS:
+        - dict chứa logs, total, page, per_page
+        - error message nếu có lỗi
+        """
         db = SessionLocal()
         
         try:
             query = db.query(AuditLogAI)
             
+            # Filter by user if specified
             if user_id:
-                query = query.filter(AuditLogAI.action_user_id == user_id)
+                query = query.filter(AuditLogAI.user_id == user_id)
             
+            # Filter by action type if specified
             if action_type:
                 query = query.filter(AuditLogAI.action_type == action_type)
             

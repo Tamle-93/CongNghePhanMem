@@ -1,6 +1,39 @@
 # Backend/src/domain/services/auth_service.py
 """
-Authentication Service - Business Logic with JWT and Refresh Token support
+============================================
+Authentication Service - Business Logic
+============================================
+
+MỤC ĐÍCH:
+- Xử lý đăng nhập/đăng ký người dùng
+- Quản lý JWT tokens và Refresh tokens
+- Bảo vệ chống brute-force với lockout mechanism
+
+CHỨC NĂNG CHÍNH:
+1. login(): Đăng nhập với username/email + password
+   - Validate credentials
+   - Check account lockout
+   - Generate JWT + Refresh token
+   - Log to AuditLogAI
+
+2. register(): Đăng ký tài khoản mới
+   - Validate unique email/username
+   - Hash password với werkzeug.security
+   - Assign default role (Author)
+
+3. refresh_token(): Làm mới JWT token
+4. logout(): Vô hiệu hóa refresh token
+5. change_password(): Đổi mật khẩu
+6. reset_password(): Reset mật khẩu qua email
+
+SECURITY FEATURES:
+- Password hashing: werkzeug.security (scrypt)
+- JWT tokens với expiration
+- Refresh tokens lưu trong DB
+- Brute-force protection với lockout tăng dần:
+  * 5 fails = khóa 5 phút
+  * +2 fails = khóa 15 phút
+  * Tiếp tục: 30 phút, 1 giờ, 2 giờ, 8 giờ
 """
 from werkzeug.security import generate_password_hash, check_password_hash
 from domain.utils.auth_utils import generate_token
@@ -15,19 +48,42 @@ from datetime import datetime, timedelta
 import json
 import hashlib
 
-# Login attempt tracking - in-memory cache (consider Redis for production)
+
+# ============================================
+# LOGIN ATTEMPT TRACKING (Brute-force Protection)
+# ============================================
+# In-memory cache - consider Redis for production/multi-server
 _login_attempts = {}  # {username: {'count': int, 'last_attempt': datetime, 'lockout_level': int}}
 
+
 class AuthService:
+    """
+    Authentication Service
+    ======================
+    Xử lý toàn bộ nghiệp vụ xác thực người dùng
     
-    # Lockout durations in minutes: 5 fails = 5min, +2 fails = 15min, then 30min, 1h, 2h, 8h
+    LOCKOUT MECHANISM:
+    - Sau 5 lần đăng nhập sai: khóa 5 phút
+    - Mỗi 2 lần sai thêm: tăng thời gian khóa
+    - Max lockout: 8 giờ
+    """
+    
+    # Lockout durations in minutes: level 1 = 5min, level 2 = 15min, etc.
     LOCKOUT_DURATIONS = [5, 15, 30, 60, 120, 480]  # minutes
     MAX_ATTEMPTS_BEFORE_LOCKOUT = 5
     ADDITIONAL_ATTEMPTS_PER_LEVEL = 2
     
     @staticmethod
     def _get_lockout_duration(level):
-        """Get lockout duration in minutes for given level"""
+        """
+        Lấy thời gian khóa (phút) theo level
+        
+        PARAMS:
+        - level: Mức độ vi phạm (1, 2, 3...)
+        
+        RETURNS:
+        - Số phút bị khóa
+        """
         if level <= 0:
             return 0
         idx = min(level - 1, len(AuthService.LOCKOUT_DURATIONS) - 1)
@@ -36,8 +92,13 @@ class AuthService:
     @staticmethod
     def _check_account_lockout(username):
         """
-        Check if account is locked out
-        Returns: (is_locked, remaining_seconds, message)
+        Kiểm tra tài khoản có đang bị khóa không
+        
+        PARAMS:
+        - username: Tên đăng nhập cần kiểm tra
+        
+        RETURNS:
+        - (is_locked: bool, remaining_seconds: float, message: str)
         """
         if username not in _login_attempts:
             return False, 0, None
@@ -62,7 +123,14 @@ class AuthService:
     
     @staticmethod
     def _record_failed_attempt(username):
-        """Record a failed login attempt"""
+        """
+        Ghi nhận lần đăng nhập thất bại
+        
+        PROCESS:
+        1. Tăng counter số lần fail
+        2. Nếu đủ ngưỡng -> tăng lockout level
+        3. Lưu timestamp để tính thời gian khóa
+        """
         now = datetime.utcnow()
         
         if username not in _login_attempts:

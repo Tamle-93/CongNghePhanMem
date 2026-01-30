@@ -2,7 +2,34 @@
 # File: Backend/src/domain/services/conference_service.py
 # ============================================
 """
+============================================
 Conference Service - Business Logic
+============================================
+
+MỤC ĐÍCH:
+- Quản lý toàn bộ nghiệp vụ liên quan đến Hội nghị (Conference)
+- CRUD operations cho conferences
+- Quản lý tracks (chủ đề/phân ban) của hội nghị
+
+CHỨC NĂNG CHÍNH:
+1. create_conference(): Tạo hội nghị mới
+   - Chỉ Chair/Admin mới có quyền tạo
+   - Ghi log vào AuditLogAI
+   
+2. get_conference(): Lấy thông tin hội nghị theo ID
+3. list_conferences(): Danh sách tất cả hội nghị (phân trang)
+4. update_conference(): Cập nhật thông tin hội nghị
+5. delete_conference(): Xóa mềm hội nghị
+
+6. add_track(): Thêm track vào hội nghị
+7. get_tracks(): Lấy danh sách tracks
+8. update_track(): Cập nhật track
+9. delete_track(): Xóa track
+
+RELATIONSHIPS:
+- Conference 1-N Paper (một hội nghị có nhiều bài báo)
+- Conference 1-N Track (một hội nghị có nhiều chủ đề)
+- Conference N-1 User (nhiều hội nghị do 1 chair quản lý)
 """
 
 from infrastructure.databases.base import SessionLocal
@@ -12,21 +39,42 @@ import json
 
 
 class ConferenceService:
-    """Conference management service"""
+    """
+    Conference Management Service
+    =============================
+    Xử lý nghiệp vụ liên quan đến hội nghị khoa học
+    """
     
     @staticmethod
     def create_conference(chair_id, name, description, submission_deadline, 
                          review_deadline, start_date=None, end_date=None, 
                          is_blind_review=True):
-        """Create a new conference"""
+        """
+        Tạo hội nghị mới
+        
+        PARAMS:
+        - chair_id: ID của người tạo (phải có role Chair/Admin)
+        - name: Tên hội nghị
+        - description: Mô tả
+        - submission_deadline: Hạn nộp bài
+        - review_deadline: Hạn phản biện
+        - start_date: Ngày bắt đầu (optional)
+        - end_date: Ngày kết thúc (optional)
+        - is_blind_review: Phản biện ẩn danh (default: True)
+        
+        RETURNS:
+        - (conference_dict, None) nếu thành công
+        - (None, error_message) nếu thất bại
+        """
         db = SessionLocal()
         
         try:
-            # Verify chair exists
+            # Verify chair exists and has permission
             chair = db.query(User).filter(User.id == chair_id).first()
             if not chair or not (chair.has_role('Chair') or chair.has_role('Admin')):
                 return None, "Invalid chair or insufficient permissions"
             
+            # Create conference object
             conference = Conference(
                 chair_id=chair_id,
                 name=name,
@@ -42,7 +90,7 @@ class ConferenceService:
             db.commit()
             db.refresh(conference)
             
-            # Log creation
+            # Log creation to audit trail
             AuditLogAI.log(
                 db_session=db,
                 user_id=chair_id,
@@ -62,7 +110,16 @@ class ConferenceService:
     
     @staticmethod
     def get_conference(conference_id):
-        """Get conference by ID"""
+        """
+        Lấy thông tin chi tiết hội nghị
+        
+        PARAMS:
+        - conference_id: ID của hội nghị
+        
+        RETURNS:
+        - (conference_dict, None) nếu tìm thấy
+        - (None, 'Conference not found') nếu không tìm thấy
+        """
         db = SessionLocal()
         try:
             conference = db.query(Conference).filter(
@@ -80,7 +137,16 @@ class ConferenceService:
     @staticmethod
     @staticmethod
     def list_conferences(page=1, per_page=10):
-        """List all conferences"""
+        """
+        Lấy danh sách hội nghị (có phân trang)
+        
+        PARAMS:
+        - page: Số trang (bắt đầu từ 1)
+        - per_page: Số item mỗi trang
+        
+        RETURNS:
+        - { conferences: [...], total, page, per_page }
+        """
         db = SessionLocal()
         try:
             offset = (page - 1) * per_page

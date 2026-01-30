@@ -1,6 +1,31 @@
 """
+============================================
 Backend/src/domain/services/paper_service.py
 Paper Service - Business Logic for Paper Submission
+============================================
+
+MỤC ĐÍCH:
+- Xử lý nghiệp vụ liên quan đến bài báo khoa học
+- Nộp bài, cập nhật, lấy danh sách bài báo
+- Quản lý file PDF và tác giả
+
+LUỒNG HOẠT ĐỘNG CHÍNH:
+1. submit_paper(): Tác giả nộp bài mới
+   - Validate conference còn mở không
+   - Lưu file PDF và strip metadata
+   - Tạo paper record và paper_authors
+   - Ghi audit log
+
+2. get_paper(): Lấy chi tiết 1 bài báo
+3. list_papers(): Lấy danh sách bài báo với filter
+4. update_paper(): Cập nhật thông tin bài báo
+5. submit_revision(): Nộp bản chỉnh sửa
+
+MODELS LIÊN QUAN:
+- Paper: Bài báo chính
+- PaperAuthor: Danh sách tác giả của bài
+- SubmissionVersion: Các phiên bản file đã nộp
+- Conference, Track: Hội nghị và phân ban
 """
 from infrastructure.databases.base import SessionLocal
 from infrastructure.models import (
@@ -14,8 +39,18 @@ import os
 import json
 from flask import abort
 
+
 class PaperService:
-    """Paper management service"""
+    """
+    Paper Management Service
+    ========================
+    Xử lý toàn bộ nghiệp vụ liên quan đến bài báo khoa học
+    
+    CONSTANTS:
+    - UPLOAD_FOLDER: Thư mục lưu file bài nộp
+    - CAMERA_READY_FOLDER: Thư mục lưu bản cuối cùng
+    - ALLOWED_EXTENSIONS: Chỉ cho phép file PDF
+    """
     
     UPLOAD_FOLDER = 'uploads/papers'
     CAMERA_READY_FOLDER = 'uploads/camera_ready'
@@ -23,12 +58,39 @@ class PaperService:
     
     @staticmethod
     def _allowed_file(filename):
+        """
+        Kiểm tra file có đúng định dạng cho phép không
+        
+        PARAMS:
+        - filename: Tên file cần kiểm tra
+        
+        RETURNS:
+        - True nếu là file PDF, False nếu không
+        """
         return '.' in filename and \
                filename.rsplit('.', 1)[1].lower() in PaperService.ALLOWED_EXTENSIONS
     
     @staticmethod
     def _save_file(file, paper_id, is_camera_ready=False):
-        """Save uploaded file and create SubmissionVersion entry"""
+        """
+        Lưu file upload và tạo SubmissionVersion entry
+        
+        PARAMS:
+        - file: File object từ request
+        - paper_id: ID của bài báo
+        - is_camera_ready: True nếu là bản camera-ready
+        
+        RETURNS:
+        - (filepath, file_size) nếu thành công
+        - (None, None) nếu thất bại
+        
+        PROCESS:
+        1. Validate file extension
+        2. Generate secure filename
+        3. Save to appropriate folder
+        4. Strip PDF metadata for privacy (double-blind review)
+        5. Return filepath and size
+        """
         if file and PaperService._allowed_file(file.filename):
             filename = secure_filename(f"paper_{paper_id}_{file.filename}")
             folder = PaperService.CAMERA_READY_FOLDER if is_camera_ready else PaperService.UPLOAD_FOLDER
@@ -36,7 +98,7 @@ class PaperService:
             filepath = os.path.join(folder, filename)
             file.save(filepath)
             
-            # ✅ STRIP PDF METADATA FOR PRIVACY
+            # ✅ STRIP PDF METADATA FOR PRIVACY (double-blind review)
             success, result = PDFUtils.strip_metadata(filepath)
             if not success:
                 print(f"⚠️  Warning: Could not strip PDF metadata: {result}")
@@ -51,11 +113,36 @@ class PaperService:
     @staticmethod
     def submit_paper(submitter_id, conference_id, title, abstract,
                     keywords, track_id, authors, file):
-        """Submit a new paper"""
+        """
+        Nộp bài báo mới
+        
+        PARAMS:
+        - submitter_id: ID người nộp (từ token)
+        - conference_id: ID hội nghị
+        - title: Tiêu đề bài báo
+        - abstract: Tóm tắt
+        - keywords: Từ khóa (string, phân cách bởi dấu phẩy)
+        - track_id: ID phân ban (optional)
+        - authors: List các tác giả [{name, email, order, is_corresponding}]
+        - file: File PDF
+        
+        RETURNS:
+        - (paper_dict, None) nếu thành công
+        - (None, error_message) nếu thất bại
+        
+        PROCESS:
+        1. Validate conference exists and is active
+        2. Check submission deadline
+        3. Save PDF file
+        4. Create Paper record
+        5. Create PaperAuthor records
+        6. Create SubmissionVersion record
+        7. Log to AuditLogAI
+        """
         db = SessionLocal()
         
         try:
-            # Verify conference
+            # Verify conference exists and is active
             conference = db.query(Conference).filter(
                 Conference.id == conference_id,
                 Conference.is_deleted == False

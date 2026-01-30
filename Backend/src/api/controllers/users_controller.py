@@ -342,3 +342,160 @@ def change_password():
         return jsonify({'status': 'error', 'message': str(e)}), 500
     finally:
         db.close()
+
+
+@users_bp.route('/invite-reviewer', methods=['POST'])
+@require_auth
+@require_role('Chair', 'Admin')
+def invite_reviewer():
+    """
+    ============================================
+    Mời người dùng trở thành Reviewer
+    ============================================
+    
+    CHỨC NĂNG:
+    1. Kiểm tra email đã tồn tại trong hệ thống chưa
+    2. Nếu đã tồn tại: cập nhật role thành Reviewer
+    3. Nếu chưa: tạo tài khoản mới với role Reviewer
+    4. Gửi email thông báo
+    
+    API: POST /api/users/invite-reviewer
+    Body: { "email": "reviewer@example.com", "name": "Tên người dùng" }
+    
+    RETURNS:
+    - success: { status: 'success', data: { user: {...}, is_new: bool } }
+    - error: { status: 'error', message: '...' }
+    """
+    from domain.services.email_service import EmailService
+    from werkzeug.security import generate_password_hash
+    import secrets
+    import string
+    
+    db = SessionLocal()
+    
+    try:
+        data = request.json
+        email = data.get('email', '').strip().lower()
+        name = data.get('name', '').strip()
+        
+        # Validate email
+        if not email or '@' not in email:
+            return jsonify({'status': 'error', 'message': 'Email không hợp lệ'}), 400
+        
+        # Check if user already exists
+        existing_user = db.query(User).filter(User.email == email).first()
+        
+        if existing_user:
+            # User exists - check if already reviewer
+            if existing_user.role == 'Reviewer':
+                return jsonify({
+                    'status': 'success',
+                    'message': 'Người dùng đã là Reviewer',
+                    'data': {
+                        'user': response_schema.dump(existing_user),
+                        'is_new': False,
+                        'already_reviewer': True
+                    }
+                }), 200
+            
+            # Update role to Reviewer
+            old_role = existing_user.role
+            existing_user.role = 'Reviewer'
+            db.commit()
+            
+            # Log the role change
+            AuditLogAI.log(
+                db_session=db,
+                user_id=request.current_user['user_id'],
+                action_type='role_changed',
+                table_name='users',
+                record_id=existing_user.id,
+                data=json.dumps({
+                    'email': email,
+                    'old_role': old_role,
+                    'new_role': 'Reviewer',
+                    'invited_by': request.current_user['username']
+                })
+            )
+            
+            return jsonify({
+                'status': 'success',
+                'message': f'Đã cập nhật {email} thành Reviewer',
+                'data': {
+                    'user': response_schema.dump(existing_user),
+                    'is_new': False,
+                    'already_reviewer': False
+                }
+            }), 200
+        
+        # Create new user with random password
+        alphabet = string.ascii_letters + string.digits
+        random_password = ''.join(secrets.choice(alphabet) for _ in range(12))
+        
+        new_user = User(
+            email=email,
+            username=email.split('@')[0] + '_' + secrets.token_hex(3),  # Unique username
+            full_name=name or email.split('@')[0],
+            password_hash=generate_password_hash(random_password),
+            role='Reviewer',
+            is_active=True,
+            is_deleted=False
+        )
+        db.add(new_user)
+        db.commit()
+        db.refresh(new_user)
+        
+        # Log the invitation
+        AuditLogAI.log(
+            db_session=db,
+            user_id=request.current_user['user_id'],
+            action_type='reviewer_invited',
+            table_name='users',
+            record_id=new_user.id,
+            data=json.dumps({
+                'email': email,
+                'name': name,
+                'invited_by': request.current_user['username']
+            })
+        )
+        
+        # Send invitation email (optional - may fail if email not configured)
+        try:
+            EmailService.send_email(
+                to=email,
+                subject='Lời mời tham gia Hội đồng Phản biện - UTH Conference',
+                body=f"""Kính gửi {name or 'Quý chuyên gia'},
+
+Bạn đã được mời tham gia Hội đồng Phản biện (PC) của hệ thống UTH Conference Management.
+
+Thông tin đăng nhập tạm thời:
+- Email: {email}
+- Mật khẩu: {random_password}
+
+Vui lòng đăng nhập và đổi mật khẩu ngay sau khi nhận được email này.
+
+Trân trọng,
+Ban tổ chức""",
+                email_type='REVIEWER_INVITATION',
+                entity_type='User',
+                entity_id=new_user.id,
+                user_id=new_user.id
+            )
+        except Exception as email_error:
+            print(f"Warning: Could not send invitation email: {email_error}")
+        
+        return jsonify({
+            'status': 'success',
+            'message': f'Đã mời {email} làm Reviewer thành công',
+            'data': {
+                'user': response_schema.dump(new_user),
+                'is_new': True,
+                'temp_password': random_password  # Only returned for new users so admin can share
+            }
+        }), 201
+        
+    except Exception as e:
+        db.rollback()
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+    finally:
+        db.close()
