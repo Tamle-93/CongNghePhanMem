@@ -16,8 +16,28 @@ def hash_password(password: str) -> str:
     return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
 
 def verify_password(password: str, hashed: str) -> bool:
-    """Verify password against hash"""
-    return bcrypt.checkpw(password.encode('utf-8'), hashed.encode('utf-8'))
+    """Verify password against hash
+    
+    Args:
+        password: plain password to verify
+        hashed: bcrypt hash from database (UTF-8 string, not bytes)
+    
+    Returns:
+        bool: True if password matches hash
+    """
+    try:
+        # bcrypt.checkpw expects:
+        # - first param: password as bytes
+        # - second param: hash as bytes
+        # Since database stores hash as UTF-8 string, we encode it back
+        return bcrypt.checkpw(
+            password.encode('utf-8'),
+            hashed.encode('utf-8')
+        )
+    except (ValueError, TypeError) as e:
+        # Invalid salt or format
+        print(f"Password verification error: {e}")
+        return False
 
 def generate_token(user_id: int, roles: list, expires_in_hours: int = 24) -> str:
     """

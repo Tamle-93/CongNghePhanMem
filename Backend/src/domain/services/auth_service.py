@@ -2,7 +2,8 @@
 """
 Authentication Service - Business Logic with JWT and Refresh Token support
 """
-from domain.utils.auth_utils import hash_password, verify_password, generate_token
+from werkzeug.security import generate_password_hash, check_password_hash
+from domain.utils.auth_utils import generate_token
 from infrastructure.models.user_model import User
 from infrastructure.models.role_model import Role
 from infrastructure.models.user_role_model import UserRole
@@ -119,9 +120,16 @@ class AuthService:
             username = username.strip()
             email = email.strip()
             
-            # Validate roles
+            # Validate roles - only Author is allowed for self-registration
+            # Admin, Chair, Reviewer must be assigned by administrators
+            ALLOWED_SELF_REGISTER_ROLES = ['Author']
             if roles is None:
                 roles = ['Author']
+            else:
+                # Filter out restricted roles
+                roles = [r for r in roles if r in ALLOWED_SELF_REGISTER_ROLES]
+                if not roles:
+                    roles = ['Author']
             
             # Check if username exists
             existing_user = db_session.query(User).filter_by(username=username).first()
@@ -234,7 +242,7 @@ class AuthService:
             if hasattr(user, 'is_blocked') and user.is_blocked:
                 return None, "Tài khoản đã bị khóa vĩnh viễn. Vui lòng liên hệ admin."
             
-            if not verify_password(password, user.password_hash):
+            if not check_password_hash(user.password_hash, password):
                 AuthService._record_failed_attempt(username)
                 attempts_info = _login_attempts.get(username, {})
                 if attempts_info.get('lockout_level', 0) > 0:

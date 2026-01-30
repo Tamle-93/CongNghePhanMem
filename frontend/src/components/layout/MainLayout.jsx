@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation, Outlet } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import Footer from './Footer';
@@ -11,16 +11,53 @@ const MainLayout = () => {
   const { user, logout } = useAuth();
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
+  const [showRoleMenu, setShowRoleMenu] = useState(false);
+  
+  // Current active role - saved in localStorage
+  const [activeRole, setActiveRole] = useState(() => {
+    const saved = localStorage.getItem('activeRole');
+    if (saved && user?.roles?.includes(saved)) {
+      return saved;
+    }
+    return user?.roles?.[0] || 'Author';
+  });
+
+  // Update activeRole when user changes
+  useEffect(() => {
+    if (user?.roles?.length > 0) {
+      const saved = localStorage.getItem('activeRole');
+      if (saved && user.roles.includes(saved)) {
+        setActiveRole(saved);
+      } else {
+        setActiveRole(user.roles[0]);
+        localStorage.setItem('activeRole', user.roles[0]);
+      }
+    }
+  }, [user]);
+
+  const handleRoleChange = (newRole) => {
+    setActiveRole(newRole);
+    localStorage.setItem('activeRole', newRole);
+    setShowRoleMenu(false);
+    
+    // Navigate to the appropriate home page for the new role
+    const homePaths = {
+      'Admin': '/admin',
+      'Chair': '/chair',
+      'Reviewer': '/reviewer',
+      'Author': '/home'
+    };
+    navigate(homePaths[newRole] || '/home');
+  };
 
   const handleLogout = () => {
+    localStorage.removeItem('activeRole');
     logout();
     navigate('/login');
   };
 
   const getNavItems = () => {
-    const role = user?.roles?.[0] || 'Author';
-    
-    if (role === 'Admin') {
+    if (activeRole === 'Admin') {
       return [
         { path: '/admin', label: 'Trang chủ' },
         { path: '/admin/users', label: 'Người dùng' },
@@ -29,7 +66,7 @@ const MainLayout = () => {
         { path: '/admin/system-config', label: 'Cấu hình' },
       ];
     }
-    if (role === 'Chair') {
+    if (activeRole === 'Chair') {
       return [
         { path: '/chair', label: 'Trang chủ' },
         { path: '/chair/papers', label: 'Quản lý bài nộp' },
@@ -38,7 +75,7 @@ const MainLayout = () => {
         { path: '/chair/decisions', label: 'Quyết định' },
       ];
     }
-    if (role === 'Reviewer') {
+    if (activeRole === 'Reviewer') {
       return [
         { path: '/reviewer', label: 'Trang chủ' },
         { path: '/reviewer/assignments', label: 'Phân công' },
@@ -57,14 +94,19 @@ const MainLayout = () => {
   };
 
   const navItems = getNavItems();
-  const role = user?.roles?.[0] || 'Author';
   const roleLabels = { Admin: 'Quản trị viên', Chair: 'Chủ tọa', Reviewer: 'Phản biện', Author: 'Tác giả' };
+  const roleColors = { 
+    Admin: 'bg-red-100 text-red-700', 
+    Chair: 'bg-purple-100 text-purple-700', 
+    Reviewer: 'bg-blue-100 text-blue-700', 
+    Author: 'bg-green-100 text-green-700' 
+  };
 
-  // Determine home path based on role
+  // Determine home path based on active role
   const getHomePath = () => {
-    if (role === 'Admin') return '/admin';
-    if (role === 'Chair') return '/chair';
-    if (role === 'Reviewer') return '/reviewer';
+    if (activeRole === 'Admin') return '/admin';
+    if (activeRole === 'Chair') return '/chair';
+    if (activeRole === 'Reviewer') return '/reviewer';
     return '/home'; // Author
   };
 
@@ -113,6 +155,41 @@ const MainLayout = () => {
             {/* Notifications */}
             <NotificationDropdown />
 
+            {/* Role Selector - show if user has multiple roles */}
+            {user?.roles?.length > 1 && (
+              <div className="relative">
+                <button
+                  onClick={() => setShowRoleMenu(!showRoleMenu)}
+                  className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${roleColors[activeRole]}`}
+                >
+                  <span>{roleLabels[activeRole]}</span>
+                  <span className="material-symbols-outlined text-base">
+                    {showRoleMenu ? 'expand_less' : 'expand_more'}
+                  </span>
+                </button>
+
+                {showRoleMenu && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-slate-200 py-1 z-50">
+                    <p className="px-4 py-2 text-xs text-slate-500 font-medium uppercase">Chuyển vai trò</p>
+                    {user.roles.map((r) => (
+                      <button
+                        key={r}
+                        onClick={() => handleRoleChange(r)}
+                        className={`w-full text-left px-4 py-2 text-sm flex items-center justify-between hover:bg-slate-50 ${
+                          activeRole === r ? 'bg-blue-50 text-blue-700' : 'text-slate-700'
+                        }`}
+                      >
+                        <span>{roleLabels[r]}</span>
+                        {activeRole === r && (
+                          <span className="material-symbols-outlined text-base text-blue-600">check</span>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* User Menu */}
             <div className="relative">
               <button
@@ -124,7 +201,7 @@ const MainLayout = () => {
                 </div>
                 <div className="hidden md:block text-left">
                   <p className="text-sm font-medium text-slate-900">{user?.full_name || user?.username}</p>
-                  <p className="text-xs text-slate-500">{roleLabels[role]}</p>
+                  <p className="text-xs text-slate-500">{roleLabels[activeRole]}</p>
                 </div>
               </button>
 

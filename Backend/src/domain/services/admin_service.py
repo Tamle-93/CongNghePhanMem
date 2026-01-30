@@ -4,7 +4,7 @@ Admin Service - User & System Management
 """
 from infrastructure.databases.base import SessionLocal
 from infrastructure.models import User, Role, UserRole, Conference, Paper, Review, AuditLogAI
-from domain.utils.auth_utils import hash_password
+from werkzeug.security import generate_password_hash
 from datetime import datetime
 import json
  
@@ -123,7 +123,7 @@ class AdminService:
             # Create user
             user = User(
                 username=username,
-                password_hash=hash_password(password),
+                password_hash=generate_password_hash(password),
                 email=email,
                 full_name=full_name
             )
@@ -213,7 +213,7 @@ class AdminService:
                 user.full_name = updates['full_name']
             
             if 'password' in updates:
-                user.password_hash = hash_password(updates['password'])
+                user.password_hash = generate_password_hash(updates['password'])
             
             # Update roles
             if 'roles' in updates:
