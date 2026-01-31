@@ -210,48 +210,63 @@ const HomePage = () => {
             )}
           </div>
 
-          {/* News/Announcements */}
+          {/* News/Announcements - Real Data */}
           <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
                 <span className="material-symbols-outlined text-blue-600">campaign</span>
-                Tin tức & Thông báo
+                Hoạt động gần đây
               </h2>
             </div>
-            <div className="space-y-3">
-              <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
-                <div className="flex items-start gap-2 mb-2">
-                  <span className="material-symbols-outlined text-blue-600 text-lg">info</span>
-                  <div className="flex-1">
-                    <p className="text-sm font-semibold text-slate-900 mb-1">Cập nhật hệ thống v2.0</p>
-                    <p className="text-xs text-slate-600">Thêm tính năng nộp bài đa bước và tối ưu giao diện người dùng.</p>
-                    <p className="text-xs text-slate-400 mt-1">2 giờ trước</p>
+            {myPapers.length > 0 ? (
+              <div className="space-y-3">
+                {myPapers.slice(0, 3).map((paper, index) => (
+                  <div key={paper.id || index} className={`p-3 rounded-lg border ${
+                    paper.status === 'accepted' ? 'bg-green-50 border-green-200' :
+                    paper.status === 'rejected' ? 'bg-red-50 border-red-200' :
+                    paper.status === 'under_review' ? 'bg-orange-50 border-orange-200' :
+                    'bg-blue-50 border-blue-200'
+                  }`}>
+                    <div className="flex items-start gap-2 mb-2">
+                      <span className={`material-symbols-outlined text-lg ${
+                        paper.status === 'accepted' ? 'text-green-600' :
+                        paper.status === 'rejected' ? 'text-red-600' :
+                        paper.status === 'under_review' ? 'text-orange-600' :
+                        'text-blue-600'
+                      }`}>
+                        {paper.status === 'accepted' ? 'check_circle' :
+                         paper.status === 'rejected' ? 'cancel' :
+                         paper.status === 'under_review' ? 'pending' :
+                         'description'}
+                      </span>
+                      <div className="flex-1">
+                        <p className="text-sm font-semibold text-slate-900 mb-1 line-clamp-1">{paper.title}</p>
+                        <p className="text-xs text-slate-600">
+                          {paper.status === 'accepted' ? 'Bài báo đã được chấp nhận!' :
+                           paper.status === 'rejected' ? 'Bài báo không được chấp nhận' :
+                           paper.status === 'under_review' ? 'Đang được phản biện' :
+                           'Đã nộp thành công'}
+                        </p>
+                        <p className="text-xs text-slate-400 mt-1">
+                          {paper.created_at ? new Date(paper.created_at).toLocaleDateString('vi-VN') : ''}
+                        </p>
+                      </div>
+                    </div>
                   </div>
-                </div>
+                ))}
               </div>
-
-              <div className="p-3 bg-green-50 rounded-lg border border-green-200">
-                <div className="flex items-start gap-2 mb-2">
-                  <span className="material-symbols-outlined text-green-600 text-lg">check_circle</span>
-                  <div className="flex-1">
-                    <p className="text-sm font-semibold text-slate-900 mb-1">Hội nghị mới được công bố</p>
-                    <p className="text-xs text-slate-600">ICSE 2026 đã mở cổng nộp bài. Hạn chót: 30/03/2026.</p>
-                    <p className="text-xs text-slate-400 mt-1">1 ngày trước</p>
-                  </div>
-                </div>
+            ) : (
+              <div className="text-center py-8 text-slate-400">
+                <span className="material-symbols-outlined text-5xl mb-2 block">inbox</span>
+                <p className="text-sm">Chưa có hoạt động nào</p>
+                <button 
+                  onClick={() => navigate('/author/submit')}
+                  className="mt-3 text-blue-600 text-sm font-medium hover:underline"
+                >
+                  Nộp bài đầu tiên →
+                </button>
               </div>
-
-              <div className="p-3 bg-purple-50 rounded-lg border border-purple-200">
-                <div className="flex items-start gap-2 mb-2">
-                  <span className="material-symbols-outlined text-purple-600 text-lg">workspace_premium</span>
-                  <div className="flex-1">
-                    <p className="text-sm font-semibold text-slate-900 mb-1">Chúc mừng tác giả xuất sắc</p>
-                    <p className="text-xs text-slate-600">3 bài báo được chấp nhận tại ICSME 2026!</p>
-                    <p className="text-xs text-slate-400 mt-1">3 ngày trước</p>
-                  </div>
-                </div>
-              </div>
-            </div>
+            )}
           </div>
 
           {/* Active Conferences */}
