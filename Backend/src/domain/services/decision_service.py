@@ -71,25 +71,30 @@ class DecisionService:
             conference = paper.conference
             chair = db.query(User).filter(User.id == chair_user_id).first()
             
-            if conference.chair_id != chair_user_id and chair.role != 'Admin':
+            # Check if user is chair of conference or Admin
+            is_admin = 'Admin' in (chair.roles if chair else [])
+            is_chair = conference.chair_id == chair_user_id
+            
+            if not is_chair and not is_admin:
                 return None, "Permission denied: Only conference chair can make decisions"
             
-            # Check if reviews are complete
+            # Check if reviews are complete (optional - allow decision without reviews)
             assignments = db.query(Assignment).filter(
                 Assignment.paper_id == paper_id,
                 Assignment.is_deleted == False
             ).all()
             
-            if not assignments:
-                return None, "No reviewers assigned to this paper"
+            # Allow decision even without assignments (Chair can decide directly)
+            # if not assignments:
+            #     return None, "No reviewers assigned to this paper"
             
-            completed_reviews = db.query(Review).filter(
-                Review.paper_id == paper_id,
-                Review.is_deleted == False
-            ).count()
-            
-            if completed_reviews < len(assignments):
-                return None, f"Not all reviews completed ({completed_reviews}/{len(assignments)})"
+            # completed_reviews = db.query(Review).filter(
+            #     Review.paper_id == paper_id,
+            #     Review.is_deleted == False
+            # ).count()
+            # 
+            # if completed_reviews < len(assignments):
+            #     return None, f"Not all reviews completed ({completed_reviews}/{len(assignments)})"
             
             # Check if decision already exists
             existing_decision = db.query(Decision).filter(
@@ -387,6 +392,18 @@ class DecisionService:
         
         paper = decision.paper
         chair = decision.chair
+        conference = None
+        
+        # Try to get conference - handle both relationship loading and direct query
+        try:
+            if hasattr(decision, 'conference') and decision.conference:
+                conference = decision.conference
+            elif decision.conference_id:
+                # Fallback: query conference if relationship not loaded
+                from infrastructure.models import Conference
+                conference = db.query(Conference).filter(Conference.id == decision.conference_id).first()
+        except:
+            pass
         
         return {
             'id': decision.id,
@@ -394,7 +411,7 @@ class DecisionService:
             'paper_title': paper.title,
             'paper_status': paper.status.value if paper.status else None,
             'conference_id': decision.conference_id,
-            'conference_name': decision.conference.name if decision.conference else None,
+            'conference_name': conference.name if conference else None,
             'result': decision.result,
             'final_comment': decision.final_comment,
             'chair_id': decision.chair_user_id,

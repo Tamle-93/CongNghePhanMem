@@ -38,3 +38,4 @@ class Decision(Base):
     # Relationships
     paper = relationship("Paper", back_populates="decision")
     chair = relationship("User", back_populates="decisions")
+    conference = relationship("Conference")

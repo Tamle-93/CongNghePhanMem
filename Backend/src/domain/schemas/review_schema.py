@@ -9,7 +9,8 @@ from marshmallow import Schema, fields, validate
 
 class ReviewSubmissionSchema(Schema):
     """Schema for submitting a review"""
-    assignment_id = fields.Int(required=True)
+    assignment_id = fields.Int(required=False)  # Optional - can use paper_id instead
+    paper_id = fields.Int(required=False)  # Alternative to assignment_id
     score = fields.Int(
         required=True,
         validate=validate.Range(min=1, max=10, error="Score must be between 1 and 10")
