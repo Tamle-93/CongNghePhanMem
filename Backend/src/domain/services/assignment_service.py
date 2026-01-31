@@ -72,7 +72,7 @@ class AssignmentService:
                 return None, "Conference not found"
             
             chair = db.query(User).filter(User.id == chair_user_id).first()
-            if conference.chair_id != chair_user_id and chair.role != 'Admin':
+            if conference.chair_id != chair_user_id and 'Admin' not in (chair.roles if chair else []):
                 return None, "Permission denied"
             
             # Verify paper belongs to conference
@@ -122,6 +122,11 @@ class AssignmentService:
             )
             
             db.add(assignment)
+            
+            # ✅ Update paper status to under_review after first assignment
+            if paper.status in ['submitted', 'pending']:
+                paper.status = 'under_review'
+            
             db.commit()
             db.refresh(assignment)
             
