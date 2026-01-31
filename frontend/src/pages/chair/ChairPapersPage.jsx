@@ -17,10 +17,23 @@ const ChairPapersPage = () => {
 
   useEffect(() => {
     fetchPapers();
+    
+    // Auto-refresh when tab is focused
+    const handleFocus = () => fetchPapers();
+    window.addEventListener('focus', handleFocus);
+    
+    // Auto-refresh every 60 seconds
+    const interval = setInterval(fetchPapers, 60000);
+    
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+      clearInterval(interval);
+    };
   }, []);
 
   const fetchPapers = async () => {
     try {
+      setLoading(true);
       const response = await api.listPapers().catch(() => ({ data: { data: { papers: [] } } }));
       // API returns {status, data: {papers, total, page, per_page}}
       const papersData = response.data?.data?.papers || response.data?.papers || [];
@@ -34,6 +47,7 @@ const ChairPapersPage = () => {
 
   const getStatusBadge = (status) => {
     const badges = {
+      submitted: { bg: 'bg-blue-100 text-blue-700', text: 'Chờ phân công' },
       pending: { bg: 'bg-blue-100 text-blue-700', text: 'Chờ phân công' },
       under_review: { bg: 'bg-orange-100 text-orange-700', text: 'Đang phản biện' },
       completed: { bg: 'bg-green-100 text-green-700', text: 'Đã có kết quả' },
@@ -279,6 +293,9 @@ const ChairPapersPage = () => {
                     Phân ban
                   </th>
                   <th className="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 bg-slate-50">
+                    Hạn phản biện
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 bg-slate-50">
                     Phản biện
                   </th>
                   <th className="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 bg-slate-50">
@@ -292,7 +309,7 @@ const ChairPapersPage = () => {
               <tbody className="divide-y divide-slate-100">
                 {filteredPapers.length === 0 ? (
                   <tr>
-                    <td colSpan="6" className="px-6 py-12 text-center text-slate-500">
+                    <td colSpan="7" className="px-6 py-12 text-center text-slate-500">
                       <span className="material-symbols-outlined text-4xl mb-2 block text-slate-300">description</span>
                       Không tìm thấy bài báo nào
                     </td>
@@ -324,7 +341,22 @@ const ChairPapersPage = () => {
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm border-b border-slate-100">
-                        {paper.status === 'pending' ? (
+                        {paper.review_deadline ? (
+                          <span className={`text-xs font-medium ${
+                            new Date(paper.review_deadline) < new Date() 
+                              ? 'text-red-600' 
+                              : new Date(paper.review_deadline) < new Date(Date.now() + 3 * 24 * 60 * 60 * 1000)
+                                ? 'text-orange-600'
+                                : 'text-slate-600'
+                          }`}>
+                            {new Date(paper.review_deadline).toLocaleDateString('vi-VN')}
+                          </span>
+                        ) : (
+                          <span className="text-xs text-slate-400">Chưa đặt</span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm border-b border-slate-100">
+                        {paper.status === 'pending' || paper.status === 'submitted' ? (
                           <span className="text-xs text-slate-400 italic">Chưa chỉ định</span>
                         ) : (
                           <div className="flex -space-x-2">
@@ -345,7 +377,7 @@ const ChairPapersPage = () => {
                           >
                             <span className="material-symbols-outlined">visibility</span>
                           </button>
-                          {paper.status === 'pending' ? (
+                          {(paper.status === 'pending' || paper.status === 'submitted') ? (
                             <button 
                               onClick={() => navigate(`/chair/papers/${paper.id || paper.paper_id}/assign`)}
                               className="flex items-center gap-1 px-3 py-1.5 bg-blue-600 text-white hover:bg-blue-700 rounded-lg text-xs font-bold transition-all shadow-sm"
