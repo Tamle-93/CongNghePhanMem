@@ -26,7 +26,8 @@ def submit_review():
     Headers: Authorization: Bearer <token>
     Body:
     {
-        "assignment_id": 1,
+        "assignment_id": 1,  // OR use paper_id
+        "paper_id": 123,     // Alternative to assignment_id
         "score": 8,
         "comments_for_author": "Good paper with minor issues...",
         "confidential_content": "Confidential comments for PC..."
@@ -35,9 +36,35 @@ def submit_review():
     try:
         data = submission_schema.load(request.json)
         
+        # Handle both assignment_id and paper_id
+        assignment_id = data.get('assignment_id')
+        paper_id = data.get('paper_id')
+        reviewer_id = request.current_user['user_id']
+        
+        # If paper_id provided but not assignment_id, find assignment
+        if paper_id and not assignment_id:
+            from infrastructure.databases.base import SessionLocal
+            from infrastructure.models import Assignment
+            db = SessionLocal()
+            try:
+                assignment = db.query(Assignment).filter(
+                    Assignment.paper_id == paper_id,
+                    Assignment.reviewer_id == reviewer_id,
+                    Assignment.is_deleted == False
+                ).first()
+                if assignment:
+                    assignment_id = assignment.id
+                else:
+                    return jsonify({'status': 'error', 'message': 'No assignment found for this paper'}), 404
+            finally:
+                db.close()
+        
+        if not assignment_id:
+            return jsonify({'status': 'error', 'message': 'assignment_id or paper_id is required'}), 400
+        
         review, error = ReviewService.submit_review(
-            assignment_id=data['assignment_id'],
-            reviewer_id=request.current_user['user_id'],
+            assignment_id=assignment_id,
+            reviewer_id=reviewer_id,
             score=data['score'],
             comments_for_author=data.get('comments_for_author', ''),
             confidential_content=data.get('confidential_content', '')
