@@ -105,8 +105,11 @@ export default {
   // Decisions
   makeDecision: (paperId, data) => api.post(`/papers/${paperId}/decision`, data), // { decision, feedback, decision_date }
   
-  // Admin
-  listUsers: (params) => api.get('/admin/users', { params }),
+  // Users (for Chair/Admin)
+  listUsers: (params) => api.get('/users', { params }),  // Chair+Admin can access /users
+  
+  // Admin only
+  adminListUsers: (params) => api.get('/admin/users', { params }),
   createUser: (data) => api.post('/admin/users', data),
   updateUser: (id, data) => api.put(`/admin/users/${id}`, data),
   blockUser: (id) => api.put(`/admin/users/${id}/block`),
