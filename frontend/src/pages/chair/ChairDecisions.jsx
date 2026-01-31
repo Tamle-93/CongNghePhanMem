@@ -6,6 +6,7 @@ const ChairDecisions = () => {
   const navigate = useNavigate();
   const [papers, setPapers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [filter, setFilter] = useState('all'); // all, pending, decided
 
   useEffect(() => {
@@ -15,11 +16,14 @@ const ChairDecisions = () => {
   const fetchPapers = async () => {
     try {
       setLoading(true);
+      setError(null);
       const response = await api.listPapers();
+      console.log('ChairDecisions - Papers response:', response.data);
       const papersData = response.data?.data?.papers || response.data?.papers || [];
       setPapers(papersData);
     } catch (error) {
       console.error('Error fetching papers:', error);
+      setError('Không thể tải danh sách bài báo. Vui lòng thử lại.');
       setPapers([]);
     } finally {
       setLoading(false);
@@ -55,6 +59,23 @@ const ChairDecisions = () => {
     return (
       <div className="flex items-center justify-center min-h-96">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="bg-white p-8 rounded-xl border border-red-200 text-center max-w-md">
+          <span className="material-symbols-outlined text-6xl text-red-500 mb-4 block">error</span>
+          <p className="text-red-600 mb-4">{error}</p>
+          <button 
+            onClick={fetchPapers}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          >
+            Thử lại
+          </button>
+        </div>
       </div>
     );
   }
@@ -142,7 +163,9 @@ const ChairDecisions = () => {
                         <p className="text-sm font-semibold text-slate-900 line-clamp-1">{paper.title}</p>
                       </td>
                       <td className="px-6 py-4 text-sm text-slate-600">
-                        {paper.authors || paper.submitter_name || 'N/A'}
+                        {Array.isArray(paper.authors) 
+                          ? paper.authors.map(a => a.full_name || a.name).join(', ')
+                          : (typeof paper.authors === 'string' ? paper.authors : paper.submitter_name || 'N/A')}
                       </td>
                       <td className="px-6 py-4">{getStatusBadge(paper.status)}</td>
                       <td className="px-6 py-4 text-right">

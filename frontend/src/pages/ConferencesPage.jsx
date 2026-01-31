@@ -51,12 +51,16 @@ const ConferencesPage = () => {
   /**
    * Fetch danh sách hội nghị từ API
    * API trả về: { status: 'success', data: { conferences: [...] } }
+   * CHỈ HIỂN THỊ HỘI NGHỊ ĐANG HOẠT ĐỘNG (is_active = true)
    */
   const fetchConferences = async () => {
     try {
       const response = await api.listConferences();
       console.log('Conferences response:', response.data);
-      setConferences(response.data?.data?.conferences || []);
+      // Filter chỉ lấy hội nghị đang hoạt động
+      const allConferences = response.data?.data?.conferences || [];
+      const activeConferences = allConferences.filter(c => c.is_active === true);
+      setConferences(activeConferences);
     } catch (err) {
       console.error('Error fetching conferences:', err);
     } finally {

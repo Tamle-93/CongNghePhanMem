@@ -36,6 +36,12 @@ def create_app(config_name=None):
     app.config.from_object(config_class())
     
     # ========================================
+    # FILE UPLOAD CONFIGURATION
+    # ========================================
+    # Allow max 50MB file uploads (for PDF papers)
+    app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024  # 50MB
+    
+    # ========================================
     # EMAIL CONFIGURATION
     # ========================================
     app.config['MAIL_SERVER'] = os.getenv('MAIL_SERVER', 'smtp.gmail.com')

@@ -135,7 +135,6 @@ class ConferenceService:
             db.close()
     
     @staticmethod
-    @staticmethod
     def list_conferences(page=1, per_page=10, only_active=True):
         """
         Lấy danh sách hội nghị (có phân trang)
@@ -143,7 +142,7 @@ class ConferenceService:
         PARAMS:
         - page: Số trang (bắt đầu từ 1)
         - per_page: Số item mỗi trang
-        - only_active: Nếu True, chỉ show conferences đang mở (submission_deadline > now)
+        - only_active: Nếu True, chỉ show conferences có is_active=True
         
         RETURNS:
         - { conferences: [...], total, page, per_page }
@@ -158,8 +157,7 @@ class ConferenceService:
             
             # Filter: chỉ show active conferences nếu only_active=True
             if only_active:
-                now = datetime.utcnow()
-                query = query.filter(Conference.submission_deadline > now)
+                query = query.filter(Conference.is_active == True)
             
             # Order + pagination
             conferences = query.order_by(Conference.created_at.desc())\
