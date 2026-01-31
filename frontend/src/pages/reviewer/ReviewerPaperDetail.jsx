@@ -19,6 +19,25 @@ const ReviewerPaperDetail = () => {
       const data = response.data?.data || response.data;
       // Handle different response formats
       const paperData = data.paper || data;
+      
+      // Normalize keywords - could be string or array
+      if (paperData.keywords && typeof paperData.keywords === 'string') {
+        paperData.keywords = paperData.keywords.split(',').map(k => k.trim()).filter(k => k);
+      } else if (!Array.isArray(paperData.keywords)) {
+        paperData.keywords = [];
+      }
+      
+      // Normalize authors - could be string or array
+      if (paperData.authors && typeof paperData.authors === 'string') {
+        try {
+          paperData.authors = JSON.parse(paperData.authors);
+        } catch {
+          paperData.authors = [{ name: paperData.authors, affiliation: '', email: '' }];
+        }
+      } else if (!Array.isArray(paperData.authors)) {
+        paperData.authors = [];
+      }
+      
       setPaper(paperData);
     } catch (error) {
       console.error('Error fetching paper:', error);
@@ -93,11 +112,11 @@ const ReviewerPaperDetail = () => {
           </div>
           <div>
             <p className="text-xs text-slate-600 mb-1">Số tác giả</p>
-            <p className="font-medium text-slate-900">{paper.authors.length} người</p>
+            <p className="font-medium text-slate-900">{paper.authors?.length || 0} người</p>
           </div>
           <div>
             <p className="text-xs text-slate-600 mb-1">Từ khóa</p>
-            <p className="font-medium text-slate-900">{paper.keywords.length} keywords</p>
+            <p className="font-medium text-slate-900">{paper.keywords?.length || 0} keywords</p>
           </div>
         </div>
       </div>
@@ -118,11 +137,14 @@ const ReviewerPaperDetail = () => {
           Từ khóa
         </h3>
         <div className="flex flex-wrap gap-2">
-          {paper.keywords.map((keyword, index) => (
+          {(paper.keywords || []).map((keyword, index) => (
             <span key={index} className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
               {keyword}
             </span>
           ))}
+          {(!paper.keywords || paper.keywords.length === 0) && (
+            <span className="text-slate-500 text-sm">Chưa có từ khóa</span>
+          )}
         </div>
       </div>
 
@@ -133,25 +155,28 @@ const ReviewerPaperDetail = () => {
           Tác giả
         </h3>
         <div className="space-y-3">
-          {paper.authors.map((author, index) => (
+          {(paper.authors || []).map((author, index) => (
             <div key={index} className="flex items-center gap-4 p-3 border border-slate-200 rounded-lg">
               <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold">
-                {author.name.charAt(0)}
+                {(author.name || author.full_name || 'A').charAt(0)}
               </div>
               <div className="flex-1">
                 <div className="flex items-center gap-2">
-                  <p className="font-medium text-slate-900">{author.name}</p>
+                  <p className="font-medium text-slate-900">{author.name || author.full_name}</p>
                   {author.is_corresponding && (
                     <span className="text-[10px] bg-green-100 text-green-700 px-2 py-0.5 rounded font-bold">
                       Tác giả liên hệ
                     </span>
                   )}
                 </div>
-                <p className="text-sm text-slate-600">{author.affiliation}</p>
-                <p className="text-xs text-slate-500">{author.email}</p>
+                <p className="text-sm text-slate-600">{author.affiliation || author.institution || ''}</p>
+                <p className="text-xs text-slate-500">{author.email || ''}</p>
               </div>
             </div>
           ))}
+          {(!paper.authors || paper.authors.length === 0) && (
+            <p className="text-slate-500 text-sm">Chưa có thông tin tác giả</p>
+          )}
         </div>
       </div>
 
