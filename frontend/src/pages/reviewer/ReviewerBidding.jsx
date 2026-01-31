@@ -15,39 +15,25 @@ const ReviewerBidding = () => {
   const fetchAvailablePapers = async () => {
     try {
       setLoading(true);
-      // Mock data với AI match scores
-      const mockPapers = [
-        {
-          paper_id: 201,
-          paper_code: 'UTH2024-101',
-          title: 'Advanced Machine Learning Techniques for Real-Time Anomaly Detection',
-          keywords: ['Machine Learning', 'Anomaly Detection', 'Real-Time Systems'],
-          authors_count: 3,
-          ai_match_score: 95,
-          track: 'AI & Machine Learning'
-        },
-        {
-          paper_id: 202,
-          paper_code: 'UTH2024-102',
-          title: 'Blockchain Integration in Supply Chain Management Systems',
-          keywords: ['Blockchain', 'Supply Chain', 'Smart Contracts'],
-          authors_count: 2,
-          ai_match_score: 75,
-          track: 'Distributed Systems'
-        },
-        {
-          paper_id: 203,
-          paper_code: 'UTH2024-103',
-          title: 'Neural Network Optimization for Edge Computing Devices',
-          keywords: ['Neural Networks', 'Edge Computing', 'Optimization'],
-          authors_count: 4,
-          ai_match_score: 90,
-          track: 'AI & Machine Learning'
-        }
-      ];
-      setPapers(mockPapers);
+      // Fetch papers from database
+      const response = await api.listPapers();
+      const papersData = response.data?.data?.papers || response.data?.papers || [];
+      
+      // Map to required fields
+      const formattedPapers = papersData.map((paper, index) => ({
+        paper_id: paper.id || index,
+        paper_code: paper.code || `UTH-${paper.id}`,
+        title: paper.title,
+        keywords: typeof paper.keywords === 'string' ? paper.keywords.split(',').map(k => k.trim()) : paper.keywords || [],
+        authors_count: Array.isArray(paper.authors) ? paper.authors.length : 1,
+        ai_match_score: paper.ai_match_score || 75, // AI score should come from DB
+        track: paper.track_name || paper.track || 'General'
+      }));
+      
+      setPapers(formattedPapers);
     } catch (error) {
       console.error('Error fetching papers:', error);
+      setPapers([]);
     } finally {
       setLoading(false);
     }
