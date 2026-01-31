@@ -90,6 +90,10 @@ export default {
   getReviewsByPaper: (paperId) => api.get(`/papers/${paperId}/reviews`),
   submitReview: (paperId, data) => api.post(`/papers/${paperId}/review`, data),
   
+  // Decisions
+  getDecision: (paperId) => api.get(`/papers/${paperId}/decision`),
+  makeDecision: (paperId, data) => api.post(`/papers/${paperId}/decision`, data),
+  
   // Assignments
   listAssignments: (params) => api.get('/assignments', { params }),
   getAssignedPapers: (reviewerId) => api.get(`/reviewers/${reviewerId}/papers`),

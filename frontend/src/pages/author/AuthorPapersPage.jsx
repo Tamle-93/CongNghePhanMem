@@ -263,16 +263,25 @@ const AuthorPapersPage = () => {
                               {paper.status === 'revision_required' && (
                                 <button 
                                   onClick={() => navigate(`/author/papers/${paper.id}/revision`)}
-                                  className="p-2 text-slate-500 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-all"
-                                  title="Chỉnh sửa"
+                                  className="p-2 text-white bg-orange-600 hover:bg-orange-700 rounded-lg transition-all"
+                                  title="Nộp bản chỉnh sửa"
                                 >
                                   <span className="material-symbols-outlined text-xl">edit_document</span>
+                                </button>
+                              )}
+                              {paper.status === 'accepted' && (
+                                <button 
+                                  onClick={() => navigate(`/author/papers/${paper.id}/camera-ready`)}
+                                  className="p-2 text-white bg-green-600 hover:bg-green-700 rounded-lg transition-all"
+                                  title="Nộp Camera-Ready"
+                                >
+                                  <span className="material-symbols-outlined text-xl">upload_file</span>
                                 </button>
                               )}
                               {(paper.status === 'accepted' || paper.status === 'rejected') && (
                                 <button 
                                   onClick={() => navigate(`/author/papers/${paper.id}/reviews`)}
-                                  className="p-2 text-slate-500 hover:text-green-600 hover:bg-green-50 rounded-lg transition-all"
+                                  className="p-2 text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
                                   title="Xem kết quả phản biện"
                                 >
                                   <span className="material-symbols-outlined text-xl">rate_review</span>
