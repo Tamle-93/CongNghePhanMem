@@ -2,19 +2,21 @@
 # File: Backend/src/domain/schemas/paper_schema.py
 # ============================================
 """
-Paper Schemas
+Paper Schemas - Validation for paper submission, update, and response
 """
 
-from marshmallow import Schema, fields, validate
+from marshmallow import Schema, fields, validate, validates_schema, ValidationError
 
 class PaperSubmissionSchema(Schema):
     """Schema for paper submission"""
-    title = fields.Str(required=True, validate=validate.Length(min=3, max=500))
-    abstract = fields.Str(required=True, validate=validate.Length(min=10, max=10000))
-    keywords = fields.Str()
+    title = fields.Str(required=True, validate=validate.Length(min=3, max=500), 
+                       error_messages={'validate': 'Tiêu đề phải từ 3-500 ký tự'})
+    abstract = fields.Str(required=True, validate=validate.Length(min=10, max=10000),
+                          error_messages={'validate': 'Tóm tắt phải từ 10-10000 ký tự'})
+    keywords = fields.Str(allow_none=True, load_default='')
     conference_id = fields.Int(required=True)
     track_id = fields.Int(allow_none=True)
-    authors = fields.List(fields.Dict(), required=True)
+    authors = fields.List(fields.Dict(), required=True, validate=validate.Length(min=1))
     # authors format: [{"name": "...", "email": "...", "order": 1, "is_corresponding": True, "affiliation": "UTH"}]
     # OR [{"user_id": 1, "order": 1, "is_corresponding": True, "affiliation": "UTH"}]
 
@@ -33,7 +35,9 @@ class PaperResponseSchema(Schema):
 
 class PaperUpdateSchema(Schema):
     """Schema for updating paper"""
-    title = fields.Str(validate=validate.Length(min=10, max=500))
-    abstract = fields.Str(validate=validate.Length(min=100, max=5000))
+    title = fields.Str(validate=validate.Length(min=10, max=500),
+                       error_messages={'validate': 'Tiêu đề phải từ 10-500 ký tự'})
+    abstract = fields.Str(validate=validate.Length(min=100, max=5000),
+                          error_messages={'validate': 'Tóm tắt phải từ 100-5000 ký tự'})
     keywords = fields.Str()
     track_id = fields.Int()

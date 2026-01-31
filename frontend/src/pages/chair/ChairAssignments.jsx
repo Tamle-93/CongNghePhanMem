@@ -20,17 +20,24 @@ export default function ChairAssignments() {
 
   const fetchData = async () => {
     try {
-      const promises = [api.listUsers({ role: 'reviewer' })];
+      // ✅ FIXED: Use correct API endpoint and response path
+      const promises = [api.listUsers({ role: 'Reviewer' })];  // Role name is 'Reviewer' not 'reviewer'
       if (id) {
         promises.push(api.getPaperById(id));
       }
       
       const [reviewersRes, paperRes] = await Promise.all(promises);
-      setReviewers(reviewersRes.data?.users || []);
+      
+      // ✅ FIXED: Extract users from correct response path
+      const users = reviewersRes.data?.data?.users || reviewersRes.data?.users || [];
+      console.log('Reviewers loaded:', users);
+      setReviewers(users);
+      
       if (paperRes) {
-        setPaper(paperRes.data);
+        const paperData = paperRes.data?.data || paperRes.data;
+        setPaper(paperData);
         // Mock AI suggestions based on paper keywords
-        generateAiSuggestions(paperRes.data, reviewersRes.data?.users || []);
+        generateAiSuggestions(paperData, users);
       }
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -72,15 +79,35 @@ export default function ChairAssignments() {
     }
 
     try {
-      await api.assignReviewers({
-        paper_id: id,
+      console.log('Submitting assignment:', {
+        paper_id: parseInt(id),
         reviewer_ids: selectedReviewers
       });
-      alert('Phân công thành công!');
+      
+      const response = await api.assignReviewers({
+        paper_id: parseInt(id),
+        reviewer_ids: selectedReviewers
+      });
+      
+      console.log('Assignment response:', response);
+      
+      // Show success with details
+      const successCount = response.data?.data?.assignments?.length || 0;
+      const errors = response.data?.data?.errors || [];
+      
+      if (errors.length > 0) {
+        alert(`Phân công thành công ${successCount} phản biện!\n\nLưu ý: ${errors.join('\n')}`);
+      } else {
+        alert(`Phân công thành công ${successCount} phản biện!`);
+      }
+      
+      // Navigate back to papers list - it will auto-refresh
       navigate('/chair/papers');
     } catch (error) {
       console.error('Error assigning reviewers:', error);
-      alert(getSaveErrorMessage(error));
+      console.error('Error response:', error.response?.data);
+      const errorMsg = error.response?.data?.message || getSaveErrorMessage(error);
+      alert('Lỗi phân công: ' + errorMsg);
     }
   };
 
@@ -162,15 +189,18 @@ export default function ChairAssignments() {
                   <p className="font-semibold text-slate-900 text-sm leading-snug">{paper.title}</p>
                 </div>
 
-                {paper.keywords && paper.keywords.length > 0 && (
+                {paper.keywords && (
                   <div>
                     <span className="text-xs font-bold text-slate-400 uppercase">Từ khóa</span>
                     <div className="flex flex-wrap gap-1 mt-1">
-                      {paper.keywords.slice(0, 4).map((keyword, index) => (
-                        <span key={index} className="px-2 py-1 bg-blue-50 text-blue-600 text-xs rounded-full">
-                          {keyword}
-                        </span>
-                      ))}
+                      {(typeof paper.keywords === 'string' ? paper.keywords.split(',') : paper.keywords)
+                        .filter(k => k && k.trim())
+                        .slice(0, 4)
+                        .map((keyword, index) => (
+                          <span key={index} className="px-2 py-1 bg-blue-50 text-blue-600 text-xs rounded-full">
+                            {typeof keyword === 'string' ? keyword.trim() : keyword}
+                          </span>
+                        ))}
                     </div>
                   </div>
                 )}
@@ -273,7 +303,7 @@ export default function ChairAssignments() {
           <div className="space-y-4">
             {filteredReviewers.map((reviewer) => {
               const isSelected = selectedReviewers.includes(reviewer.id);
-              const workload = reviewer.assigned_papers || Math.floor(Math.random() * 8);
+              const workload = reviewer.assigned_papers || reviewer.paper_count || 0;
               
               return (
                 <div
@@ -340,9 +370,18 @@ export default function ChairAssignments() {
             })}
 
             {filteredReviewers.length === 0 && (
-              <div className="text-center py-12 text-slate-400">
-                <span className="material-symbols-outlined text-6xl mb-4">person_search</span>
-                <p>Không tìm thấy phản biện nào</p>
+              <div className="text-center py-12 bg-white rounded-xl border border-slate-200">
+                <span className="material-symbols-outlined text-6xl mb-4 text-slate-300">person_search</span>
+                <p className="text-slate-500 mb-4">Không tìm thấy phản biện nào</p>
+                <p className="text-sm text-slate-400 mb-6">
+                  Hệ thống chưa có người phản biện. Vui lòng thêm phản biện viên trong phần "Đội ngũ PC".
+                </p>
+                <button
+                  onClick={() => navigate('/chair/reviewers')}
+                  className="px-6 py-2 bg-primary text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
+                >
+                  Quản lý đội ngũ PC
+                </button>
               </div>
             )}
           </div>

@@ -59,6 +59,8 @@ const LoginPage = () => {
         
         // Single role - proceed normally
         login(token, user);
+        // ✅ FIXED: Save single role to localStorage on login
+        localStorage.setItem('activeRole', user.roles?.[0] || 'Author');
         navigateByRole(user.roles?.[0] || 'Author');
       } else {
         setError('Đăng nhập thất bại. Vui lòng thử lại.');
@@ -76,6 +78,8 @@ const LoginPage = () => {
       const { token, user } = pendingLoginData;
       const updatedUser = { ...user, selectedRole: selectedRole };
       login(token, updatedUser);
+      // ✅ FIXED: Save active role to localStorage on login
+      localStorage.setItem('activeRole', selectedRole);
       setShowRoleModal(false);
       navigateByRole(selectedRole);
     }

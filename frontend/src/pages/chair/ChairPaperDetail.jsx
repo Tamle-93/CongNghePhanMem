@@ -60,11 +60,18 @@ export default function ChairPaperDetail() {
       // Gọi song song 2 API để tối ưu thời gian
       const [paperRes, reviewsRes] = await Promise.all([
         api.getPaperById(id),
-        api.getReviewsByPaper(id).catch(() => ({ data: [] }))
+        api.getReviewsByPaper(id).catch(() => ({ data: { data: [] } }))
       ]);
       
-      setPaper(paperRes.data?.data?.paper || paperRes.data);
-      setReviews(reviewsRes.data?.data || reviewsRes.data || []);
+      // ✅ FIXED: Correct data path from API response
+      const paperData = paperRes.data?.data;
+      if (!paperData) {
+        console.error('Invalid paper response:', paperRes.data);
+        return;
+      }
+      
+      setPaper(paperData);
+      setReviews(reviewsRes.data?.data || []);
     } catch (error) {
       console.error('Error fetching paper:', error);
     } finally {
@@ -96,6 +103,7 @@ export default function ChairPaperDetail() {
    */
   const getStatusLabel = (status) => {
     const labels = {
+      submitted: 'Chờ phân công',
       pending: 'Chờ phân công',
       under_review: 'Đang phản biện',
       revision_required: 'Yêu cầu chỉnh sửa',
@@ -183,7 +191,7 @@ export default function ChairPaperDetail() {
           
           {/* Action buttons */}
           <div className="flex gap-2">
-            {paper.status === 'pending' && (
+            {(paper.status === 'pending' || paper.status === 'submitted') && (
               <button
                 onClick={() => navigate(`/chair/papers/${id}/assign`)}
                 className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
@@ -251,15 +259,30 @@ export default function ChairPaperDetail() {
             {paper.pdf_path && (
               <div>
                 <h3 className="text-sm font-bold text-slate-500 uppercase mb-2">File bài báo</h3>
-                <a 
-                  href={`http://localhost:5000/uploads/${paper.pdf_path}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200"
+                <button 
+                  onClick={async () => {
+                    try {
+                      const token = localStorage.getItem('token');
+                      const paperId = paper.id || paper.paper_id;
+                      const response = await fetch(`http://localhost:5000/api/papers/${paperId}/pdf`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                      });
+                      if (!response.ok) throw new Error('Failed to fetch PDF');
+                      const blob = await response.blob();
+                      const url = window.URL.createObjectURL(blob);
+                      window.open(url, '_blank');
+                      // Clean up after a delay
+                      setTimeout(() => window.URL.revokeObjectURL(url), 100);
+                    } catch (error) {
+                      console.error('Error loading PDF:', error);
+                      alert('Không thể tải file PDF. Vui lòng thử lại.');
+                    }
+                  }}
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-colors"
                 >
                   <span className="material-symbols-outlined">picture_as_pdf</span>
                   Xem PDF
-                </a>
+                </button>
               </div>
             )}
           </div>

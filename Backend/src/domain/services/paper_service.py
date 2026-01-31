@@ -244,14 +244,16 @@ class PaperService:
             db.commit()
             
             # Log to audit
-            AuditLog.log_action(
-                db_session=db,
+            audit_log = AuditLog(
                 user_id=submitter_id,
                 action='PAPER_SUBMITTED',
                 entity_type='Paper',
                 entity_id=paper.id,
-                changes={'title': title, 'conference_id': conference_id}
+                changes={'title': title, 'conference_id': conference_id},
+                status='success'
             )
+            db.add(audit_log)
+            db.commit()
             
             return PaperService._serialize_paper(db, paper), None
             
@@ -277,7 +279,14 @@ class PaperService:
                 user = db.query(User).filter(User.id == user_id).first()
                 
                 is_submitter = paper.submitter_id == user_id
-                is_chair = paper.conference.chair_id == user_id
+                
+                # Check if user is chair of the conference
+                from infrastructure.models import Conference
+                conference = db.query(Conference).filter(
+                    Conference.id == paper.conference_id
+                ).first()
+                is_chair = conference and conference.chair_id == user_id
+                
                 is_admin = 'Admin' in user.roles
                 
                 from infrastructure.models import Assignment
@@ -395,14 +404,16 @@ class PaperService:
             db.refresh(paper)
             
             # Log to audit
-            AuditLog.log_action(
-                db_session=db,
+            audit_log = AuditLog(
                 user_id=user_id,
                 action='PAPER_UPDATED',
                 entity_type='Paper',
                 entity_id=paper.id,
-                changes=changes
+                changes=changes,
+                status='success'
             )
+            db.add(audit_log)
+            db.commit()
             
             return PaperService._serialize_paper(db, paper), None
             
@@ -440,14 +451,16 @@ class PaperService:
             db.commit()
             
             # Log withdrawal
-            AuditLog.log_action(
-                db_session=db,
+            audit_log = AuditLog(
                 user_id=user_id,
                 action='PAPER_WITHDRAWN',
                 entity_type='Paper',
                 entity_id=paper.id,
-                changes={'status': 'withdrawn'}
+                changes={'status': 'withdrawn'},
+                status='success'
             )
+            db.add(audit_log)
+            db.commit()
             
             return True, None
             

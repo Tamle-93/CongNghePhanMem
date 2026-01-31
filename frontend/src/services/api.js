@@ -1,6 +1,9 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:5000/api';
+// ✅ FIXED: Use relative path for Docker deployment
+// In development (npm run dev), Vite proxy will forward to localhost:5000
+// In production (Docker), nginx will forward /api to backend container
+const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -9,12 +12,20 @@ const api = axios.create({
   },
 });
 
-// Add token to requests
+// Add token and active role to requests
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');
+  const activeRole = localStorage.getItem('activeRole');
+  
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
+  
+  // Add active role header so backend knows which role user is operating as
+  if (activeRole) {
+    config.headers['X-Active-Role'] = activeRole;
+  }
+  
   return config;
 });
 
@@ -94,8 +105,11 @@ export default {
   // Decisions
   makeDecision: (paperId, data) => api.post(`/papers/${paperId}/decision`, data), // { decision, feedback, decision_date }
   
-  // Admin
-  listUsers: (params) => api.get('/admin/users', { params }),
+  // Users (for Chair/Admin)
+  listUsers: (params) => api.get('/users', { params }),  // Chair+Admin can access /users
+  
+  // Admin only
+  adminListUsers: (params) => api.get('/admin/users', { params }),
   createUser: (data) => api.post('/admin/users', data),
   updateUser: (id, data) => api.put(`/admin/users/${id}`, data),
   blockUser: (id) => api.put(`/admin/users/${id}/block`),

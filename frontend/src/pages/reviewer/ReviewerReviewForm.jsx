@@ -100,7 +100,26 @@ const ReviewerReviewForm = () => {
       setSubmitting(true);
       const response = await api.post('/reviews', {
         paper_id: parseInt(id),
-        ...formData
+        score: formData.overall_score || 5,  // Map overall_score to score
+        comments_for_author: `
+**Điểm mạnh:**
+${formData.strengths}
+
+**Điểm yếu:**
+${formData.weaknesses}
+
+**Nhận xét chi tiết:**
+${formData.detailed_comments}
+
+**Khuyến nghị:** ${formData.recommendation}
+        `.trim(),
+        confidential_content: `
+Originality: ${formData.originality_score}/10
+Technical Quality: ${formData.technical_quality_score}/10
+Clarity: ${formData.clarity_score}/10
+Relevance: ${formData.relevance_score}/10
+Overall: ${formData.overall_score}/10
+        `.trim()
       });
       
       if (response.data.status === 'success') {

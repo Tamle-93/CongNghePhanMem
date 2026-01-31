@@ -71,51 +71,74 @@ def get_my_assignments():
 @limiter.limit("30 per minute")
 def create_assignment():
     """
-    Create reviewer assignment (Manual)
+    Create reviewer assignment(s) - supports single or multiple reviewers
     ---
-    tags:
-      - Assignments
-    security:
-      - Bearer: []
-    parameters:
-      - in: body
-        name: body
-        schema:
-          type: object
-          required:
-            - conference_id
-            - paper_id
-            - reviewer_id
-          properties:
-            conference_id:
-              type: integer
-            paper_id:
-              type: integer
-            reviewer_id:
-              type: integer
-    responses:
-      201:
-        description: Assignment created
-      400:
-        description: Error
+    Body:
+    {
+        "conference_id": 1,
+        "paper_id": 123,
+        "reviewer_id": 5  // single reviewer
+    }
+    OR
+    {
+        "paper_id": 123,
+        "reviewer_ids": [5, 6, 7]  // multiple reviewers
+    }
     """
     try:
-        data = create_schema.load(request.json)
+        data = request.json
+        paper_id = data.get('paper_id')
         
-        assignment, error = AssignmentService.create_assignment(
-            conference_id=data['conference_id'],
-            paper_id=data['paper_id'],
-            reviewer_id=data['reviewer_id'],
-            chair_user_id=request.current_user['user_id']
-        )
+        if not paper_id:
+            return jsonify({'status': 'error', 'message': 'paper_id is required'}), 400
         
-        if error:
-            return jsonify({'status': 'error', 'message': error}), 400
+        # Get conference_id from paper
+        from infrastructure.databases.base import SessionLocal
+        from infrastructure.models import Paper
+        db = SessionLocal()
+        try:
+            paper = db.query(Paper).filter(Paper.id == paper_id).first()
+            if not paper:
+                return jsonify({'status': 'error', 'message': 'Paper not found'}), 404
+            conference_id = paper.conference_id
+        finally:
+            db.close()
+        
+        # Handle both single reviewer_id and multiple reviewer_ids
+        reviewer_ids = data.get('reviewer_ids', [])
+        if not reviewer_ids and data.get('reviewer_id'):
+            reviewer_ids = [data.get('reviewer_id')]
+        
+        if not reviewer_ids:
+            return jsonify({'status': 'error', 'message': 'reviewer_id or reviewer_ids required'}), 400
+        
+        # Create assignments for all reviewers
+        assignments = []
+        errors = []
+        
+        for reviewer_id in reviewer_ids:
+            assignment, error = AssignmentService.create_assignment(
+                conference_id=conference_id,
+                paper_id=paper_id,
+                reviewer_id=reviewer_id,
+                chair_user_id=request.current_user['user_id']
+            )
+            
+            if error:
+                errors.append(f"Reviewer {reviewer_id}: {error}")
+            else:
+                assignments.append(assignment)
+        
+        if errors and not assignments:
+            return jsonify({'status': 'error', 'message': '; '.join(errors)}), 400
         
         return jsonify({
             'status': 'success',
-            'message': 'Assignment created successfully',
-            'data': assignment
+            'message': f'Created {len(assignments)} assignment(s)' + (f' ({len(errors)} failed)' if errors else ''),
+            'data': {
+                'assignments': assignments,
+                'errors': errors if errors else None
+            }
         }), 201
         
     except ValidationError as e:

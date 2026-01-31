@@ -15,7 +15,7 @@ export default function AuthorPaperDetail() {
   const fetchPaperDetail = async () => {
     try {
       const response = await api.getPaperById(id);
-      setPaper(response.data);
+      setPaper(response.data.data);
     } catch (error) {
       console.error('Error fetching paper:', error);
     } finally {
@@ -218,12 +218,12 @@ export default function AuthorPaperDetail() {
                     Từ khóa
                   </label>
                   <div className="flex flex-wrap gap-2">
-                    {paper.keywords.map((keyword, index) => (
+                    {(Array.isArray(paper.keywords) ? paper.keywords : paper.keywords.split(',')).map((keyword, index) => (
                       <span
                         key={index}
                         className="px-3 py-1 bg-blue-50 text-blue-600 text-xs font-medium rounded-full border border-blue-100"
                       >
-                        {keyword}
+                        {typeof keyword === 'string' ? keyword.trim() : keyword}
                       </span>
                     ))}
                   </div>
@@ -299,7 +299,7 @@ export default function AuthorPaperDetail() {
               </h3>
             </div>
             <div className="p-6 space-y-4">
-              {paper.file_path ? (
+              {(paper.pdf_path || paper.file_path) ? (
                 <div className="flex items-center justify-between p-3 rounded-lg border border-slate-200 bg-slate-50">
                   <div className="flex items-center gap-3">
                     <span className="material-symbols-outlined text-red-500 text-3xl">
@@ -307,15 +307,30 @@ export default function AuthorPaperDetail() {
                     </span>
                     <div className="overflow-hidden">
                       <p className="text-sm font-bold text-slate-900 truncate">
-                        {paper.file_path.split('/').pop()}
+                        {(paper.pdf_path || paper.file_path).split('/').pop()}
                       </p>
                       <p className="text-xs text-slate-500">
-                        {new Date(paper.submission_date).toLocaleDateString('vi-VN')}
+                        {paper.created_at ? new Date(paper.created_at).toLocaleDateString('vi-VN') : 'N/A'}
                       </p>
                     </div>
                   </div>
                   <button
-                    onClick={() => window.open(paper.file_path, '_blank')}
+                    onClick={async () => {
+                      try {
+                        const token = localStorage.getItem('token');
+                        const response = await fetch(`http://localhost:5000/api/papers/${paper.id}/pdf`, {
+                          headers: { 'Authorization': `Bearer ${token}` }
+                        });
+                        if (!response.ok) throw new Error('Failed to fetch PDF');
+                        const blob = await response.blob();
+                        const url = window.URL.createObjectURL(blob);
+                        window.open(url, '_blank');
+                        setTimeout(() => window.URL.revokeObjectURL(url), 100);
+                      } catch (error) {
+                        console.error('Error loading PDF:', error);
+                        alert('Không thể tải file PDF. Vui lòng thử lại.');
+                      }
+                    }}
                     className="p-2 text-primary hover:bg-blue-100 rounded-lg transition-all"
                     title="Download"
                   >
@@ -341,11 +356,11 @@ export default function AuthorPaperDetail() {
             <div className="space-y-4">
               <div>
                 <p className="text-xs opacity-70 mb-1">Hội nghị</p>
-                <p className="font-bold">{paper.conference?.name || 'Không rõ'}</p>
+                <p className="font-bold">{paper.conference_name || paper.conference?.name || 'Không rõ'}</p>
               </div>
               <div>
                 <p className="text-xs opacity-70 mb-1">Phân ban</p>
-                <p className="font-bold">{paper.track?.name || 'Chưa phân công'}</p>
+                <p className="font-bold">{paper.track_name || paper.track?.name || 'Chưa phân công'}</p>
               </div>
               {paper.status === 'revision_required' && paper.revision_deadline && (
                 <div>

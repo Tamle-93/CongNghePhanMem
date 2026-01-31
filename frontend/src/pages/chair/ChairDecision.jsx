@@ -21,10 +21,17 @@ export default function ChairDecision() {
     try {
       const [paperRes, reviewsRes] = await Promise.all([
         api.getPaperById(id),
-        api.getReviewsByPaper(id)
+        api.getReviewsByPaper(id).catch(() => ({ data: { data: [] } }))
       ]);
-      setPaper(paperRes.data);
-      setReviews(reviewsRes.data);
+      
+      // ✅ FIXED: Extract paper and reviews from API response correctly
+      // API returns: { status: 'success', data: {...paperData} }
+      const paperData = paperRes.data?.data || paperRes.data;
+      setPaper(paperData);
+      
+      // Reviews API returns: { status: 'success', data: [...reviews] }
+      const reviewsData = reviewsRes.data?.data || [];
+      setReviews(Array.isArray(reviewsData) ? reviewsData : []);
       
       // Pre-fill feedback template based on decision
       generateFeedbackTemplate('accepted');

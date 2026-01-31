@@ -24,39 +24,39 @@ const ChairTimelineEdit = () => {
   const fetchMilestone = async () => {
     try {
       setLoading(true);
-      // Try to get milestone from conference deadlines or separate endpoint
-      const response = await api.get(`/conferences/milestones/${id}`).catch(() => null);
+      // Fetch conferences to get milestone data from conference deadlines
+      const confResponse = await api.listConferences();
+      const conferences = confResponse.data?.data?.conferences || [];
       
-      if (response?.data?.data) {
-        const data = response.data.data;
-        setMilestone({
-          name: data.name || '',
-          description: data.description || '',
-          deadline: data.deadline ? data.deadline.split('T')[0] : '',
-          type: data.type || 'submission',
-          reminder_days: data.reminder_days || 7,
-          is_active: data.is_active !== false
-        });
-      } else {
-        // Default sample data for demo
-        const sampleMilestones = {
-          '1': { name: 'Hạn nộp bài', type: 'submission', deadline: '2026-01-09', description: 'Hạn cuối nộp bài báo đầy đủ' },
-          '2': { name: 'Hạn phản biện', type: 'review', deadline: '2026-02-08', description: 'Hạn cuối cho reviewer nộp đánh giá' },
-          '3': { name: 'Thông báo kết quả', type: 'decision', deadline: '2026-02-20', description: 'Gửi thông báo kết quả đến tác giả' },
-          '4': { name: 'Hạn nộp camera-ready', type: 'camera_ready', deadline: '2026-03-01', description: 'Hạn nộp bản cuối cùng sau chỉnh sửa' }
+      if (conferences.length > 0) {
+        const conf = conferences[0];
+        
+        // Map milestone ID to conference field
+        const typeMap = {
+          '1': { field: 'submission_deadline', name: 'Hạn nộp bài', type: 'submission' },
+          '2': { field: 'review_deadline', name: 'Hạn phản biện', type: 'review' },
+          '3': { field: 'decision_deadline', name: 'Thông báo kết quả', type: 'decision' },
+          '4': { field: 'camera_ready_deadline', name: 'Hạn nộp camera-ready', type: 'camera_ready' }
         };
         
-        if (sampleMilestones[id]) {
+        const mapping = typeMap[id];
+        if (mapping && conf[mapping.field]) {
+          const dateStr = conf[mapping.field];
           setMilestone({
-            ...milestone,
-            ...sampleMilestones[id],
+            name: mapping.name,
+            description: '',
+            deadline: dateStr.split('T')[0],
+            type: mapping.type,
             reminder_days: 7,
             is_active: true
           });
+        } else {
+          setError('Mốc thời gian không tồn tại');
         }
       }
     } catch (err) {
       console.error('Error fetching milestone:', err);
+      setError('Không thể tải dữ liệu từ database');
     } finally {
       setLoading(false);
     }

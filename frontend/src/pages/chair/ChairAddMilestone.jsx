@@ -30,9 +30,36 @@ const ChairAddMilestone = () => {
     try {
       setLoading(true);
       const datetime = `${formData.date}T${formData.time}:00`;
-      // TODO: Replace with real API
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      // await api.post('/chair/milestones', { ...formData, date: datetime });
+      
+      // Get first conference to update
+      const confRes = await api.listConferences();
+      const conferences = confRes.data?.data?.conferences || [];
+      
+      if (conferences.length === 0) {
+        alert('Không tìm thấy hội nghị nào để cập nhật');
+        return;
+      }
+      
+      const conf = conferences[0];
+      
+      // Map type to conference field
+      const typeToField = {
+        'submission': 'submission_deadline',
+        'review': 'review_deadline',
+        'notification': 'decision_deadline',
+        'conference': 'conference_start_date',
+        'registration': 'registration_deadline',
+        'camera_ready': 'camera_ready_deadline'
+      };
+      
+      const field = typeToField[formData.type];
+      if (field) {
+        // Update conference deadline
+        await api.put(`/conferences/${conf.id}`, {
+          [field]: datetime
+        });
+      }
+      
       alert('Đã tạo mốc thời gian thành công!');
       navigate('/chair/timeline');
     } catch (error) {

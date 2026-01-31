@@ -1,6 +1,36 @@
 """
+============================================
 Backend/src/domain/services/review_service.py
-Review Service - Review Submission and Management
+============================================
+Review Service - Phản biện quản lý
+
+MỤC ĐÍCH:
+- Quản lý submission của phản biện
+- Track review scores và comments
+- Validate review deadlines
+- Ghi log audit trail
+
+CHỨC NĂNG CHÍNH:
+1. submit_review(): Nộp hoặc cập nhật phản biện
+   - Validate reviewer assignment
+   - Check deadline
+   - Update assignment status
+   
+2. get_paper_reviews(): Lấy tất cả reviews của 1 bài
+3. get_reviewer_assignments(): Bài phân công cho reviewer
+4. get_review_status(): Trạng thái phản biện
+
+WORKFLOW:
+1. Reviewer login -> list assignments
+2. Reviewer open paper -> submit review with score + comments
+3. System log to AuditLogAI
+4. Chair view reviews -> make decision
+
+SECURITY:
+- Chỉ assigned reviewer mới submit review
+- Check deadline trước submit
+- Confidential comments (không cho author thấy)
+- Audit log mọi thay đổi
 """
 
 from infrastructure.databases.base import SessionLocal
@@ -11,7 +41,11 @@ from datetime import datetime
 import json
 
 class ReviewService:
-    """Review management service"""
+    """
+    Review Management Service
+    ========================
+    Quản lý phản biện và scores
+    """
     
     @staticmethod
     def submit_review(assignment_id, reviewer_id, score, 

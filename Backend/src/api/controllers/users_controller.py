@@ -36,7 +36,13 @@ def list_users():
         query = db.query(User).filter(User.is_deleted == False)
         
         if role:
-            query = query.filter(User.role == role)
+            # ✅ FIXED: Filter by role through UserRole relationship with explicit join conditions
+            from infrastructure.models import UserRole, Role
+            query = query.join(UserRole, User.id == UserRole.user_id)\
+                        .join(Role, UserRole.role_id == Role.id)\
+                        .filter(
+                            (Role.name == role) & (UserRole.is_active == True)
+                        )
         
         if search:
             search_pattern = f"%{search}%"
@@ -214,10 +220,13 @@ def list_reviewers():
     db = SessionLocal()
     
     try:
-        reviewers = db.query(User).filter(
-            User.role.in_(['Reviewer', 'Chair']),
+        # ✅ FIXED: Use UserRole relationship to filter by roles
+        from infrastructure.models import UserRole, Role
+        reviewers = db.query(User).join(UserRole).join(Role).filter(
+            Role.name.in_(['Reviewer', 'Chair']),
+            UserRole.is_active == True,
             User.is_deleted == False
-        ).order_by(User.full_name).all()
+        ).distinct().order_by(User.full_name).all()
         
         return jsonify({
             'status': 'success',
@@ -240,10 +249,13 @@ def get_users_by_role(role):
         if role not in ['Author', 'Reviewer', 'Chair', 'Admin']:
             return jsonify({'status': 'error', 'message': 'Invalid role'}), 400
         
-        users = db.query(User).filter(
-            User.role == role,
+        # ✅ FIXED: Use UserRole relationship to filter by roles
+        from infrastructure.models import UserRole, Role
+        users = db.query(User).join(UserRole).join(Role).filter(
+            Role.name == role,
+            UserRole.is_active == True,
             User.is_deleted == False
-        ).order_by(User.full_name).all()
+        ).distinct().order_by(User.full_name).all()
         
         return jsonify({
             'status': 'success',
@@ -268,13 +280,16 @@ def get_user_statistics():
     
     try:
         from sqlalchemy import func
+        from infrastructure.models import UserRole, Role
         
-        # Count by role
+        # ✅ FIXED: Count by role using UserRole relationship
         role_stats = db.query(
-            User.role,
+            Role.name,
             func.count(User.id).label('count')
-        ).filter(User.is_deleted == False)\
-         .group_by(User.role).all()
+        ).join(UserRole).join(Role).filter(
+            UserRole.is_active == True,
+            User.is_deleted == False
+        ).group_by(Role.name).all()
         
         stats = {
             'total_users': db.query(User).filter(User.is_deleted == False).count(),
@@ -387,7 +402,8 @@ def invite_reviewer():
         
         if existing_user:
             # User exists - check if already reviewer
-            if existing_user.role == 'Reviewer':
+            # ✅ FIXED: Check if user has Reviewer role
+            if 'Reviewer' in existing_user.roles:
                 return jsonify({
                     'status': 'success',
                     'message': 'Người dùng đã là Reviewer',
@@ -398,21 +414,34 @@ def invite_reviewer():
                     }
                 }), 200
             
-            # Update role to Reviewer
-            old_role = existing_user.role
-            existing_user.role = 'Reviewer'
+            # ✅ FIXED: Add Reviewer role using UserRole relationship
+            from infrastructure.models import UserRole, Role
+            reviewer_role = db.query(Role).filter(Role.name == 'Reviewer').first()
+            if not reviewer_role:
+                return jsonify({'status': 'error', 'message': 'Reviewer role not found'}), 500
+            
+            # Get current roles before adding new one
+            old_roles = existing_user.roles if existing_user.roles else []
+            
+            new_user_role = UserRole(
+                user_id=existing_user.id,
+                role_id=reviewer_role.id,
+                conference_id=None,  # Global Reviewer role
+                is_active=True
+            )
+            db.add(new_user_role)
             db.commit()
             
             # Log the role change
             AuditLogAI.log(
                 db_session=db,
                 user_id=request.current_user['user_id'],
-                action_type='role_changed',
+                action_type='role_added',
                 table_name='users',
                 record_id=existing_user.id,
                 data=json.dumps({
                     'email': email,
-                    'old_role': old_role,
+                    'old_roles': old_roles,
                     'new_role': 'Reviewer',
                     'invited_by': request.current_user['username']
                 })

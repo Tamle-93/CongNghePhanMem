@@ -135,27 +135,37 @@ class ConferenceService:
             db.close()
     
     @staticmethod
-    @staticmethod
-    def list_conferences(page=1, per_page=10):
+    def list_conferences(page=1, per_page=10, only_active=True):
         """
         Lấy danh sách hội nghị (có phân trang)
         
         PARAMS:
         - page: Số trang (bắt đầu từ 1)
         - per_page: Số item mỗi trang
+        - only_active: Nếu True, chỉ show conferences có is_active=True
         
         RETURNS:
         - { conferences: [...], total, page, per_page }
         """
         db = SessionLocal()
         try:
+            from datetime import datetime
             offset = (page - 1) * per_page
             
-            conferences = db.query(Conference).filter(
-                Conference.is_deleted == False
-            ).order_by(Conference.created_at.desc()).limit(per_page).offset(offset).all()
+            # Base query: không deleted
+            query = db.query(Conference).filter(Conference.is_deleted == False)
             
-            total = db.query(Conference).filter(Conference.is_deleted == False).count()
+            # Filter: chỉ show active conferences nếu only_active=True
+            if only_active:
+                query = query.filter(Conference.is_active == True)
+            
+            # Order + pagination
+            conferences = query.order_by(Conference.created_at.desc())\
+                               .limit(per_page)\
+                               .offset(offset)\
+                               .all()
+            
+            total = query.count()
             
             return {
                 'conferences': [ConferenceService._serialize_conference(c) for c in conferences],

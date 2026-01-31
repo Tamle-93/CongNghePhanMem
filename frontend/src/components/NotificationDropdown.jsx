@@ -30,12 +30,108 @@ const NotificationDropdown = () => {
 
   const fetchNotifications = async () => {
     try {
-      const response = await api.getNotifications().catch(() => ({ data: { notifications: [] } }));
-      const notifs = response.data?.notifications || [];
-      setNotifications(notifs);
+      setLoading(true);
+      
+      // Try to get real notifications first
+      let notifs = [];
+      try {
+        const response = await api.getNotifications();
+        notifs = response.data?.notifications || response.data?.data?.notifications || [];
+      } catch {
+        // If no notification API, generate from papers/conferences
+        notifs = [];
+      }
+      
+      // If no real notifications, generate from user's papers and conferences
+      if (notifs.length === 0) {
+        try {
+          const [papersRes, conferencesRes] = await Promise.all([
+            api.listPapers().catch(() => ({ data: { data: { papers: [] } } })),
+            api.listConferences().catch(() => ({ data: { data: { conferences: [] } } }))
+          ]);
+          
+          const papers = papersRes.data?.data?.papers || papersRes.data?.papers || [];
+          const conferences = conferencesRes.data?.data?.conferences || conferencesRes.data?.conferences || [];
+          
+          // Generate notifications from papers
+          papers.slice(0, 5).forEach((paper, index) => {
+            if (paper.status === 'accepted') {
+              notifs.push({
+                id: `paper-accepted-${paper.id}`,
+                type: 'decision_made',
+                title: 'Bài báo được chấp nhận!',
+                message: `"${paper.title}" đã được chấp nhận đăng.`,
+                created_at: paper.updated_at || paper.created_at,
+                is_read: index > 0,
+                link: `/author/papers/${paper.id}`
+              });
+            } else if (paper.status === 'rejected') {
+              notifs.push({
+                id: `paper-rejected-${paper.id}`,
+                type: 'decision_made',
+                title: 'Kết quả phản biện',
+                message: `"${paper.title}" không được chấp nhận.`,
+                created_at: paper.updated_at || paper.created_at,
+                is_read: index > 0,
+                link: `/author/papers/${paper.id}`
+              });
+            } else if (paper.status === 'under_review') {
+              notifs.push({
+                id: `paper-review-${paper.id}`,
+                type: 'review_assigned',
+                title: 'Bài báo đang được phản biện',
+                message: `"${paper.title}" đã được gửi tới phản biện.`,
+                created_at: paper.updated_at || paper.created_at,
+                is_read: true,
+                link: `/author/papers/${paper.id}`
+              });
+            } else if (paper.status === 'submitted' || paper.status === 'pending') {
+              notifs.push({
+                id: `paper-submitted-${paper.id}`,
+                type: 'paper_submitted',
+                title: 'Nộp bài thành công',
+                message: `"${paper.title}" đã được nộp.`,
+                created_at: paper.created_at,
+                is_read: true,
+                link: `/author/papers/${paper.id}`
+              });
+            }
+          });
+          
+          // Add deadline reminders for upcoming conferences
+          const now = new Date();
+          conferences.forEach((conf) => {
+            if (conf.submission_deadline) {
+              const deadline = new Date(conf.submission_deadline);
+              const daysLeft = Math.ceil((deadline - now) / (1000 * 60 * 60 * 24));
+              
+              if (daysLeft > 0 && daysLeft <= 7) {
+                notifs.push({
+                  id: `deadline-${conf.id || conf.conference_id}`,
+                  type: 'deadline_reminder',
+                  title: `Sắp hết hạn nộp bài!`,
+                  message: `${conf.name}: Còn ${daysLeft} ngày để nộp bài.`,
+                  created_at: new Date().toISOString(),
+                  is_read: daysLeft > 3,
+                  link: '/conferences'
+                });
+              }
+            }
+          });
+          
+          // Sort by created_at desc
+          notifs.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+        } catch (err) {
+          console.error('Error generating notifications:', err);
+        }
+      }
+      
+      setNotifications(notifs.slice(0, 10)); // Limit to 10
       setUnreadCount(notifs.filter(n => !n.is_read).length);
     } catch (err) {
       console.error('Error fetching notifications:', err);
+    } finally {
+      setLoading(false);
     }
   };
 
