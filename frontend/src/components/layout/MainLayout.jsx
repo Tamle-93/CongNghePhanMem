@@ -13,7 +13,7 @@ const MainLayout = () => {
   const [showSearch, setShowSearch] = useState(false);
   const [showRoleMenu, setShowRoleMenu] = useState(false);
   
-  // Current active role - saved in localStorage
+  // Current active role - saved in localStorage and synchronized across component instances
   const [activeRole, setActiveRole] = useState(() => {
     const saved = localStorage.getItem('activeRole');
     if (saved && user?.roles?.includes(saved)) {
@@ -22,7 +22,15 @@ const MainLayout = () => {
     return user?.roles?.[0] || 'Author';
   });
 
-  // Update activeRole when user changes
+  // ✅ FIXED: Ensure activeRole stays synced with localStorage on mount and when location changes
+  useEffect(() => {
+    const savedRole = localStorage.getItem('activeRole');
+    if (savedRole && user?.roles?.includes(savedRole)) {
+      setActiveRole(savedRole);
+    }
+  }, [location, user]); // Re-sync when navigating or user changes
+
+  // ✅ ORIGINAL: Update activeRole when user changes
   useEffect(() => {
     if (user?.roles?.length > 0) {
       const saved = localStorage.getItem('activeRole');
@@ -36,6 +44,11 @@ const MainLayout = () => {
   }, [user]);
 
   const handleRoleChange = (newRole) => {
+    if (!newRole || !user?.roles?.includes(newRole)) {
+      console.error('Invalid role selected:', newRole);
+      return;
+    }
+    
     setActiveRole(newRole);
     localStorage.setItem('activeRole', newRole);
     setShowRoleMenu(false);

@@ -1,6 +1,28 @@
 """
+============================================
 Backend/src/infrastructure/models/paper_model.py
-Paper Model - FIXED with correct Enum and relationships
+============================================
+Paper Model - Bài báo (Submission Management)
+
+MỤC ĐÍCH:
+- Lưu thông tin bài báo được nộp
+- Track trạng thái bài (draft, submitted, under review, etc.)
+- Manage versions (original, revision, camera-ready)
+- Link tác giả, phản biện, quyết định
+
+FIELDS:
+- title: Tiêu đề bài báo
+- abstract: Tóm tắt
+- keywords: Từ khóa
+- pdf_path: Đường dẫn file PDF
+- status: Trạng thái (DRAFT, SUBMITTED, UNDER_REVIEW, ACCEPTED, REJECTED)
+
+STATUS FLOW:
+DRAFT → SUBMITTED → UNDER_REVIEW → REVIEWED → (ACCEPTED|REJECTED)
+           ↓
+        Tác giả đang soạn
+        
+AUDIT: created_at, updated_at
 """
 
 from sqlalchemy import Column, Integer, String, Text, DateTime, Boolean, ForeignKey, Enum
@@ -10,14 +32,16 @@ from enum import Enum as PyEnum
 from infrastructure.databases.base import Base
 
 class PaperStatus(str, PyEnum):
-    """Paper status enum"""
-    DRAFT = "draft"
-    SUBMITTED = "submitted"
-    UNDER_REVIEW = "under_review"
-    REVIEWED = "reviewed"
-    ACCEPTED = "accepted"
-    REJECTED = "rejected"
-    WITHDRAWN = "withdrawn"
+    """
+    Paper Status Enum - Các trạng thái bài báo
+    """
+    DRAFT = "draft"           # Bản nháp
+    SUBMITTED = "submitted"   # Đã nộp
+    UNDER_REVIEW = "under_review"  # Đang review
+    REVIEWED = "reviewed"     # Xong review
+    ACCEPTED = "accepted"     # Chấp nhận
+    REJECTED = "rejected"     # Từ chối
+    WITHDRAWN = "withdrawn"   # Rút lại
 
 class Paper(Base):
     """Paper Model - Bài báo khoa học"""

@@ -12,6 +12,18 @@ const AdminConferenceManagement = () => {
 
   useEffect(() => {
     fetchConferences();
+    
+    // Auto-refresh every 60 seconds
+    const interval = setInterval(fetchConferences, 60000);
+    
+    // Refresh when tab is focused
+    const handleFocus = () => fetchConferences();
+    window.addEventListener('focus', handleFocus);
+    
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('focus', handleFocus);
+    };
   }, []);
 
   const fetchConferences = async () => {
@@ -68,10 +80,24 @@ const AdminConferenceManagement = () => {
             <h1 className="text-3xl font-bold text-gray-900 sm:text-4xl">Quản Lý Hội Nghị</h1>
             <p className="mt-2 text-base text-gray-600">Quản lý thông tin và cấu hình các hội nghị khoa học.</p>
           </div>
-          <button onClick={() => navigate('/admin/conferences/create')} className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors shadow-sm">
-            <span className="material-symbols-outlined text-[20px]">add</span>
-            Tạo hội nghị mới
-          </button>
+          <div className="flex items-center gap-2">
+            <button 
+              onClick={fetchConferences}
+              disabled={loading}
+              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
+              title="Làm mới danh sách"
+            >
+              <span className="material-symbols-outlined text-[20px]">refresh</span>
+              <span className="hidden sm:inline">Làm mới</span>
+            </button>
+            <button 
+              onClick={() => navigate('/admin/conferences/create')} 
+              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
+            >
+              <span className="material-symbols-outlined text-[20px]">add</span>
+              <span className="hidden sm:inline">Tạo hội nghị</span>
+            </button>
+          </div>
         </div>
 
         <div className="mb-6 p-4 bg-white rounded-xl border border-gray-200 shadow-sm flex flex-col md:flex-row gap-4">

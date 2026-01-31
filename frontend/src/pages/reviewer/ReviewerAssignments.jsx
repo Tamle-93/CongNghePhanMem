@@ -17,9 +17,14 @@ const ReviewerAssignments = () => {
       setLoading(true);
       const params = filter !== 'all' ? { status: filter } : {};
       const response = await api.get('/assignments/my-assignments', { params });
-      setAssignments(response.data.data.assignments || []);
+      
+      // ✅ FIXED: Extract assignments from API response correctly
+      // API returns: { status: 'success', data: { assignments: [...] } }
+      const assignmentsData = response.data?.data?.assignments || [];
+      setAssignments(Array.isArray(assignmentsData) ? assignmentsData : []);
     } catch (error) {
       console.error('Error fetching assignments:', error);
+      setAssignments([]);
     } finally {
       setLoading(false);
     }

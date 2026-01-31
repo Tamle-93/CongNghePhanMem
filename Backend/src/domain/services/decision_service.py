@@ -1,6 +1,40 @@
 """
+============================================
 Backend/src/domain/services/decision_service.py
-Decision Service - Paper Decision Management
+============================================
+Decision Service - Quyết định cho bài báo
+
+MỤC ĐÍCH:
+- Quản lý quyết định cuối cùng cho bài báo
+- Track decision history
+- Generate notification emails
+- Support all decision types: Accept, Reject, Revision
+
+CHỨC NĂNG CHÍNH:
+1. make_decision(): Tạo hoặc cập nhật quyết định
+   - Accept: Chấp nhận bài
+   - Reject: Từ chối bài
+   - Revision: Yêu cầu chỉnh sửa
+   
+2. get_decision(): Lấy quyết định của bài
+3. notify_authors(): Gửi email cho tác giả
+4. get_statistics(): Thống kê quyết định
+
+DECISION WORKFLOW:
+1. Chair view reviews for a paper
+2. Chair reads comments từ reviewers
+3. Chair make decision + write feedback
+4. System create Decision record
+5. System send email to authors
+6. Authors see result in their dashboard
+7. If Revision: authors resubmit + new review
+8. If Accept: authors submit camera-ready
+
+NOTIFICATION:
+- Template cho mỗi decision type
+- Include review comments nếu needed
+- Send to all authors
+- Log to AuditLogAI
 """
 
 from infrastructure.databases.base import SessionLocal
@@ -12,7 +46,11 @@ from datetime import datetime
 import json
 
 class DecisionService:
-    """Decision management service"""
+    """
+    Decision Management Service
+    ===========================
+    Quản lý quyết định bài báo
+    """
     
     @staticmethod
     def make_decision(paper_id, chair_user_id, result, final_comment=""):

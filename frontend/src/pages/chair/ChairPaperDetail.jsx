@@ -60,11 +60,18 @@ export default function ChairPaperDetail() {
       // Gọi song song 2 API để tối ưu thời gian
       const [paperRes, reviewsRes] = await Promise.all([
         api.getPaperById(id),
-        api.getReviewsByPaper(id).catch(() => ({ data: [] }))
+        api.getReviewsByPaper(id).catch(() => ({ data: { data: [] } }))
       ]);
       
-      setPaper(paperRes.data?.data?.paper || paperRes.data);
-      setReviews(reviewsRes.data?.data || reviewsRes.data || []);
+      // ✅ FIXED: Correct data path from API response
+      const paperData = paperRes.data?.data;
+      if (!paperData) {
+        console.error('Invalid paper response:', paperRes.data);
+        return;
+      }
+      
+      setPaper(paperData);
+      setReviews(reviewsRes.data?.data || []);
     } catch (error) {
       console.error('Error fetching paper:', error);
     } finally {

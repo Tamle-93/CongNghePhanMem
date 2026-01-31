@@ -39,31 +39,78 @@ def submit_paper():
         file: PDF file (required)
     """
     try:
-        # Get form data
-        data = {
-            'title': request.form.get('title'),
-            'abstract': request.form.get('abstract'),
-            'keywords': request.form.get('keywords'),
-            'conference_id': int(request.form.get('conference_id')),
-            'track_id': int(request.form.get('track_id')) if request.form.get('track_id') else None,
-            'authors': request.form.get('authors')
-        }
-        
-        # Parse authors JSON
         import json
-        authors = json.loads(data['authors'])
-        data['authors'] = authors
         
-        # Validate
-        validated_data = submission_schema.load(data)
-        
-        # Get file
+        # Get file first to validate early
         if 'file' not in request.files:
-            return jsonify({'status': 'error', 'message': 'No file uploaded'}), 400
+            return jsonify({'status': 'error', 'message': 'Vui lòng tải lên file PDF'}), 400
         
         file = request.files['file']
         if file.filename == '':
-            return jsonify({'status': 'error', 'message': 'No file selected'}), 400
+            return jsonify({'status': 'error', 'message': 'Vui lòng chọn file PDF'}), 400
+        
+        # Get and validate form data
+        title = request.form.get('title', '').strip()
+        abstract = request.form.get('abstract', '').strip()
+        keywords = request.form.get('keywords', '').strip()
+        conference_id_str = request.form.get('conference_id', '')
+        track_id_str = request.form.get('track_id')
+        authors_str = request.form.get('authors', '[]')
+        
+        # Validate required fields first
+        if not title:
+            return jsonify({'status': 'error', 'message': 'Tiêu đề bài báo không được để trống'}), 400
+        if not abstract:
+            return jsonify({'status': 'error', 'message': 'Tóm tắt không được để trống'}), 400
+        if not conference_id_str:
+            return jsonify({'status': 'error', 'message': 'Vui lòng chọn hội nghị'}), 400
+        
+        # Parse conference_id
+        try:
+            conference_id = int(conference_id_str)
+        except (ValueError, TypeError):
+            return jsonify({'status': 'error', 'message': 'ID hội nghị không hợp lệ'}), 400
+        
+        # Parse track_id if provided
+        track_id = None
+        if track_id_str:
+            try:
+                track_id = int(track_id_str)
+            except (ValueError, TypeError):
+                return jsonify({'status': 'error', 'message': 'ID phân ban không hợp lệ'}), 400
+        
+        # Parse authors JSON
+        try:
+            authors = json.loads(authors_str)
+            if not isinstance(authors, list):
+                authors = [authors]
+            if len(authors) == 0:
+                return jsonify({'status': 'error', 'message': 'Vui lòng thêm ít nhất một tác giả'}), 400
+        except json.JSONDecodeError:
+            return jsonify({'status': 'error', 'message': 'Dữ liệu tác giả không hợp lệ'}), 400
+        
+        # Validate each author has required fields
+        for i, author in enumerate(authors):
+            if not isinstance(author, dict):
+                return jsonify({'status': 'error', 'message': f'Tác giả #{i+1} không hợp lệ'}), 400
+            # At least name or user_id must be present
+            name = author.get('name', '').strip() if isinstance(author.get('name'), str) else ''
+            user_id = author.get('user_id')
+            if not name and not user_id:
+                return jsonify({'status': 'error', 'message': f'Tác giả #{i+1} thiếu tên hoặc ID'}), 400
+        
+        # Prepare data for schema validation
+        data = {
+            'title': title,
+            'abstract': abstract,
+            'keywords': keywords,
+            'conference_id': conference_id,
+            'track_id': track_id,
+            'authors': authors
+        }
+        
+        # Validate with marshmallow schema
+        validated_data = submission_schema.load(data)
         
         # Submit paper
         paper, error = PaperService.submit_paper(
@@ -87,9 +134,19 @@ def submit_paper():
         }), 201
         
     except ValidationError as e:
-        return jsonify({'status': 'error', 'errors': e.messages}), 400
+        # Convert marshmallow validation errors to user-friendly messages
+        error_messages = []
+        for field, msgs in e.messages.items():
+            if isinstance(msgs, list):
+                error_messages.extend(msgs)
+            else:
+                error_messages.append(str(msgs))
+        
+        error_detail = ', '.join(error_messages) if error_messages else 'Dữ liệu không hợp lệ'
+        return jsonify({'status': 'error', 'message': error_detail}), 400
     except Exception as e:
-        return jsonify({'status': 'error', 'message': str(e)}), 500
+        print(f"❌ Paper submission error: {str(e)}")
+        return jsonify({'status': 'error', 'message': f'Lỗi: {str(e)}'}), 500
 
 @papers_bp.route('', methods=['GET'])
 @require_auth

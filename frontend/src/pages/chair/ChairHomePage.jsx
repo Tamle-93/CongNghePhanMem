@@ -38,6 +38,18 @@ const ChairHomePage = () => {
 
   useEffect(() => {
     fetchData();
+    
+    // Auto-refresh every 60 seconds
+    const interval = setInterval(fetchData, 60000);
+    
+    // Refresh when tab is focused
+    const handleFocus = () => fetchData();
+    window.addEventListener('focus', handleFocus);
+    
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('focus', handleFocus);
+    };
   }, []);
 
   /**
@@ -138,18 +150,27 @@ const ChairHomePage = () => {
           </div>
           <div className="flex items-center gap-2">
             <button 
+              onClick={fetchData}
+              disabled={loading}
+              className="flex items-center gap-2 bg-white border border-slate-200 px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-50 transition-colors disabled:opacity-50"
+              title="Làm mới dữ liệu"
+            >
+              <span className="material-symbols-outlined text-lg text-slate-600">refresh</span>
+              <span className="hidden sm:inline">Làm mới</span>
+            </button>
+            <button 
               onClick={handleExportReport}
               className="flex items-center gap-2 bg-white border border-slate-200 px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-50 transition-colors"
             >
               <span className="material-symbols-outlined text-lg text-slate-600">file_download</span>
-              Xuất báo cáo
+              <span className="hidden sm:inline">Xuất báo cáo</span>
             </button>
             <button 
               onClick={() => navigate('/chair/papers')}
               className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-blue-700 transition-colors shadow-sm"
             >
               <span className="material-symbols-outlined text-lg">add</span>
-              Phân công bài mới
+              <span className="hidden sm:inline">Phân công bài</span>
             </button>
           </div>
         </div>

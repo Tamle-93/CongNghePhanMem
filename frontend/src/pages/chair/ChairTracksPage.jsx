@@ -35,6 +35,8 @@ const ChairTracksPage = () => {
   const [saving, setSaving] = useState(false);
   const [notification, setNotification] = useState({ show: false, message: '', type: '' });
   const [showAddTrackModal, setShowAddTrackModal] = useState(false);
+  const [showEditTrackModal, setShowEditTrackModal] = useState(false);
+  const [editingTrack, setEditingTrack] = useState(null);
   const [newTrack, setNewTrack] = useState({ name: '', nameEn: '', description: '', chair: '' });
   const [conferenceInfo, setConferenceInfo] = useState({
     name: '',
@@ -65,12 +67,14 @@ const ChairTracksPage = () => {
       
       // Get the first conference as default
       if (conferences.length > 0) {
-        setSelectedConferenceId(conferences[0].id);
-        // Load tracks for this conference
-        await loadTracks(conferences[0].id);
+        const conferenceId = conferences[0].id;
+        setSelectedConferenceId(conferenceId);
+        // Load tracks and deadlines for this conference
+        await loadTracks(conferenceId);
+        await loadDeadlines(conferenceId);
+      } else {
+        setDeadlines([]);
       }
-      
-      setDeadlines([]);
     } catch (err) {
       console.error('Error:', err);
     } finally {
@@ -91,6 +95,22 @@ const ChairTracksPage = () => {
     } catch (err) {
       console.error('Error loading tracks:', err);
       setTracks([]);
+    }
+  };
+
+  // ✅ FIXED: Added loadDeadlines function to fetch and display conference deadlines
+  const loadDeadlines = async (conferenceId) => {
+    try {
+      const response = await api.get(`/conferences/${conferenceId}/deadlines`).catch(() => null);
+      const deadlinesData = response?.data?.data || [];
+      if (Array.isArray(deadlinesData)) {
+        setDeadlines(deadlinesData);
+      } else {
+        setDeadlines([]);
+      }
+    } catch (err) {
+      console.error('Error loading deadlines:', err);
+      setDeadlines([]);
     }
   };
 
@@ -162,6 +182,51 @@ const ChairTracksPage = () => {
     } catch (err) {
       console.error('Error deleting track:', err);
       showNotification('Có lỗi khi xóa phân ban', 'error');
+    }
+  };
+
+  // ✅ FIXED: Add edit track handler
+  const handleEditTrack = (track) => {
+    setEditingTrack({
+      id: track.id,
+      name: track.name,
+      nameEn: track.nameEn || track.name_en || '',
+      description: track.description || '',
+      code: track.code || ''
+    });
+    setShowEditTrackModal(true);
+  };
+
+  const handleSaveEditedTrack = async () => {
+    if (!editingTrack.name.trim()) {
+      showNotification('Vui lòng nhập tên phân ban', 'error');
+      return;
+    }
+
+    setSaving(true);
+    try {
+      await api.put(`/tracks/${editingTrack.id}`, {
+        name: editingTrack.name,
+        description: editingTrack.description,
+        code: editingTrack.code
+      });
+
+      // Update local state
+      setTracks(tracks.map(t => t.id === editingTrack.id ? {
+        ...t,
+        name: editingTrack.name,
+        description: editingTrack.description,
+        code: editingTrack.code
+      } : t));
+
+      showNotification('Đã cập nhật phân ban thành công!', 'success');
+      setShowEditTrackModal(false);
+      setEditingTrack(null);
+    } catch (err) {
+      console.error('Error updating track:', err);
+      showNotification('Có lỗi khi cập nhật phân ban', 'error');
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -410,7 +475,10 @@ const ChairTracksPage = () => {
                       </td>
                       <td className="px-6 py-4 text-right">
                         <div className="flex justify-end gap-2">
-                          <button className="p-2 text-slate-400 hover:text-blue-600 transition-colors">
+                          <button 
+                            onClick={() => handleEditTrack(track)}
+                            className="p-2 text-slate-400 hover:text-blue-600 transition-colors"
+                          >
                             <span className="material-symbols-outlined text-xl">edit</span>
                           </button>
                           <button 
@@ -813,6 +881,73 @@ const ChairTracksPage = () => {
               >
                 {saving && <span className="animate-spin">⏳</span>}
                 {saving ? 'Đang lưu...' : 'Thêm phân ban'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ✅ FIXED: Edit Track Modal */}
+      {showEditTrackModal && editingTrack && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-md mx-4">
+            <div className="p-6 border-b border-slate-200">
+              <h3 className="text-lg font-bold text-slate-900">Chỉnh Sửa Phân Ban</h3>
+              <p className="text-sm text-slate-600 mt-1">Cập nhật thông tin phân ban</p>
+            </div>
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-2">
+                  Tên phân ban (tiếng Việt)
+                </label>
+                <input
+                  type="text"
+                  value={editingTrack.name}
+                  onChange={(e) => setEditingTrack({ ...editingTrack, name: e.target.value })}
+                  className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-blue-600"
+                  placeholder="VD: Trí tuệ nhân tạo"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-2">
+                  Mã phân ban
+                </label>
+                <input
+                  type="text"
+                  value={editingTrack.code}
+                  onChange={(e) => setEditingTrack({ ...editingTrack, code: e.target.value })}
+                  className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-blue-600"
+                  placeholder="VD: AI"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-2">Mô tả</label>
+                <textarea
+                  value={editingTrack.description}
+                  onChange={(e) => setEditingTrack({ ...editingTrack, description: e.target.value })}
+                  rows={3}
+                  className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-blue-600"
+                  placeholder="Mô tả ngắn gọn về phân ban này..."
+                />
+              </div>
+            </div>
+            <div className="p-6 border-t border-slate-200 flex justify-end gap-3">
+              <button
+                onClick={() => {
+                  setShowEditTrackModal(false);
+                  setEditingTrack(null);
+                }}
+                className="px-4 py-2 text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg font-semibold transition-colors"
+              >
+                Hủy
+              </button>
+              <button
+                onClick={handleSaveEditedTrack}
+                disabled={saving}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center gap-2"
+              >
+                {saving && <span className="animate-spin">⏳</span>}
+                {saving ? 'Đang lưu...' : 'Lưu thay đổi'}
               </button>
             </div>
           </div>

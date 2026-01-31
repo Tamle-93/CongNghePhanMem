@@ -12,6 +12,18 @@ const AuthorPapersPage = () => {
 
   useEffect(() => {
     fetchPapers();
+    
+    // Auto-refresh every 60 seconds
+    const interval = setInterval(fetchPapers, 60000);
+    
+    // Refresh when tab is focused
+    const handleFocus = () => fetchPapers();
+    window.addEventListener('focus', handleFocus);
+    
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('focus', handleFocus);
+    };
   }, []);
 
   const fetchPapers = async () => {
@@ -110,13 +122,24 @@ const AuthorPapersPage = () => {
               Quản lý các bài báo đã nộp và theo dõi tiến độ phản biện.
             </p>
           </div>
-          <button 
-            onClick={() => navigate('/author/submit')}
-            className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition-all shadow-lg shadow-blue-500/20 active:scale-95 group"
-          >
-            <span className="material-symbols-outlined text-xl group-hover:rotate-90 transition-transform">add</span>
-            <span>Nộp bài mới</span>
-          </button>
+          <div className="flex items-center gap-2">
+            <button 
+              onClick={fetchPapers}
+              disabled={loading}
+              className="flex items-center gap-2 bg-white border border-slate-300 px-4 py-3 rounded-lg hover:bg-slate-50 transition-colors disabled:opacity-50"
+              title="Làm mới danh sách"
+            >
+              <span className="material-symbols-outlined text-xl text-slate-600">refresh</span>
+              <span className="hidden sm:inline">Làm mới</span>
+            </button>
+            <button 
+              onClick={() => navigate('/author/submit')}
+              className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition-all shadow-lg shadow-blue-500/20 active:scale-95 group"
+            >
+              <span className="material-symbols-outlined text-xl group-hover:rotate-90 transition-transform">add</span>
+              <span>Nộp bài mới</span>
+            </button>
+          </div>
         </div>
 
         {/* Search and Filter */}

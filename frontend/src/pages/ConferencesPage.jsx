@@ -34,6 +34,18 @@ const ConferencesPage = () => {
   // ============================================
   useEffect(() => {
     fetchConferences();
+    
+    // Auto-refresh every 60 seconds
+    const interval = setInterval(fetchConferences, 60000);
+    
+    // Refresh when tab is focused
+    const handleFocus = () => fetchConferences();
+    window.addEventListener('focus', handleFocus);
+    
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('focus', handleFocus);
+    };
   }, []);
 
   /**
@@ -83,13 +95,26 @@ const ConferencesPage = () => {
     <div className="min-h-screen bg-slate-50">
       <main className="max-w-7xl mx-auto px-4 md:px-8 py-8 space-y-6">
         {/* Page Header */}
-        <div className="flex flex-col gap-2">
-          <h1 className="text-slate-900 text-3xl md:text-4xl font-black tracking-tight">
-            Danh sách hội nghị khoa học
-          </h1>
-          <p className="text-slate-500 text-base">
-            Khám phá và nộp bài cho các hội nghị khoa học uy tín.
-          </p>
+        <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-2">
+            <h1 className="text-slate-900 text-3xl md:text-4xl font-black tracking-tight">
+              Danh sách hội nghị khoa học
+            </h1>
+            <p className="text-slate-500 text-base">
+              Khám phá và nộp bài cho các hội nghị khoa học uy tín.
+            </p>
+          </div>
+          
+          {/* Refresh Button */}
+          <button
+            onClick={fetchConferences}
+            disabled={loading}
+            className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors disabled:opacity-50"
+            title="Làm mới danh sách"
+          >
+            <span className="material-symbols-outlined text-xl">refresh</span>
+            <span className="hidden sm:inline">Làm mới</span>
+          </button>
         </div>
 
         {/* Empty State */}

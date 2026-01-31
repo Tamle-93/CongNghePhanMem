@@ -111,6 +111,8 @@ def require_role(*allowed_roles):
         @require_role('Author', 'Chair')  # Allow Author OR Chair
         def submit_paper():
             pass
+    
+    ✅ FIXED: Now checks X-Active-Role header for role switching support
     """
     def decorator(f):
         @wraps(f)
@@ -121,21 +123,34 @@ def require_role(*allowed_roles):
                     'message': 'Authentication required'
                 }), 401
             
-            # ✅ Get roles from token (now an array)
-            user_roles = request.current_user.get('roles', [])
+            # ✅ FIXED: Get active role from header (for role switching)
+            active_role = request.headers.get('X-Active-Role')
             
-            # ✅ Ensure it's a list
-            if not isinstance(user_roles, list):
-                user_roles = [user_roles] if user_roles else []
-            
-            # ✅ Check if user has at least one matching role
-            if not any(role in allowed_roles for role in user_roles):
-                return jsonify({
-                    'status': 'error',
-                    'message': 'Insufficient permissions',
-                    'required_roles': list(allowed_roles),
-                    'your_roles': user_roles
-                }), 403
+            # If active role is specified, use it for permission check
+            if active_role:
+                if active_role not in allowed_roles:
+                    return jsonify({
+                        'status': 'error',
+                        'message': 'Insufficient permissions',
+                        'required_roles': list(allowed_roles),
+                        'active_role': active_role
+                    }), 403
+            else:
+                # Fall back to checking token roles
+                user_roles = request.current_user.get('roles', [])
+                
+                # Ensure it's a list
+                if not isinstance(user_roles, list):
+                    user_roles = [user_roles] if user_roles else []
+                
+                # Check if user has at least one matching role
+                if not any(role in allowed_roles for role in user_roles):
+                    return jsonify({
+                        'status': 'error',
+                        'message': 'Insufficient permissions',
+                        'required_roles': list(allowed_roles),
+                        'your_roles': user_roles
+                    }), 403
             
             return f(*args, **kwargs)
         

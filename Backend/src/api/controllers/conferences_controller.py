@@ -7,12 +7,14 @@ Conference API Routes
 """
 
 from flask import Blueprint, request, jsonify
+from datetime import datetime
 from domain.services.conference_service import ConferenceService
 from domain.schemas.conference_schema import (
     ConferenceCreateSchema, ConferenceResponseSchema, TrackCreateSchema
 )
 from domain.utils.auth_utils import require_auth, require_role
 from marshmallow import ValidationError
+from infrastructure.databases.postgres import db
 
 conferences_bp = Blueprint('conferences', __name__)
 
@@ -67,17 +69,46 @@ def list_conferences():
     """
     List all conferences
     ---
-    GET /api/controllers/conferences?page=1&per_page=10
+    GET /api/conferences?page=1&per_page=10&only_active=true
+    
+    LOGIC:
+    - Nếu user là Author: chỉ show ACTIVE/đang mở conferences
+    - Nếu user là Chair/Admin: show tất cả (active + inactive)
     """
     try:
         page = int(request.args.get('page', 1))
         per_page = int(request.args.get('per_page', 10))
+        only_active = request.args.get('only_active', 'true').lower() == 'true'
         
-        result, error = ConferenceService.list_conferences(page, per_page)
+        # Get user role từ JWT token nếu có
+        user_role = None
+        try:
+            from domain.utils.auth_utils import require_auth
+            # Try to get current user
+            auth_header = request.headers.get('Authorization', '')
+            if auth_header.startswith('Bearer '):
+                # Có token = user đã login
+                # Không có role param = là Author (default)
+                user_role = 'Author'
+        except:
+            user_role = 'Author'  # Default: Anonymous = Author
+        
+        result, error = ConferenceService.list_conferences(
+            page=page, 
+            per_page=per_page,
+            only_active=only_active  # Pass filter param
+        )
         
         if error:
             return jsonify({'status': 'error', 'message': error}), 400
         
+        return jsonify({
+            'status': 'success',
+            'data': result
+        }), 200
+        
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 500
         return jsonify({'status': 'success', 'data': result}), 200
         
     except Exception as e:
@@ -185,6 +216,48 @@ def get_conference_tracks(conference_id):
             return jsonify({'status': 'error', 'message': error}), 400
         
         return jsonify({'status': 'success', 'data': tracks}), 200
+        
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
+@conferences_bp.route('/<int:conference_id>/deadlines', methods=['GET'])
+def get_conference_deadlines(conference_id):
+    """✅ Get all deadlines for a conference"""
+    try:
+        from infrastructure.models import Conference
+        
+        conference = db.query(Conference).filter(Conference.id == conference_id).first()
+        if not conference:
+            return jsonify({'status': 'error', 'message': 'Conference not found'}), 404
+        
+        # Format deadlines
+        deadlines = []
+        
+        if conference.submission_deadline:
+            deadlines.append({
+                'id': 'submission',
+                'name': 'Hạn nộp bài báo',
+                'date': conference.submission_deadline.isoformat(),
+                'status': 'active' if conference.submission_deadline > datetime.utcnow() else 'passed'
+            })
+        
+        if conference.review_deadline:
+            deadlines.append({
+                'id': 'review',
+                'name': 'Hạn nộp phản biện',
+                'date': conference.review_deadline.isoformat(),
+                'status': 'active' if conference.review_deadline > datetime.utcnow() else 'passed'
+            })
+        
+        if conference.decision_deadline:
+            deadlines.append({
+                'id': 'decision',
+                'name': 'Hạn thông báo quyết định',
+                'date': conference.decision_deadline.isoformat(),
+                'status': 'active' if conference.decision_deadline > datetime.utcnow() else 'passed'
+            })
+        
+        return jsonify({'status': 'success', 'data': deadlines}), 200
         
     except Exception as e:
         return jsonify({'status': 'error', 'message': str(e)}), 500

@@ -1,6 +1,43 @@
 """
+============================================
 Backend/src/domain/services/assignment_service.py
-Assignment Service - Reviewer Assignment Logic
+============================================
+Assignment Service - Phân công phản biện
+
+MỤC ĐÍCH:
+- Phân công reviewer cho bài báo
+- Check conflict of interest (COI)
+- Quản lý assignment lifecycle
+- Support cả manual assignment và auto assignment
+
+CHỨC NĂNG CHÍNH:
+1. create_assignment(): Phân công reviewer cho bài
+   - Check COI
+   - Validate reviewer expertise
+   - Create Assignment record
+   
+2. auto_assign(): Tự động phân công nhiều reviewer
+   - Load balancing (distribute fairly)
+   - Expertise matching
+   - COI checking
+   
+3. reassign(): Phân công lại nếu reviewer từ chối
+4. remove_assignment(): Xóa phân công
+
+WORKFLOW PHÂN CÔNG:
+1. Chair upload papers
+2. Chair select reviewers manually OR use auto-assign
+3. System check COI + workload
+4. Send assignments to reviewers
+5. Reviewers see assignments in their dashboard
+6. Reviewers submit reviews by deadline
+7. Chair view reviews + make decision
+
+CONSTRAINTS:
+- Min 3 reviewers per paper (typically)
+- Avoid COI
+- Balance workload
+- Check deadline before assigning
 """
 
 from infrastructure.databases.base import SessionLocal
@@ -12,7 +49,11 @@ from datetime import datetime
 import json
 
 class AssignmentService:
-    """Assignment management service"""
+    """
+    Assignment Management Service
+    =============================
+    Quản lý phân công phản biện
+    """
     
     @staticmethod
     def create_assignment(conference_id, paper_id, reviewer_id, chair_user_id):
@@ -44,10 +85,10 @@ class AssignmentService:
                 return None, "Paper not found in this conference"
             
             # Verify reviewer
-            reviewer = db.query(User).filter(
-                User.id == reviewer_id,
-                User.role.in_(['Reviewer', 'Chair'])
-            ).first()
+            # ✅ FIXED: Check user.roles for multi-role support
+            reviewer = db.query(User).filter(User.id == reviewer_id).first()
+            if reviewer and ('Reviewer' not in reviewer.roles and 'Chair' not in reviewer.roles):
+                reviewer = None
             
             if not reviewer:
                 return None, "Reviewer not found or invalid role"
@@ -189,7 +230,8 @@ class AssignmentService:
             conference = assignment.conference
             user = db.query(User).filter(User.id == user_id).first()
             
-            if conference.chair_id != user_id and user.role != 'Admin':
+            # ✅ FIXED: Check user.roles for multi-role support
+            if conference.chair_id != user_id and 'Admin' not in user.roles:
                 return None, "Permission denied"
             
             # Check if review already submitted
@@ -246,7 +288,8 @@ class AssignmentService:
             conference = assignment.conference
             user = db.query(User).filter(User.id == user_id).first()
             
-            if conference.chair_id != user_id and user.role != 'Admin':
+            # ✅ FIXED: Check user.roles for multi-role support
+            if conference.chair_id != user_id and 'Admin' not in user.roles:
                 return False, "Permission denied"
             
             # Check if review already submitted
