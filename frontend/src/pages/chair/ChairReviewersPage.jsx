@@ -45,13 +45,18 @@ const ChairReviewersPage = () => {
 
   /**
    * Fetch danh sách reviewer từ API
-   * GET /api/admin/users?role=Reviewer
+   * GET /api/users?role=Reviewer
    */
   const fetchReviewers = async () => {
     try {
       setLoading(true);
-      const response = await api.listUsers({ role: 'Reviewer' }).catch(() => ({ data: { data: { users: [] } } }));
+      console.log('Fetching reviewers...');
+      
+      const response = await api.listUsers({ role: 'Reviewer' });
+      console.log('API Response:', response.data);
+      
       const users = response.data?.data?.users || response.data?.users || [];
+      console.log('Extracted users:', users);
       
       // Transform users to reviewer format
       const reviewerList = users.map(user => ({
@@ -65,6 +70,7 @@ const ChairReviewersPage = () => {
         avatar: null,
         isNew: false // Flag để phân biệt với người mới mời
       }));
+      console.log('Transformed reviewers:', reviewerList);
       setReviewers(reviewerList);
     } catch (err) {
       console.error('Error fetching reviewers:', err);

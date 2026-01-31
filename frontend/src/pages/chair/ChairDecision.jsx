@@ -21,7 +21,7 @@ export default function ChairDecision() {
     try {
       const [paperRes, reviewsRes] = await Promise.all([
         api.getPaperById(id),
-        api.getReviewsByPaper(id)
+        api.getReviewsByPaper(id).catch(() => ({ data: { data: [] } }))
       ]);
       
       // ✅ FIXED: Extract paper and reviews from API response correctly

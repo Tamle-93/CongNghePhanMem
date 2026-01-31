@@ -323,11 +323,22 @@ const ChairTracksPage = () => {
    * Mở popup hoặc tab mới hiển thị giao diện công khai
    */
   const handlePreviewWebsite = () => {
+    console.log('Preview website - selectedConferenceId:', selectedConferenceId);
     if (selectedConferenceId) {
       // Mở trang chi tiết hội nghị ở tab mới
       window.open(`/conferences/${selectedConferenceId}`, '_blank');
     } else {
-      showNotification('Vui lòng chọn hội nghị để xem trước', 'error');
+      // Try to get first conference
+      api.listConferences().then(res => {
+        const conferences = res.data?.data?.conferences || [];
+        if (conferences.length > 0) {
+          window.open(`/conferences/${conferences[0].id}`, '_blank');
+        } else {
+          showNotification('Không tìm thấy hội nghị nào', 'error');
+        }
+      }).catch(() => {
+        showNotification('Vui lòng chọn hội nghị để xem trước', 'error');
+      });
     }
   };
 

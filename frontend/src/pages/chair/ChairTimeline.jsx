@@ -96,8 +96,36 @@ const ChairTimeline = () => {
 
   const handleDelete = async (id) => {
     if (!window.confirm('Bạn có chắc chắn muốn xóa mốc thời gian này?')) return;
-    setMilestones(milestones.filter(m => m.id !== id));
-    alert('Đã xóa mốc thời gian');
+    
+    try {
+      const milestone = milestones.find(m => m.id === id);
+      if (milestone && conference) {
+        // Map type to conference field
+        const typeToField = {
+          'submission': 'submission_deadline',
+          'review': 'review_deadline',
+          'notification': 'decision_deadline',
+          'conference': 'conference_start_date',
+          'registration': 'registration_deadline',
+          'camera_ready': 'camera_ready_deadline'
+        };
+        
+        const field = typeToField[milestone.type];
+        if (field) {
+          // Clear the deadline in conference
+          await api.put(`/conferences/${conference.id}`, {
+            [field]: null
+          });
+        }
+      }
+      
+      // Remove from local state and refresh
+      setMilestones(milestones.filter(m => m.id !== id));
+      alert('Đã xóa mốc thời gian');
+    } catch (error) {
+      console.error('Error deleting milestone:', error);
+      alert('Không thể xóa mốc thời gian');
+    }
   };
 
   const getMilestoneTypeColor = (type) => {
