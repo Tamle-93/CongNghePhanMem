@@ -139,8 +139,8 @@ const ConferenceDetail = () => {
       return;
     }
     
-    // Chuyển đến trang nộp bài
-    navigate(`/author/papers/new?conference_id=${id}`);
+    // Chuyển đến trang nộp bài với conference_id và tên hội nghị
+    navigate(`/author/submit?conference_id=${id}&conference_name=${encodeURIComponent(conference?.name || '')}`);
   };
 
   // ============================================

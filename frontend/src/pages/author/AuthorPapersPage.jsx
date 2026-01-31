@@ -29,7 +29,10 @@ const AuthorPapersPage = () => {
   const fetchPapers = async () => {
     try {
       const response = await api.listPapers();
-      setPapers(response.data?.papers || []);
+      console.log('AuthorPapersPage - Full response:', response.data);
+      const papersData = response.data?.data?.papers || response.data?.papers || [];
+      console.log('AuthorPapersPage - Papers extracted:', papersData);
+      setPapers(papersData);
     } catch (err) {
       console.error('Error fetching papers:', err);
     } finally {
@@ -251,7 +254,7 @@ const AuthorPapersPage = () => {
                           <td className="p-4 align-top text-right">
                             <div className="flex items-center justify-end gap-2">
                               <button 
-                                onClick={() => navigate(`/author/papers/${paper.paper_id}`)}
+                                onClick={() => navigate(`/author/papers/${paper.id}`)}
                                 className="p-2 text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
                                 title="Xem chi tiết"
                               >
@@ -259,7 +262,7 @@ const AuthorPapersPage = () => {
                               </button>
                               {paper.status === 'revision_required' && (
                                 <button 
-                                  onClick={() => navigate(`/author/papers/${paper.paper_id}/revision`)}
+                                  onClick={() => navigate(`/author/papers/${paper.id}/revision`)}
                                   className="p-2 text-slate-500 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-all"
                                   title="Chỉnh sửa"
                                 >
@@ -268,7 +271,7 @@ const AuthorPapersPage = () => {
                               )}
                               {(paper.status === 'accepted' || paper.status === 'rejected') && (
                                 <button 
-                                  onClick={() => navigate(`/author/papers/${paper.paper_id}/reviews`)}
+                                  onClick={() => navigate(`/author/papers/${paper.id}/reviews`)}
                                   className="p-2 text-slate-500 hover:text-green-600 hover:bg-green-50 rounded-lg transition-all"
                                   title="Xem kết quả phản biện"
                                 >

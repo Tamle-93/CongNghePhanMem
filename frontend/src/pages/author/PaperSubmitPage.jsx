@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import api from '../../services/api';
 import { getErrorMessage } from '../../utils/errorHandler';
 
 const PaperSubmitPage = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [currentStep, setCurrentStep] = useState(1);
   const [conferences, setConferences] = useState([]);
   const [tracks, setTracks] = useState([]);
@@ -13,6 +14,10 @@ const PaperSubmitPage = () => {
   const [keywordInput, setKeywordInput] = useState('');
   const [spellChecking, setSpellChecking] = useState(false);
   const [spellCheckResult, setSpellCheckResult] = useState(null);
+  
+  // Get conference_id from URL params (from "Nộp bài ngay" button)
+  const preselectedConferenceId = searchParams.get('conference_id');
+  const preselectedConferenceName = searchParams.get('conference_name');
   
   // Suggested keywords for quick selection
   const suggestedKeywords = [
@@ -26,7 +31,7 @@ const PaperSubmitPage = () => {
   const [formData, setFormData] = useState({
     title: '',
     abstract: '',
-    conference_id: '',
+    conference_id: preselectedConferenceId || '',
     track_id: '',
     topics: [],
     file: null
@@ -36,6 +41,13 @@ const PaperSubmitPage = () => {
     fetchConferences();
   }, []);
 
+  // Auto-fetch tracks when conference is preselected
+  useEffect(() => {
+    if (preselectedConferenceId && formData.conference_id) {
+      fetchTracks(formData.conference_id);
+    }
+  }, [formData.conference_id]);
+
   const fetchConferences = async () => {
     try {
       const response = await api.listConferences();
@@ -43,6 +55,21 @@ const PaperSubmitPage = () => {
       setConferences(response.data?.data?.conferences || []);
     } catch (err) {
       console.error('Error:', err);
+    }
+  };
+
+  const fetchTracks = async (conferenceId) => {
+    if (!conferenceId) {
+      setTracks([]);
+      return;
+    }
+    try {
+      const response = await api.get(`/conferences/${conferenceId}/tracks`);
+      console.log('Tracks response:', response.data);
+      setTracks(response.data?.data?.tracks || []);
+    } catch (err) {
+      console.error('Error fetching tracks:', err);
+      setTracks([]);
     }
   };
 
@@ -99,6 +126,7 @@ const PaperSubmitPage = () => {
         setCurrentStep(1);
         return;
       }
+      // Track is optional - don't validate
       if (authors.length === 0) {
         alert('Vui lòng thêm ít nhất 1 tác giả');
         setCurrentStep(2);
@@ -369,7 +397,11 @@ const PaperSubmitPage = () => {
                     </label>
                     <select
                       value={formData.conference_id}
-                      onChange={(e) => setFormData({ ...formData, conference_id: e.target.value })}
+                      onChange={(e) => {
+                        const conferenceId = e.target.value;
+                        setFormData({ ...formData, conference_id: conferenceId, track_id: '' });
+                        fetchTracks(conferenceId); // Load tracks for selected conference
+                      }}
                       className="w-full rounded-lg border-slate-300 focus:ring-2 focus:ring-blue-500 p-3"
                     >
                       <option value="">-- Chọn hội nghị --</option>
@@ -513,22 +545,28 @@ const PaperSubmitPage = () => {
 
                   <div>
                     <label className="block text-sm font-semibold text-slate-700 mb-2">
-                      Phân ban (Track) <span className="text-red-500">*</span>
+                      Phân ban (Track) {tracks.length > 0 && <span className="text-slate-400 font-normal">(Tùy chọn)</span>}
                     </label>
                     <select
                       value={formData.track_id}
                       onChange={(e) => setFormData({ ...formData, track_id: e.target.value })}
                       className="w-full rounded-lg border-slate-300 focus:ring-2 focus:ring-blue-500 p-3"
+                      disabled={tracks.length === 0}
                     >
-                      <option value="">-- Chọn Phân ban --</option>
-                      <option value="1">Khoa học máy tính (Computer Science)</option>
-                      <option value="2">Kỹ thuật phần mềm (Software Engineering)</option>
-                      <option value="3">Hệ thống thông tin (Information Systems)</option>
-                      <option value="4">Mạng máy tính & Truyền thông (Networks)</option>
+                      <option value="">-- {tracks.length > 0 ? 'Chọn Phân ban (không bắt buộc)' : 'Hội nghị chưa có phân ban'} --</option>
+                      {tracks.map(track => (
+                        <option key={track.id} value={track.id}>{track.name}</option>
+                      ))}
                     </select>
-                    <p className="mt-2 text-xs text-slate-500">
-                      Chọn phân ban phù hợp giúp bài báo được phân công cho đúng hội đồng phản biện chuyên môn.
-                    </p>
+                    {tracks.length === 0 ? (
+                      <p className="mt-2 text-xs text-amber-600 bg-amber-50 p-2 rounded">
+                        ⚠️ Hội nghị này chưa có phân ban. Bạn có thể tiếp tục nộp bài mà không cần chọn phân ban.
+                      </p>
+                    ) : (
+                      <p className="mt-2 text-xs text-slate-500">
+                        Chọn phân ban phù hợp giúp bài báo được phân công cho đúng hội đồng phản biện chuyên môn.
+                      </p>
+                    )}
                   </div>
 
                   <div>
