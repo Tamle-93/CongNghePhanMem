@@ -20,21 +20,30 @@ const ReviewerPaperDetail = () => {
       // Handle different response formats
       const paperData = data.paper || data;
       
-      // Normalize keywords - could be string or array
-      if (paperData.keywords && typeof paperData.keywords === 'string') {
-        paperData.keywords = paperData.keywords.split(',').map(k => k.trim()).filter(k => k);
-      } else if (!Array.isArray(paperData.keywords)) {
+      // Normalize keywords - handle all cases
+      if (paperData.keywords) {
+        if (typeof paperData.keywords === 'string') {
+          paperData.keywords = paperData.keywords.split(',').map(k => k.trim()).filter(k => k);
+        } else if (!Array.isArray(paperData.keywords)) {
+          paperData.keywords = [];
+        }
+      } else {
         paperData.keywords = [];
       }
       
-      // Normalize authors - could be string or array
-      if (paperData.authors && typeof paperData.authors === 'string') {
-        try {
-          paperData.authors = JSON.parse(paperData.authors);
-        } catch {
-          paperData.authors = [{ name: paperData.authors, affiliation: '', email: '' }];
+      // Normalize authors - handle all cases
+      if (paperData.authors) {
+        if (typeof paperData.authors === 'string') {
+          try {
+            const parsed = JSON.parse(paperData.authors);
+            paperData.authors = Array.isArray(parsed) ? parsed : [parsed];
+          } catch {
+            paperData.authors = [{ name: paperData.authors, affiliation: '', email: '' }];
+          }
+        } else if (!Array.isArray(paperData.authors)) {
+          paperData.authors = [];
         }
-      } else if (!Array.isArray(paperData.authors)) {
+      } else {
         paperData.authors = [];
       }
       

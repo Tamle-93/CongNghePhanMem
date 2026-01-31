@@ -50,6 +50,7 @@ const ChairPapersPage = () => {
       submitted: { bg: 'bg-blue-100 text-blue-700', text: 'Chờ phân công' },
       pending: { bg: 'bg-blue-100 text-blue-700', text: 'Chờ phân công' },
       under_review: { bg: 'bg-orange-100 text-orange-700', text: 'Đang phản biện' },
+      revision_required: { bg: 'bg-orange-100 text-orange-700', text: 'Yêu cầu chỉnh sửa' },
       completed: { bg: 'bg-green-100 text-green-700', text: 'Đã có kết quả' },
       accepted: { bg: 'bg-green-100 text-green-700', text: 'Đã chấp nhận' },
       rejected: { bg: 'bg-red-100 text-red-700', text: 'Đã từ chối' }

@@ -8,6 +8,7 @@ const ChairDecisions = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [filter, setFilter] = useState('all'); // all, pending, decided
+  const [reviewStats, setReviewStats] = useState({});
 
   useEffect(() => {
     fetchPapers();
@@ -21,6 +22,24 @@ const ChairDecisions = () => {
       console.log('ChairDecisions - Papers response:', response.data);
       const papersData = response.data?.data?.papers || response.data?.papers || [];
       setPapers(papersData);
+      
+      // Fetch review stats for each paper
+      const stats = {};
+      for (const paper of papersData) {
+        try {
+          const reviewRes = await api.getReviewsByPaper(paper.id).catch(() => ({ data: [] }));
+          const reviews = reviewRes.data?.data || reviewRes.data || [];
+          if (reviews.length > 0) {
+            const avgScore = (reviews.reduce((sum, r) => sum + (r.score || 0), 0) / reviews.length).toFixed(1);
+            stats[paper.id] = { count: reviews.length, avg: avgScore };
+          } else {
+            stats[paper.id] = { count: 0, avg: 'N/A' };
+          }
+        } catch (e) {
+          stats[paper.id] = { count: 0, avg: 'N/A' };
+        }
+      }
+      setReviewStats(stats);
     } catch (error) {
       console.error('Error fetching papers:', error);
       setError('Không thể tải danh sách bài báo. Vui lòng thử lại.');
@@ -151,6 +170,8 @@ const ChairDecisions = () => {
                     <th className="px-6 py-4 text-xs font-bold text-slate-600 uppercase">ID</th>
                     <th className="px-6 py-4 text-xs font-bold text-slate-600 uppercase">Tiêu đề</th>
                     <th className="px-6 py-4 text-xs font-bold text-slate-600 uppercase">Tác giả</th>
+                    <th className="px-6 py-4 text-xs font-bold text-slate-600 uppercase text-center">Phản biện</th>
+                    <th className="px-6 py-4 text-xs font-bold text-slate-600 uppercase text-center">Điểm TB</th>
                     <th className="px-6 py-4 text-xs font-bold text-slate-600 uppercase">Trạng thái</th>
                     <th className="px-6 py-4 text-xs font-bold text-slate-600 uppercase text-right">Thao tác</th>
                   </tr>
@@ -166,6 +187,12 @@ const ChairDecisions = () => {
                         {Array.isArray(paper.authors) 
                           ? paper.authors.map(a => a.full_name || a.name).join(', ')
                           : (typeof paper.authors === 'string' ? paper.authors : paper.submitter_name || 'N/A')}
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        <span className="text-sm font-semibold text-slate-900">{reviewStats[paper.id]?.count || 0}</span>
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        <span className="text-sm font-semibold text-blue-600">{reviewStats[paper.id]?.avg || 'N/A'}/5</span>
                       </td>
                       <td className="px-6 py-4">{getStatusBadge(paper.status)}</td>
                       <td className="px-6 py-4 text-right">

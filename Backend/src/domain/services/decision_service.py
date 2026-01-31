@@ -134,7 +134,7 @@ class DecisionService:
             elif result == 'Reject':
                 paper.status = PaperStatus.REJECTED
             else:  # Revision
-                paper.status = PaperStatus.UNDER_REVIEW
+                paper.status = 'revision_required'
             
             db.commit()
             
