@@ -36,11 +36,13 @@ def list_users():
         query = db.query(User).filter(User.is_deleted == False)
         
         if role:
-            # ✅ FIXED: Filter by role through UserRole relationship
+            # ✅ FIXED: Filter by role through UserRole relationship with explicit join conditions
             from infrastructure.models import UserRole, Role
-            query = query.join(UserRole).join(Role).filter(
-                (Role.name == role) & (UserRole.is_active == True)
-            )
+            query = query.join(UserRole, User.id == UserRole.user_id)\
+                        .join(Role, UserRole.role_id == Role.id)\
+                        .filter(
+                            (Role.name == role) & (UserRole.is_active == True)
+                        )
         
         if search:
             search_pattern = f"%{search}%"
@@ -418,6 +420,9 @@ def invite_reviewer():
             if not reviewer_role:
                 return jsonify({'status': 'error', 'message': 'Reviewer role not found'}), 500
             
+            # Get current roles before adding new one
+            old_roles = existing_user.roles if existing_user.roles else []
+            
             new_user_role = UserRole(
                 user_id=existing_user.id,
                 role_id=reviewer_role.id,
@@ -436,7 +441,7 @@ def invite_reviewer():
                 record_id=existing_user.id,
                 data=json.dumps({
                     'email': email,
-                    'old_role': old_role,
+                    'old_roles': old_roles,
                     'new_role': 'Reviewer',
                     'invited_by': request.current_user['username']
                 })
