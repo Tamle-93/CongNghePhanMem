@@ -216,12 +216,20 @@ def delete_user(user_id):
 @require_auth
 @require_role('Chair', 'Admin')
 def list_reviewers():
-    """Get all users with Reviewer or Chair role"""
+    """
+    Get all users with Reviewer or Chair role
+    SIMPLIFIED: Admin và Chair đều thấy TẤT CẢ reviewers
+    (Vì hầu hết reviewers là GLOBAL, không gắn với conference cụ thể)
+    """
     db = SessionLocal()
     
     try:
-        # ✅ FIXED: Use UserRole relationship to filter by roles
         from infrastructure.models import UserRole, Role
+        
+        # ✅ SIMPLIFIED: Lấy tất cả users có role Reviewer hoặc Chair
+        # Không filter theo conference vì:
+        # 1. Hầu hết reviewers là GLOBAL (không có conference_id)
+        # 2. Chair cần thấy tất cả để có thể chọn phân công
         reviewers = db.query(User).join(UserRole).join(Role).filter(
             Role.name.in_(['Reviewer', 'Chair']),
             UserRole.is_active == True,
@@ -249,7 +257,7 @@ def get_users_by_role(role):
         if role not in ['Author', 'Reviewer', 'Chair', 'Admin']:
             return jsonify({'status': 'error', 'message': 'Invalid role'}), 400
         
-        # ✅ FIXED: Use UserRole relationship to filter by roles
+    
         from infrastructure.models import UserRole, Role
         users = db.query(User).join(UserRole).join(Role).filter(
             Role.name == role,

@@ -35,6 +35,7 @@ export default function ChairPaperDetail() {
   
   const [paper, setPaper] = useState(null);       // Thông tin bài báo
   const [reviews, setReviews] = useState([]);     // Danh sách reviews
+  const [assignments, setAssignments] = useState([]); // Danh sách assignments
   const [loading, setLoading] = useState(true);   // Trạng thái loading
 
   // ========== EFFECTS ==========
@@ -57,10 +58,11 @@ export default function ChairPaperDetail() {
     try {
       setLoading(true);
       
-      // Gọi song song 2 API để tối ưu thời gian
-      const [paperRes, reviewsRes] = await Promise.all([
+      // Gọi song song 3 API để tối ưu thời gian
+      const [paperRes, reviewsRes, assignmentsRes] = await Promise.all([
         api.getPaperById(id),
-        api.getReviewsByPaper(id).catch(() => ({ data: { data: [] } }))
+        api.getReviewsByPaper(id).catch(() => ({ data: { data: [] } })),
+        api.get(`/assignments/paper/${id}`).catch(() => ({ data: { data: { assignments: [] } } }))
       ]);
       
       // ✅ FIXED: Correct data path from API response
@@ -72,9 +74,19 @@ export default function ChairPaperDetail() {
       
       setPaper(paperData);
       
-      // ✅ FIXED: Handle multiple possible response structures
-      const reviewsData = reviewsRes.data?.data?.reviews || reviewsRes.data?.data || reviewsRes.data?.reviews || [];
+      // ✅ FIXED: Handle multiple possible response structures for reviews
+      let reviewsData = reviewsRes.data?.data?.reviews;
+      if (reviewsData && typeof reviewsData === 'object' && !Array.isArray(reviewsData)) {
+        reviewsData = reviewsData.reviews || [];
+      }
+      if (!Array.isArray(reviewsData)) {
+        reviewsData = reviewsRes.data?.data || reviewsRes.data?.reviews || [];
+      }
       setReviews(Array.isArray(reviewsData) ? reviewsData : []);
+      
+      // ✅ FIXED: Handle assignments response
+      let assignmentsData = assignmentsRes.data?.data?.assignments || [];
+      setAssignments(Array.isArray(assignmentsData) ? assignmentsData : []);
     } catch (error) {
       console.error('Error fetching paper:', error);
     } finally {
@@ -124,13 +136,33 @@ export default function ChairPaperDetail() {
   };
 
   /**
+   * Tính số lượng reviewer đã được phân công
+   * @returns {number} Số reviewer đã phân công
+   */
+  const getTotalAssignedReviewers = () => {
+    // Count unique reviewers từ assignments
+    if (!Array.isArray(assignments)) return 0;
+    const uniqueReviewers = new Set(assignments.map(a => a.reviewer_id));
+    return uniqueReviewers.size;
+  };
+
+  /**
    * Tính điểm trung bình từ các reviews
    * @returns {string} Điểm trung bình (1 decimal)
    */
   const calculateAverageScore = () => {
-    if (!Array.isArray(reviews) || reviews.length === 0) return 'N/A';
-    const total = reviews.reduce((sum, r) => sum + (r.overall_score || 0), 0);
-    return (total / reviews.length).toFixed(1);
+    try {
+      if (!reviews || !Array.isArray(reviews) || reviews.length === 0) return 'N/A';
+      const total = reviews.reduce((sum, r) => {
+        // Backend trả về 'score' hoặc 'overall_score'
+        const score = parseFloat(r.overall_score || r.score) || 0;
+        return sum + score;
+      }, 0);
+      return (total / reviews.length).toFixed(1);
+    } catch (error) {
+      console.error('Error calculating average score:', error, reviews);
+      return 'N/A';
+    }
   };
 
   // ========== RENDER: LOADING STATE ==========
@@ -257,8 +289,11 @@ export default function ChairPaperDetail() {
           {/* Cột phải: Thống kê review */}
           <div className="space-y-4">
             <div>
-              <h3 className="text-sm font-bold text-slate-500 uppercase mb-2">Số lượng phản biện</h3>
-              <p className="text-2xl font-bold text-slate-900">{reviews.length}</p>
+              <h3 className="text-sm font-bold text-slate-500 uppercase mb-2">Phản biện được phân công</h3>
+              <p className="text-2xl font-bold text-slate-900">
+                {getTotalAssignedReviewers()}
+              </p>
+              <p className="text-xs text-slate-500 mt-1">{reviews.length} đã hoàn tất</p>
             </div>
             
             <div>
@@ -309,10 +344,10 @@ export default function ChairPaperDetail() {
       <div className="bg-white rounded-xl border border-slate-200 p-6">
         <h2 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
           <span className="material-symbols-outlined">rate_review</span>
-          Kết quả phản biện ({reviews.length})
+          Kết quả phản biện ({Array.isArray(reviews) ? reviews.length : 0})
         </h2>
 
-        {reviews.length === 0 ? (
+        {!Array.isArray(reviews) || reviews.length === 0 ? (
           <div className="text-center py-8 text-slate-500">
             <span className="material-symbols-outlined text-4xl mb-2 block">pending</span>
             <p>Chưa có kết quả phản biện</p>
@@ -323,17 +358,17 @@ export default function ChairPaperDetail() {
               <div key={review.id || index} className="border border-slate-200 rounded-lg p-4">
                 <div className="flex items-center justify-between mb-3">
                   <span className="font-medium text-slate-900">
-                    Phản biện #{index + 1}
+                    Phản biện #{index + 1} - {review.reviewer_name || 'Reviewer'}
                   </span>
                   <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-bold">
-                    Điểm: {review.overall_score || 'N/A'}
+                    Điểm: {review.overall_score || review.score || 'N/A'}
                   </span>
                 </div>
                 
-                {review.comments && (
+                {(review.comments_for_author || review.comments) && (
                   <div className="mb-3">
                     <h4 className="text-sm font-medium text-slate-600 mb-1">Nhận xét:</h4>
-                    <p className="text-slate-700 text-sm">{review.comments}</p>
+                    <p className="text-slate-700 text-sm whitespace-pre-wrap">{review.comments_for_author || review.comments}</p>
                   </div>
                 )}
                 
