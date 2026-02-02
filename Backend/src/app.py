@@ -668,31 +668,31 @@ if __name__ == '__main__':
     app = create_app()
     
     print(f"\n{'='*70}")
-    print(f"🚀 UTH-ConfMS API")
+    print(f" UTH-ConfMS API")
     print(f"{'='*70}")
-    print(f"📍 Environment: {app.config.get('APP_ENV')}")
-    print(f"🗄️  Database: {app.config.get('DB_TYPE').upper()}")
-    print(f"📦 DB Name: {app.config.get('DB_NAME')}")
-    print(f"🌐 Server: http://localhost:{app.config.get('PORT')}")
-    print(f"📚 API Docs: http://localhost:{app.config.get('PORT')}/api/docs")
-    print(f"🌍 Languages: EN, VN")
-    print(f"⚡ Caching: {app.config.get('CACHE_TYPE', 'simple')}")
+    print(f" Environment: {app.config.get('APP_ENV')}")
+    print(f"  Database: {app.config.get('DB_TYPE').upper()}")
+    print(f" DB Name: {app.config.get('DB_NAME')}")
+    print(f" Server: http://localhost:{app.config.get('PORT')}")
+    print(f" API Docs: http://localhost:{app.config.get('PORT')}/api/docs")
+    print(f" Languages: EN, VN")
+    print(f" Caching: {app.config.get('CACHE_TYPE', 'simple')}")
     from settings.rate_limit_config import RATE_LIMIT_ENABLED
-    print(f"🛡️  Rate Limiting: {'Enabled' if RATE_LIMIT_ENABLED else 'Disabled'}")
-    print(f"🔧 Debug Mode: {app.config.get('DEBUG')}")
-    print(f"📧 Email: {app.config.get('MAIL_USERNAME') or 'Not configured'}")
+    print(f"  Rate Limiting: {'Enabled' if RATE_LIMIT_ENABLED else 'Disabled'}")
+    print(f" Debug Mode: {app.config.get('DEBUG')}")
+    print(f" Email: {app.config.get('MAIL_USERNAME') or 'Not configured'}")
     print(f"{'='*70}\n")
     
     # Check database
     if app.config.get('APP_ENV') == 'development':
-        print("📋 Checking database...")
+        print(" Checking database...")
         from infrastructure.databases.base import check_connection
         
         connected, message = check_connection()
         if connected:
-            print("✅ Database is accessible!\n")
+            print(" Database is accessible!\n")
         else:
-            print(f"⚠️  Warning: {message}\n")
+            print(f"  Warning: {message}\n")
     
     # Start server
     app.run(

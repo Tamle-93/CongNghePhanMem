@@ -66,7 +66,21 @@ const ChairPapersPage = () => {
     const matchesSearch = paper.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          paper.authors?.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesTrack = !filters.track || paper.track === filters.track;
-    const matchesStatus = !filters.status || paper.status === filters.status;
+    
+    // Match status - handle both lowercase and uppercase, and combine submitted/pending
+    let matchesStatus = !filters.status;
+    if (filters.status) {
+      const paperStatus = paper.status?.toLowerCase();
+      const filterStatus = filters.status.toLowerCase();
+      
+      // "submitted" filter should match both 'submitted' and 'pending' (same meaning)
+      if (filterStatus === 'submitted' || filterStatus === 'pending') {
+        matchesStatus = paperStatus === 'submitted' || paperStatus === 'pending';
+      } else {
+        matchesStatus = paperStatus === filterStatus;
+      }
+    }
+    
     return matchesSearch && matchesTrack && matchesStatus;
   });
 
@@ -74,7 +88,8 @@ const ChairPapersPage = () => {
     total: papers.length,
     pending: papers.filter(p => ['pending', 'submitted', 'PENDING', 'SUBMITTED'].includes(p.status)).length,
     reviewing: papers.filter(p => ['under_review', 'UNDER_REVIEW'].includes(p.status)).length,
-    completed: papers.filter(p => ['accepted', 'rejected', 'ACCEPTED', 'REJECTED'].includes(p.status)).length
+    reviewed: papers.filter(p => ['reviewed', 'REVIEWED'].includes(p.status)).length,
+    completed: papers.filter(p => ['accepted', 'rejected', 'ACCEPTED', 'REJECTED', 'camera_ready', 'CAMERA_READY'].includes(p.status)).length
   };
 
   // Pagination
@@ -247,11 +262,14 @@ const ChairPapersPage = () => {
                     onChange={(e) => setFilters({...filters, status: e.target.value})}
                   >
                     <option value="">Tất cả trạng thái</option>
+                    <option value="submitted">Chưa bắt đầu (mới nộp)</option>
                     <option value="pending">Chờ phân công</option>
                     <option value="under_review">Đang phản biện</option>
-                    <option value="completed">Đã có kết quả phản biện</option>
+                    <option value="reviewed">Đã phản biện xong</option>
+                    <option value="revision_required">Yêu cầu chỉnh sửa</option>
                     <option value="accepted">Đã chấp nhận</option>
                     <option value="rejected">Đã từ chối</option>
+                    <option value="camera_ready">Camera-Ready</option>
                   </select>
                 </div>
                 <div className="flex flex-col gap-1.5">

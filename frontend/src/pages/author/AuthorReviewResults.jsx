@@ -133,8 +133,8 @@ export default function AuthorReviewResults() {
           <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
             {paper.status === 'accepted' && (
               <>
-                <button className="flex items-center justify-center gap-2 bg-primary hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-xl transition-all shadow-lg shadow-blue-500/20 active:scale-95">
-                  <span className="material-symbols-outlined text-xl">workspace_premium</span>
+                <button className="flex items-center justify-center gap-2 bg-primary hover:bg-green-800 text-white font-bold py-3 px-6 rounded-xl transition-all shadow-lg shadow-green-600/20 active:scale-95">
+                  <span className="material-symbols-outlined text-xl">verified</span>
                   <span>Tải chứng nhận</span>
                 </button>
                 <button className="flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white font-bold py-3 px-6 rounded-xl transition-all shadow-lg active:scale-95">
@@ -146,7 +146,7 @@ export default function AuthorReviewResults() {
             {paper.status === 'revision_required' && (
               <button 
                 onClick={() => navigate(`/author/papers/${id}/revision`)}
-                className="flex items-center justify-center gap-2 bg-primary hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-xl transition-all shadow-lg shadow-blue-500/20 active:scale-95"
+                className="flex items-center justify-center gap-2 bg-primary hover:bg-green-800 text-white font-bold py-3 px-6 rounded-xl transition-all shadow-lg shadow-green-600/20 active:scale-95"
               >
                 <span className="material-symbols-outlined text-xl">edit_document</span>
                 <span>Nộp bản chỉnh sửa</span>

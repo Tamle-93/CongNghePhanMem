@@ -150,7 +150,7 @@ const ConferenceDetail = () => {
     return (
       <div className="flex items-center justify-center min-h-screen bg-slate-50">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-700 mx-auto mb-4"></div>
           <p className="text-slate-600">Đang tải thông tin hội nghị...</p>
         </div>
       </div>
@@ -175,7 +175,7 @@ const ConferenceDetail = () => {
           </p>
           <button
             onClick={() => navigate('/conferences')}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            className="px-4 py-2 bg-green-700 text-white rounded-lg hover:bg-green-800 transition-colors"
           >
             Quay lại danh sách
           </button>
@@ -193,7 +193,7 @@ const ConferenceDetail = () => {
   return (
     <div className="min-h-screen bg-slate-50">
       {/* Header Section */}
-      <div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white">
+      <div className="bg-gradient-to-r from-green-700 to-green-900 text-white">
         <div className="max-w-7xl mx-auto px-4 md:px-8 py-12">
           {/* Back button */}
           <button
@@ -231,7 +231,7 @@ const ConferenceDetail = () => {
             {/* Description Card */}
             <div className="bg-white rounded-xl border border-slate-200 p-6">
               <h2 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
-                <span className="material-symbols-outlined text-blue-600">info</span>
+                <span className="material-symbols-outlined text-green-700">info</span>
                 Giới thiệu
               </h2>
               <p className="text-slate-600 leading-relaxed">
@@ -242,7 +242,7 @@ const ConferenceDetail = () => {
             {/* Timeline Card */}
             <div className="bg-white rounded-xl border border-slate-200 p-6">
               <h2 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
-                <span className="material-symbols-outlined text-blue-600">schedule</span>
+                <span className="material-symbols-outlined text-green-700">schedule</span>
                 Các mốc thời gian quan trọng
               </h2>
               
@@ -289,8 +289,8 @@ const ConferenceDetail = () => {
 
                 {/* Conference Date */}
                 {conference.start_date && (
-                  <div className="flex items-center gap-4 p-4 rounded-lg bg-blue-50 border border-blue-200">
-                    <div className="p-2 rounded-full bg-blue-100 text-blue-600">
+                  <div className="flex items-center gap-4 p-4 rounded-lg bg-green-50 border border-green-200">
+                    <div className="p-2 rounded-full bg-green-100 text-green-700">
                       <span className="material-symbols-outlined">event</span>
                     </div>
                     <div className="flex-1">
@@ -324,13 +324,13 @@ const ConferenceDetail = () => {
             {tracks.length > 0 && (
               <div className="bg-white rounded-xl border border-slate-200 p-6">
                 <h2 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
-                  <span className="material-symbols-outlined text-blue-600">category</span>
+                  <span className="material-symbols-outlined text-green-700">category</span>
                   Chủ đề / Tracks
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   {tracks.map((track, index) => (
                     <div key={index} className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg border border-slate-200">
-                      <span className="material-symbols-outlined text-blue-600">label</span>
+                      <span className="material-symbols-outlined text-green-700">label</span>
                       <span className="text-slate-700">{track.name || track}</span>
                     </div>
                   ))}
@@ -352,7 +352,7 @@ const ConferenceDetail = () => {
                   </p>
                   <button
                     onClick={handleSubmitPaper}
-                    className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors flex items-center justify-center gap-2"
+                    className="w-full py-3 bg-green-700 hover:bg-green-800 text-white font-semibold rounded-lg transition-colors flex items-center justify-center gap-2"
                   >
                     <span className="material-symbols-outlined">upload_file</span>
                     Nộp bài ngay
@@ -385,7 +385,7 @@ const ConferenceDetail = () => {
                     href={conference.website}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700"
+                    className="flex items-center gap-2 text-sm text-green-700 hover:text-green-800"
                   >
                     <span className="material-symbols-outlined text-lg">language</span>
                     <span>Website hội nghị</span>
@@ -394,7 +394,7 @@ const ConferenceDetail = () => {
                 {conference.contact_email && (
                   <a
                     href={`mailto:${conference.contact_email}`}
-                    className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700"
+                    className="flex items-center gap-2 text-sm text-green-700 hover:text-green-800"
                   >
                     <span className="material-symbols-outlined text-lg">mail</span>
                     <span>{conference.contact_email}</span>
@@ -408,8 +408,8 @@ const ConferenceDetail = () => {
               <div className="bg-white rounded-xl border border-slate-200 p-6">
                 <h3 className="text-lg font-bold text-slate-900 mb-4">Ban tổ chức</h3>
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                    <span className="material-symbols-outlined text-blue-600">person</span>
+                  <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                    <span className="material-symbols-outlined text-green-700">person</span>
                   </div>
                   <div>
                     <div className="font-semibold text-slate-900">{conference.chair_name}</div>

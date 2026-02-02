@@ -9,15 +9,15 @@ const Footer = () => {
           {/* Logo & Description */}
           <div className="md:col-span-1">
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
-                <span className="text-2xl">🎓</span>
+              <div className="w-10 h-10 bg-gradient-to-br from-green-600 to-green-800 rounded-lg flex items-center justify-center">
+                <span className="material-symbols-outlined text-white">school</span>
               </div>
               <div>
-                <h3 className="text-white font-bold text-lg">UTH-ConfMS</h3>
+                <h3 className="text-white font-bold text-lg">UTH ConfMS</h3>
               </div>
             </div>
             <p className="text-sm text-slate-400 leading-relaxed">
-              Hệ thống quản lý hội nghị khoa học - Đại học Công nghệ TP.HCM (UTH). Nâng tầm tri thức Việt.
+              Hệ thống quản lý hội nghị khoa học - Đại học Giao thông Vận tải TP.HCM (UTH). Nâng tầm tri thức Việt.
             </p>
           </div>
 
@@ -26,24 +26,25 @@ const Footer = () => {
             <h4 className="text-white font-bold mb-4 text-sm uppercase tracking-wider">Khám phá</h4>
             <ul className="space-y-2">
               <li>
-                <Link to="/home" className="text-sm hover:text-blue-400 transition-colors">
+                <Link to="/about" className="text-sm hover:text-green-400 transition-colors">
                   Về hệ thống
                 </Link>
               </li>
               <li>
-                <Link to="/conferences" className="text-sm hover:text-blue-400 transition-colors">
+                <Link to="/conferences" className="text-sm hover:text-green-400 transition-colors">
                   Tìm kiếm hội nghị
                 </Link>
               </li>
               <li>
-                <Link to="/author/papers" className="text-sm hover:text-blue-400 transition-colors">
-                  Tạp chí khoa học
+                <Link to="/guide" className="text-sm hover:text-green-400 transition-colors">
+                  Hướng dẫn sử dụng
                 </Link>
               </li>
               <li>
-                <Link to="/guide" className="text-sm hover:text-blue-400 transition-colors">
-                  Thư viện điện tử
-                </Link>
+                <a href="https://uth.edu.vn/thu-vien" target="_blank" rel="noopener noreferrer" className="text-sm hover:text-green-400 transition-colors inline-flex items-center gap-1">
+                  Thư viện UTH
+                  <span className="material-symbols-outlined text-xs">open_in_new</span>
+                </a>
               </li>
             </ul>
           </div>
@@ -53,22 +54,22 @@ const Footer = () => {
             <h4 className="text-white font-bold mb-4 text-sm uppercase tracking-wider">Quy định</h4>
             <ul className="space-y-2">
               <li>
-                <Link to="/author/papers" className="text-sm hover:text-blue-400 transition-colors">
+                <Link to="/privacy" className="text-sm hover:text-green-400 transition-colors">
                   Chính sách bảo mật
                 </Link>
               </li>
               <li>
-                <Link to="/author/submit" className="text-sm hover:text-blue-400 transition-colors">
+                <Link to="/terms" className="text-sm hover:text-green-400 transition-colors">
                   Điều khoản sử dụng
                 </Link>
               </li>
               <li>
-                <Link to="/guide" className="text-sm hover:text-blue-400 transition-colors">
+                <Link to="/copyright" className="text-sm hover:text-green-400 transition-colors">
                   Quy định bản quyền
                 </Link>
               </li>
               <li>
-                <Link to="/guide" className="text-sm hover:text-blue-400 transition-colors">
+                <Link to="/ethics" className="text-sm hover:text-green-400 transition-colors">
                   Đạo đức khoa học
                 </Link>
               </li>
@@ -80,20 +81,20 @@ const Footer = () => {
             <h4 className="text-white font-bold mb-4 text-sm uppercase tracking-wider">Liên hệ</h4>
             <ul className="space-y-3">
               <li className="flex items-start gap-2">
-                <span className="material-symbols-outlined text-blue-400 text-lg mt-0.5 flex-shrink-0">location_on</span>
+                <span className="material-symbols-outlined text-green-400 text-lg mt-0.5 flex-shrink-0">location_on</span>
                 <span className="text-sm">
                   02 Võ Oanh, Phường 25, Bình Thạnh, Thành phố Hồ Chí Minh, Việt Nam
                 </span>
               </li>
               <li className="flex items-center gap-2">
-                <span className="material-symbols-outlined text-blue-400 text-lg flex-shrink-0">call</span>
-                <a href="tel:123456789" className="text-sm hover:text-blue-400 transition-colors">
+                <span className="material-symbols-outlined text-green-400 text-lg flex-shrink-0">call</span>
+                <a href="tel:123456789" className="text-sm hover:text-green-400 transition-colors">
                   123456789
                 </a>
               </li>
               <li className="flex items-center gap-2">
-                <span className="material-symbols-outlined text-blue-400 text-lg flex-shrink-0">email</span>
-                <a href="mailto:khoahoc@uth.edu.vn" className="text-sm hover:text-blue-400 transition-colors">
+                <span className="material-symbols-outlined text-green-400 text-lg flex-shrink-0">email</span>
+                <a href="mailto:khoahoc@uth.edu.vn" className="text-sm hover:text-green-400 transition-colors">
                   khoahoc@uth.edu.vn
                 </a>
               </li>
@@ -105,13 +106,13 @@ const Footer = () => {
         <div className="mt-8 pt-8 border-t border-slate-700">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <p className="text-sm text-slate-500">
-              © 2025 UTH-ConfMS. All rights reserved.
+              © 2025 UTH ConfMS. All rights reserved.
             </p>
             <div className="flex items-center gap-4">
-              <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="text-slate-500 hover:text-blue-400 transition-colors">
+              <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="text-slate-500 hover:text-green-400 transition-colors">
                 <span className="material-symbols-outlined">code</span>
               </a>
-              <a href="#" className="text-slate-500 hover:text-blue-400 transition-colors">
+              <a href="#" className="text-slate-500 hover:text-green-400 transition-colors">
                 <span className="material-symbols-outlined">language</span>
               </a>
             </div>

@@ -130,8 +130,10 @@ const MainLayout = () => {
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-8">
             <Link to={getHomePath()} className="flex items-center gap-2">
-              <span className="text-2xl">🎓</span>
-              <span className="text-xl font-bold text-slate-900">UTH-ConfMS</span>
+              <div className="w-9 h-9 bg-gradient-to-br from-green-600 to-green-800 rounded-lg flex items-center justify-center">
+                <span className="material-symbols-outlined text-white text-xl">school</span>
+              </div>
+              <span className="text-xl font-bold text-slate-900">UTH ConfMS</span>
             </Link>
             
             <nav className="hidden md:flex items-center gap-6">
@@ -141,8 +143,8 @@ const MainLayout = () => {
                   to={item.path}
                   className={`text-sm font-medium transition-colors ${
                     location.pathname === item.path
-                      ? 'text-blue-600'
-                      : 'text-slate-600 hover:text-blue-600'
+                      ? 'text-green-700'
+                      : 'text-slate-600 hover:text-green-700'
                   }`}
                 >
                   {item.label}
@@ -189,12 +191,12 @@ const MainLayout = () => {
                         key={r}
                         onClick={() => handleRoleChange(r)}
                         className={`w-full text-left px-4 py-2 text-sm flex items-center justify-between hover:bg-slate-50 ${
-                          activeRole === r ? 'bg-blue-50 text-blue-700' : 'text-slate-700'
+                          activeRole === r ? 'bg-green-50 text-green-700' : 'text-slate-700'
                         }`}
                       >
                         <span>{roleLabels[r]}</span>
                         {activeRole === r && (
-                          <span className="material-symbols-outlined text-base text-blue-600">check</span>
+                          <span className="material-symbols-outlined text-base text-green-600">check</span>
                         )}
                       </button>
                     ))}
@@ -209,7 +211,7 @@ const MainLayout = () => {
                 onClick={() => setShowUserMenu(!showUserMenu)}
                 className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-100 transition-colors"
               >
-                <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-sm">
+                <div className="w-8 h-8 rounded-full bg-green-700 flex items-center justify-center text-white font-bold text-sm">
                   {user?.full_name?.[0] || user?.username?.[0] || 'U'}
                 </div>
                 <div className="hidden md:block text-left">

@@ -29,13 +29,14 @@ const ReviewerReviews = () => {
         submitted_at: a.review_submitted_at || a.submitted_at,
         deadline: a.deadline,
         score: a.review_score || a.overall_score || null,
-        status: a.status
+        status: a.status, // pending, in_progress, completed
+        review_submitted: a.review_submitted
       }));
       
       if (filter === 'pending') {
-        fetchedReviews = fetchedReviews.filter(r => !r.submitted_at);
+        fetchedReviews = fetchedReviews.filter(r => r.status !== 'completed');
       } else if (filter === 'submitted') {
-        fetchedReviews = fetchedReviews.filter(r => r.submitted_at);
+        fetchedReviews = fetchedReviews.filter(r => r.status === 'completed');
       }
       
       setReviews(fetchedReviews);
@@ -125,7 +126,7 @@ const ReviewerReviews = () => {
             <div>
               <p className="text-sm text-gray-600">Đã hoàn thành</p>
               <p className="text-2xl font-bold text-gray-900">
-                {reviews.filter(r => r.submitted_at).length}
+                {reviews.filter(r => r.status === 'completed').length}
               </p>
             </div>
           </div>
@@ -139,7 +140,7 @@ const ReviewerReviews = () => {
             <div>
               <p className="text-sm text-gray-600">Chưa hoàn thành</p>
               <p className="text-2xl font-bold text-gray-900">
-                {reviews.filter(r => !r.submitted_at).length}
+                {reviews.filter(r => r.status !== 'completed').length}
               </p>
             </div>
           </div>
@@ -188,9 +189,13 @@ const ReviewerReviews = () => {
                           {getScoreText(review.score)}
                         </span>
                       )}
-                      {review.submitted_at ? (
+                      {review.status === 'completed' ? (
                         <span className="px-3 py-1 rounded-full text-xs font-medium border bg-green-100 text-green-800 border-green-300">
                           Đã nộp
+                        </span>
+                      ) : review.status === 'in_progress' ? (
+                        <span className="px-3 py-1 rounded-full text-xs font-medium border bg-blue-100 text-blue-800 border-blue-300">
+                          Đang đánh giá
                         </span>
                       ) : (
                         <span className="px-3 py-1 rounded-full text-xs font-medium border bg-yellow-100 text-yellow-800 border-yellow-300">
@@ -203,13 +208,13 @@ const ReviewerReviews = () => {
                         <span className="material-symbols-outlined text-base">event_note</span>
                         <span>{review.conference_name || 'N/A'}</span>
                       </div>
-                      {review.submitted_at && (
+                      {review.status === 'completed' && review.submitted_at && (
                         <div className="flex items-center gap-1">
                           <span className="material-symbols-outlined text-base">event</span>
                           <span>Nộp: {new Date(review.submitted_at).toLocaleDateString('vi-VN')}</span>
                         </div>
                       )}
-                      {!review.submitted_at && review.deadline && (
+                      {review.status !== 'completed' && review.deadline && (
                         <div className="flex items-center gap-1">
                           <span className="material-symbols-outlined text-base">schedule</span>
                           <span>Hạn: {new Date(review.deadline).toLocaleDateString('vi-VN')}</span>
@@ -222,9 +227,9 @@ const ReviewerReviews = () => {
                     className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 font-medium"
                   >
                     <span className="material-symbols-outlined text-lg">
-                      {review.submitted_at ? 'visibility' : 'edit'}
+                      {review.status === 'completed' ? 'visibility' : 'edit'}
                     </span>
-                    <span>{review.submitted_at ? 'Xem' : 'Đánh giá'}</span>
+                    <span>{review.status === 'completed' ? 'Xem' : 'Đánh giá'}</span>
                   </button>
                 </div>
               </div>

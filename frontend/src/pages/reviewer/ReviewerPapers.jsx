@@ -25,14 +25,22 @@ const ReviewerPapers = () => {
     }
   };
 
-  const getStatusColor = (hasReview) => {
-    return hasReview
-      ? 'bg-green-100 text-green-800 border-green-300'
-      : 'bg-yellow-100 text-yellow-800 border-yellow-300';
+  const getStatusColor = (status) => {
+    const colors = {
+      'completed': 'bg-green-100 text-green-800 border-green-300',
+      'in_progress': 'bg-blue-100 text-blue-800 border-blue-300',
+      'pending': 'bg-yellow-100 text-yellow-800 border-yellow-300'
+    };
+    return colors[status] || colors.pending;
   };
 
-  const getStatusText = (hasReview) => {
-    return hasReview ? 'Đã đánh giá' : 'Chưa đánh giá';
+  const getStatusText = (status) => {
+    const texts = {
+      'completed': 'Đã đánh giá',
+      'in_progress': 'Đang đánh giá',
+      'pending': 'Chưa đánh giá'
+    };
+    return texts[status] || 'Chưa đánh giá';
   };
 
   if (loading) {
@@ -76,7 +84,7 @@ const ReviewerPapers = () => {
             <div>
               <p className="text-sm text-gray-600">Chưa đánh giá</p>
               <p className="text-2xl font-bold text-gray-900">
-                {papers.filter(p => !p.review_submitted_at).length}
+                {papers.filter(p => p.status === 'pending' || !p.status).length}
               </p>
             </div>
           </div>
@@ -90,7 +98,7 @@ const ReviewerPapers = () => {
             <div>
               <p className="text-sm text-gray-600">Đã hoàn thành</p>
               <p className="text-2xl font-bold text-gray-900">
-                {papers.filter(p => p.review_submitted_at).length}
+                {papers.filter(p => p.status === 'completed').length}
               </p>
             </div>
           </div>
@@ -145,8 +153,8 @@ const ReviewerPapers = () => {
                       {new Date(paper.deadline).toLocaleDateString('vi-VN')}
                     </td>
                     <td className="px-6 py-4">
-                      <span className={`px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(paper.review_submitted_at)}`}>
-                        {getStatusText(paper.review_submitted_at)}
+                      <span className={`px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(paper.status)}`}>
+                        {getStatusText(paper.status)}
                       </span>
                     </td>
                     <td className="px-6 py-4 text-right">

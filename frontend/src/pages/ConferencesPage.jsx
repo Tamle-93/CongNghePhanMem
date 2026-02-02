@@ -87,7 +87,7 @@ const ConferencesPage = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-96">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-700"></div>
       </div>
     );
   }
@@ -140,7 +140,7 @@ const ConferencesPage = () => {
               >
                 {/* Card Header */}
                 <div className="flex items-start justify-between mb-4">
-                  <div className="p-3 bg-blue-50 rounded-lg text-blue-600">
+                  <div className="p-3 bg-green-50 rounded-lg text-green-700">
                     <span className="material-symbols-outlined text-3xl">event</span>
                   </div>
                   <span className="text-xs font-medium text-green-600 bg-green-50 px-3 py-1 rounded-full">
@@ -149,7 +149,7 @@ const ConferencesPage = () => {
                 </div>
                 
                 {/* Conference Title */}
-                <h3 className="font-bold text-slate-900 text-lg mb-2 group-hover:text-blue-600 transition-colors">
+                <h3 className="font-bold text-slate-900 text-lg mb-2 group-hover:text-green-700 transition-colors">
                   {conf.name}
                 </h3>
                 
@@ -177,7 +177,7 @@ const ConferencesPage = () => {
                 {/* View Detail Button */}
                 <button 
                   onClick={() => handleViewDetail(conf.conference_id || conf.id)}
-                  className="w-full mt-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors"
+                  className="w-full mt-4 py-2 bg-green-700 hover:bg-green-800 text-white font-semibold rounded-lg transition-colors"
                 >
                   Xem chi tiết
                 </button>
