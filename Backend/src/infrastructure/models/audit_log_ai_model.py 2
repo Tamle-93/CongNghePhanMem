@@ -2,9 +2,7 @@ from datetime import datetime
 from sqlalchemy import Column, Integer, String, DateTime, Text, create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 
-# ===== FIX: Khai báo Base trực tiếp để demo =====
 Base = declarative_base()
-
 
 class AuditLogAI(Base):
     __tablename__ = "audit_log_ai"
@@ -18,7 +16,6 @@ class AuditLogAI(Base):
 
     def __repr__(self):
         return f"<AuditLogAI id={self.id} action={self.action} actor={self.actor}>"
-
 
 # ===== RUN DEMO =====
 if __name__ == "__main__":
