@@ -281,12 +281,23 @@ class PaperService:
                 
                 is_submitter = paper.submitter_id == user_id
                 
-                # Check if user is chair of the conference
-                from infrastructure.models import Conference
+                # Check if user has Chair role (any conference) or is chair_id of this conference
+                from infrastructure.models import Conference, UserRole, Role
                 conference = db.query(Conference).filter(
                     Conference.id == paper.conference_id
                 ).first()
-                is_chair = conference and conference.chair_id == user_id
+                
+                # User có role Chair (global hoặc bất kỳ conference nào)
+                has_chair_role = db.query(UserRole).join(Role).filter(
+                    UserRole.user_id == user_id,
+                    Role.name == 'Chair',
+                    UserRole.is_active == True
+                ).first() is not None
+                
+                # Hoặc là chair_id của conference này
+                is_conference_chair = conference and conference.chair_id == user_id
+                
+                is_chair = has_chair_role or is_conference_chair
                 
                 is_admin = 'Admin' in user.roles
                 

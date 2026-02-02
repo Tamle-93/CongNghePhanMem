@@ -72,9 +72,9 @@ const ChairPapersPage = () => {
 
   const stats = {
     total: papers.length,
-    pending: papers.filter(p => p.status === 'pending').length,
-    reviewing: papers.filter(p => p.status === 'under_review').length,
-    completed: papers.filter(p => p.status === 'accepted' || p.status === 'rejected').length
+    pending: papers.filter(p => ['pending', 'submitted', 'PENDING', 'SUBMITTED'].includes(p.status)).length,
+    reviewing: papers.filter(p => ['under_review', 'UNDER_REVIEW'].includes(p.status)).length,
+    completed: papers.filter(p => ['accepted', 'rejected', 'ACCEPTED', 'REJECTED'].includes(p.status)).length
   };
 
   // Pagination

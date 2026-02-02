@@ -54,11 +54,16 @@ class UserResponseSchema(Schema):
     username = fields.Str()
     email = fields.Email()
     full_name = fields.Str()
+    organization = fields.Str()
+    expertise = fields.Str()
     created_at = fields.DateTime(dump_only=True)
     updated_at = fields.DateTime(dump_only=True)
     
     # ✅ CRITICAL: Include roles field
     roles = fields.Method("get_roles")
+    
+    # ✅ ADD: Workload (assigned papers count)
+    assigned_papers = fields.Method("get_assigned_papers")
     
     def get_roles(self, obj):
         """
@@ -80,6 +85,19 @@ class UserResponseSchema(Schema):
         
         # Fallback
         return []
+    
+    def get_assigned_papers(self, obj):
+        """
+        Count number of papers assigned to this user as reviewer
+        """
+        try:
+            # Check if user has assignments relationship
+            if hasattr(obj, 'assignments'):
+                # Count active assignments (not deleted)
+                return len([a for a in obj.assignments if not a.is_deleted])
+            return 0
+        except Exception:
+            return 0
 
 
 class UserUpdateSchema(Schema):

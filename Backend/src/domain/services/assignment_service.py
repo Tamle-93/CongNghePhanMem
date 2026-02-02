@@ -73,8 +73,26 @@ class AssignmentService:
                 return None, "Conference not found"
             
             chair = db.query(User).filter(User.id == chair_user_id).first()
-            if conference.chair_id != chair_user_id and 'Admin' not in (chair.roles if chair else []):
-                return None, "Permission denied"
+            if not chair:
+                return None, "User not found"
+                
+            chair_role_names = [r.name if hasattr(r, 'name') else r for r in (chair.roles if chair else [])]
+            
+            # ✅ DEBUG: Log role check details
+            print(f"[DEBUG] Chair user_id={chair_user_id}, username={chair.username if chair else 'N/A'}")
+            print(f"[DEBUG] Chair roles={chair.roles}, role_names={chair_role_names}")
+            print(f"[DEBUG] Conference chair_id={conference.chair_id}")
+            
+            # ✅ FIX: Allow if user has Chair or Admin role
+            # (Don't require exact conference.chair_id match as it may not be set)
+            is_admin = 'Admin' in chair_role_names
+            is_chair = 'Chair' in chair_role_names
+            is_chair_of_conference = conference.chair_id == chair_user_id
+            
+            print(f"[DEBUG] is_admin={is_admin}, is_chair={is_chair}, is_chair_of_conference={is_chair_of_conference}")
+            
+            if not (is_admin or is_chair or is_chair_of_conference):
+                return None, f"Permission denied: Need Admin or Chair role"
             
             # Verify paper belongs to conference
             paper = db.query(Paper).filter(
@@ -88,20 +106,39 @@ class AssignmentService:
             # Verify reviewer
             # ✅ FIXED: Check user.roles for multi-role support
             reviewer = db.query(User).filter(User.id == reviewer_id).first()
-            if reviewer and ('Reviewer' not in reviewer.roles and 'Chair' not in reviewer.roles):
-                reviewer = None
+            if reviewer:
+                reviewer_role_names = [r.name if hasattr(r, 'name') else r for r in (reviewer.roles if reviewer else [])]
+                print(f"[DEBUG] Reviewer user_id={reviewer_id}, username={reviewer.username if reviewer else 'N/A'}")
+                print(f"[DEBUG] Reviewer roles={reviewer.roles}, role_names={reviewer_role_names}")
+                if 'Reviewer' not in reviewer_role_names and 'Chair' not in reviewer_role_names:
+                    print(f"[DEBUG] Reviewer role check FAILED - setting reviewer=None")
+                    reviewer = None
             
             if not reviewer:
                 return None, "Reviewer not found or invalid role"
             
-            # Check for conflict of interest
+            # ✅ CHECK 1: Reviewer cannot be the paper submitter (author)
+            if paper.submitter_id == reviewer_id:
+                return None, "Cannot assign paper submitter as reviewer (conflict of interest)"
+            
+            # ✅ CHECK 2: Reviewer cannot be a co-author of the paper
+            from infrastructure.models import PaperAuthor
+            is_coauthor = db.query(PaperAuthor).filter(
+                PaperAuthor.paper_id == paper_id,
+                PaperAuthor.user_id == reviewer_id
+            ).first()
+            
+            if is_coauthor:
+                return None, "Cannot assign co-author as reviewer (conflict of interest)"
+            
+            # ✅ CHECK 3: Check for declared conflict of interest
             conflict = db.query(ConflictOfInterest).filter(
                 ConflictOfInterest.paper_id == paper_id,
                 ConflictOfInterest.reviewer_id == reviewer_id
             ).first()
             
             if conflict:
-                return None, f"Conflict of interest: {conflict.reason}"
+                return None, f"Conflict of interest declared: {conflict.reason}"
             
             # Check if already assigned
             existing = db.query(Assignment).filter(
@@ -124,9 +161,10 @@ class AssignmentService:
             
             db.add(assignment)
             
-            # ✅ Update paper status to under_review after first assignment
-            if paper.status in ['submitted', 'pending']:
-                paper.status = 'under_review'
+            # ✅ Update paper status to UNDER_REVIEW after first assignment
+            # Database uses UPPERCASE enum values
+            if paper.status and paper.status.upper() in ['SUBMITTED', 'PENDING', 'DRAFT']:
+                paper.status = 'UNDER_REVIEW'
             
             db.commit()
             db.refresh(assignment)
@@ -273,9 +311,13 @@ class AssignmentService:
             conference = assignment.conference
             user = db.query(User).filter(User.id == user_id).first()
             
-            # ✅ FIXED: Check user.roles for multi-role support
-            if conference.chair_id != user_id and 'Admin' not in user.roles:
-                return None, "Permission denied"
+            # ✅ FIXED: Allow if user has Admin or Chair role
+            user_role_names = [r.name if hasattr(r, 'name') else r for r in (user.roles if user else [])]
+            is_admin = 'Admin' in user_role_names
+            is_chair = 'Chair' in user_role_names
+            
+            if not (is_admin or is_chair or conference.chair_id == user_id):
+                return None, "Permission denied: Need Admin or Chair role"
             
             # Check if review already submitted
             review = db.query(Review).filter(
@@ -331,9 +373,13 @@ class AssignmentService:
             conference = assignment.conference
             user = db.query(User).filter(User.id == user_id).first()
             
-            # ✅ FIXED: Check user.roles for multi-role support
-            if conference.chair_id != user_id and 'Admin' not in user.roles:
-                return False, "Permission denied"
+            # ✅ FIXED: Allow if user has Admin or Chair role
+            user_role_names = [r.name if hasattr(r, 'name') else r for r in (user.roles if user else [])]
+            is_admin = 'Admin' in user_role_names
+            is_chair = 'Chair' in user_role_names
+            
+            if not (is_admin or is_chair or conference.chair_id == user_id):
+                return False, "Permission denied: Need Admin or Chair role"
             
             # Check if review already submitted
             review = db.query(Review).filter(
