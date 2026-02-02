@@ -42,6 +42,7 @@ from infrastructure.models import (
     Decision, Paper, Conference, User, Review, 
     Assignment, AuditLogAI, PaperStatus
 )
+from domain.services.email_service import EmailService
 from datetime import datetime
 import json
 
@@ -69,13 +70,19 @@ class DecisionService:
             
             # Verify chair permission
             conference = paper.conference
+            if not conference:
+                return None, "Paper has no associated conference"
             chair = db.query(User).filter(User.id == chair_user_id).first()
+            if not chair:
+                return None, "User not found"
             
-            # Check if user is chair of conference or Admin
-            is_admin = 'Admin' in (chair.roles if chair else [])
-            is_chair = conference.chair_id == chair_user_id
+            # Check if user can make decisions: conference chair, Chair role in conference, or Admin
+            is_admin = chair.has_role('Admin')
+            is_conference_chair = conference.chair_id == chair_user_id
+            has_chair_role = chair.has_role('Chair', conference.id)
+            can_decide = is_admin or is_conference_chair or has_chair_role
             
-            if not is_chair and not is_admin:
+            if not can_decide:
                 return None, "Permission denied: Only conference chair can make decisions"
             
             # Check if reviews are complete (optional - allow decision without reviews)
@@ -134,9 +141,55 @@ class DecisionService:
             elif result == 'Reject':
                 paper.status = PaperStatus.REJECTED
             else:  # Revision
-                paper.status = 'revision_required'
+                paper.status = PaperStatus.REVISION_REQUIRED
             
             db.commit()
+            
+            # ✅ Send email to paper submitter (author)
+            try:
+                submitter = db.query(User).filter(User.id == paper.submitter_id).first()
+                if submitter:
+                    decision_text = {
+                        'Accept': 'CHẤP NHẬN',
+                        'Reject': 'TỪ CHỐI',
+                        'Revision': 'YÊU CẦU CHỈNH SỬA'
+                    }.get(result, 'QUYẾT ĐỊNH')
+                    
+                    EmailService.send_email(
+                        to=submitter.email,
+                        subject=f'Kết quả quyết định - {paper.title[:50]}...',
+                        body=f"""
+                        Xin chào {submitter.full_name or submitter.username},
+                        
+                        Kết quả quyết định cho bài báo của bạn:
+                        
+                        Tiêu đề: {paper.title}
+                        Kết quả: {decision_text}
+                        
+                        {"Nhận xét: " + final_comment if final_comment else ""}
+                        
+                        Vui lòng đăng nhập vào hệ thống để xem chi tiết.
+                        
+                        Trân trọng,
+                        Ban tổ chức hội nghị
+                        """,
+                        html=f"""
+                        <p>Xin chào <strong>{submitter.full_name or submitter.username}</strong>,</p>
+                        <p>Kết quả quyết định cho bài báo của bạn:</p>
+                        <div style="background-color: #f9fafb; padding: 15px; border-left: 4px solid #3b82f6; margin: 20px 0;">
+                            <p><strong>Tiêu đề:</strong> {paper.title}</p>
+                            <p><strong>Kết quả:</strong> <span style="font-weight: bold; color: {'#10b981' if result == 'Accept' else '#ef4444' if result == 'Reject' else '#f59e0b'};">{decision_text}</span></p>
+                            {"<p><strong>Nhận xét:</strong><br/>" + final_comment + "</p>" if final_comment else ""}
+                        </div>
+                        <p>Vui lòng đăng nhập vào hệ thống để xem chi tiết.</p>
+                        """,
+                        email_type='DECISION',
+                        entity_type='Paper',
+                        entity_id=paper_id,
+                        user_id=submitter.id
+                    )
+            except Exception as e:
+                print(f"⚠️  Failed to send decision email: {str(e)}")
             
             # Log decision
             AuditLogAI.log(

@@ -28,10 +28,11 @@ const ChairDecisions = () => {
       for (const paper of papersData) {
         try {
           const reviewRes = await api.getReviewsByPaper(paper.id).catch(() => ({ data: [] }));
-          const reviews = reviewRes.data?.data || reviewRes.data || [];
-          if (reviews.length > 0) {
-            const avgScore = (reviews.reduce((sum, r) => sum + (r.score || 0), 0) / reviews.length).toFixed(1);
-            stats[paper.id] = { count: reviews.length, avg: avgScore };
+          const reviews = reviewRes.data?.data?.reviews || reviewRes.data?.reviews || reviewRes.data || [];
+          const reviewsArray = Array.isArray(reviews) ? reviews : [];
+          if (reviewsArray.length > 0) {
+            const avgScore = (reviewsArray.reduce((sum, r) => sum + (r.overall_score || r.score || 0), 0) / reviewsArray.length).toFixed(1);
+            stats[paper.id] = { count: reviewsArray.length, avg: avgScore };
           } else {
             stats[paper.id] = { count: 0, avg: 'N/A' };
           }
@@ -50,28 +51,39 @@ const ChairDecisions = () => {
   };
 
   const getStatusBadge = (status) => {
+    const statusLower = status?.toLowerCase();
     const badges = {
       pending: { bg: 'bg-yellow-100 text-yellow-700', text: 'Chờ quyết định' },
+      submitted: { bg: 'bg-yellow-100 text-yellow-700', text: 'Chờ quyết định' },
       under_review: { bg: 'bg-blue-100 text-blue-700', text: 'Đang phản biện' },
+      reviewed: { bg: 'bg-purple-100 text-purple-700', text: 'Đã phản biện' },
       accepted: { bg: 'bg-green-100 text-green-700', text: 'Đã chấp nhận' },
       rejected: { bg: 'bg-red-100 text-red-700', text: 'Đã từ chối' },
-      revision_required: { bg: 'bg-orange-100 text-orange-700', text: 'Yêu cầu chỉnh sửa' }
+      revision_required: { bg: 'bg-orange-100 text-orange-700', text: 'Yêu cầu chỉnh sửa' },
+      camera_ready: { bg: 'bg-teal-100 text-teal-700', text: 'Camera-Ready' }
     };
-    const badge = badges[status] || badges.pending;
+    const badge = badges[statusLower] || badges.pending;
     return <span className={`${badge.bg} px-2.5 py-1 rounded-full text-xs font-semibold`}>{badge.text}</span>;
   };
 
   const filteredPapers = papers.filter(paper => {
-    if (filter === 'pending') return paper.status === 'pending' || paper.status === 'under_review';
-    if (filter === 'decided') return paper.status === 'accepted' || paper.status === 'rejected' || paper.status === 'revision_required';
+    const statusLower = paper.status?.toLowerCase();
+    if (filter === 'pending') return statusLower === 'pending' || statusLower === 'under_review' || statusLower === 'submitted';
+    if (filter === 'decided') return statusLower === 'accepted' || statusLower === 'rejected' || statusLower === 'revision_required' || statusLower === 'camera_ready';
     return true;
   });
 
   const stats = {
     total: papers.length,
-    pending: papers.filter(p => p.status === 'pending' || p.status === 'under_review').length,
-    accepted: papers.filter(p => p.status === 'accepted').length,
-    rejected: papers.filter(p => p.status === 'rejected').length
+    pending: papers.filter(p => {
+      const s = p.status?.toLowerCase();
+      return s === 'pending' || s === 'under_review' || s === 'submitted';
+    }).length,
+    accepted: papers.filter(p => {
+      const s = p.status?.toLowerCase();
+      return s === 'accepted' || s === 'camera_ready';
+    }).length,
+    rejected: papers.filter(p => p.status?.toLowerCase() === 'rejected').length
   };
 
   if (loading) {

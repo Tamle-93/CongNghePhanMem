@@ -37,6 +37,7 @@ from infrastructure.databases.base import SessionLocal
 from infrastructure.models import (
     Review, Assignment, Paper, User, Conference, AuditLogAI
 )
+from domain.services.email_service import EmailService
 from datetime import datetime
 import json
 
@@ -78,17 +79,7 @@ class ReviewService:
             ).first()
             
             if existing_review:
-                # Update existing review
-                existing_review.score = score
-                existing_review.comments_for_author = comments_for_author
-                existing_review.confidential_content = confidential_content
-                existing_review.updated_at = datetime.utcnow()
-                
-                db.commit()
-                db.refresh(existing_review)
-                
-                review = existing_review
-                action = 'review_updated'
+                return None, "Review already submitted"
             else:
                 # Create new review
                 review = Review(
@@ -108,6 +99,47 @@ class ReviewService:
                 # Update assignment status
                 assignment.status = 'Completed'
                 db.commit()
+                
+                # ✅ Send email to chair that review is submitted
+                try:
+                    conference = assignment.conference
+                    paper = assignment.paper
+                    reviewer = assignment.reviewer
+                    
+                    EmailService.send_email(
+                        to=conference.chair_email if conference.chair_email else 'chair@example.com',
+                        subject=f'Phản biện đã nộp - {paper.title[:50]}...',
+                        body=f"""
+                        Xin chào,
+                        
+                        Phản biện đã nộp nhận xét cho bài báo:
+                        
+                        Tiêu đề: {paper.title}
+                        Phản biện: {reviewer.full_name or reviewer.username}
+                        Điểm: {score}/5
+                        
+                        Vui lòng đăng nhập vào hệ thống để xem chi tiết.
+                        
+                        Trân trọng,
+                        Hệ thống quản lý hội nghị
+                        """,
+                        html=f"""
+                        <p>Xin chào,</p>
+                        <p>Phản biện đã nộp nhận xét cho bài báo:</p>
+                        <div style="background-color: #f9fafb; padding: 15px; border-left: 4px solid #3b82f6; margin: 20px 0;">
+                            <p><strong>Tiêu đề:</strong> {paper.title}</p>
+                            <p><strong>Phản biện:</strong> {reviewer.full_name or reviewer.username}</p>
+                            <p><strong>Điểm:</strong> <span style="font-size: 18px; font-weight: bold; color: #10b981;">{score}</span>/5</p>
+                        </div>
+                        <p>Vui lòng đăng nhập vào hệ thống để xem chi tiết.</p>
+                        """,
+                        email_type='REVIEW_SUBMITTED',
+                        entity_type='Review',
+                        entity_id=review.id,
+                        user_id=reviewer_id
+                    )
+                except Exception as e:
+                    print(f"⚠️  Failed to send review submission email: {str(e)}")
             
             # Log review
             AuditLogAI.log(

@@ -25,12 +25,12 @@ const HomePage = () => {
       const [conferencesRes, papersRes, usersRes] = await Promise.all([
         api.listConferences().catch(() => ({ data: { data: { conferences: [] } } })),
         api.listPapers().catch(() => ({ data: { data: { papers: [] } } })),
-        api.listUsers().catch(() => ({ data: { data: { users: [] } } }))
+        api.getUserPublicStats().catch(() => ({ data: { data: { total_users: 0 } } }))
       ]);
 
       const conferencesData = conferencesRes.data?.data?.conferences || conferencesRes.data?.conferences || [];
       const papersData = papersRes.data?.data?.papers || papersRes.data?.papers || [];
-      const usersData = usersRes.data?.data?.users || usersRes.data?.users || [];
+      const totalUsers = usersRes.data?.data?.total_users ?? usersRes.data?.total_users ?? 0;
 
       // Filter active conferences (upcoming submission deadlines)
       const now = new Date();
@@ -66,7 +66,7 @@ const HomePage = () => {
       setStats({
         conferences: conferencesData.length,
         papers: papersData.length,
-        users: usersData.length
+        users: totalUsers
       });
     } catch (err) {
       console.error('Error fetching data:', err);

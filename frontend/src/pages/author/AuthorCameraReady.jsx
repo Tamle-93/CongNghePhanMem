@@ -72,14 +72,23 @@ export default function AuthorCameraReady() {
       formData.append('notes', notes);
       formData.append('paper_id', id);
 
-      await api.post(`/papers/${id}/camera-ready`, formData, {
+      console.log('Submitting camera-ready:', {
+        paper_id: id,
+        camera_file: cameraReadyFile?.name,
+        copyright_file: copyrightFile?.name
+      });
+
+      const response = await api.post(`/papers/${id}/camera-ready`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
+      console.log('Camera-ready response:', response);
       alert('Đã nộp bản Camera-Ready thành công!');
       navigate(`/author/papers/${id}`);
     } catch (error) {
       console.error('Error submitting camera-ready:', error);
-      alert('Không thể nộp bản Camera-Ready. Vui lòng thử lại.');
+      console.error('Error response:', error.response?.data);
+      const errorMsg = error.response?.data?.message || 'Không thể nộp bản Camera-Ready. Vui lòng thử lại.';
+      alert(errorMsg);
     } finally {
       setSubmitting(false);
     }

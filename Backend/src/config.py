@@ -20,6 +20,7 @@ class Config:
     DB_TYPE = os.getenv('DB_TYPE', 'postgresql')  # postgresql | mysql | sqlite
     
     # Database Connection (for PostgreSQL and MySQL)
+    # Connect to local PostgreSQL (password: 1234)
     DB_HOST = os.getenv('DB_HOST', 'localhost')
     DB_PORT = os.getenv('DB_PORT', '5432')
     DB_NAME = os.getenv('DB_NAME', 'uth_confms')

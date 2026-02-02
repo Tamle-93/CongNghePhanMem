@@ -6,10 +6,14 @@ from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 import os
 
+# Disable rate limiting in development
+RATE_LIMIT_ENABLED = os.getenv('RATE_LIMIT_ENABLED', 'false').lower() == 'true'
+
 limiter = Limiter(
     key_func=get_remote_address,
-    default_limits=["200 per day", "50 per hour"],
-    storage_uri=os.getenv('RATE_LIMIT_STORAGE_URI', 'memory://')
+    default_limits=["10000 per day", "1000 per hour", "200 per minute"] if RATE_LIMIT_ENABLED else [],
+    storage_uri=os.getenv('RATE_LIMIT_STORAGE_URI', 'memory://'),
+    enabled=RATE_LIMIT_ENABLED
 )
 
 def init_rate_limiter(app):

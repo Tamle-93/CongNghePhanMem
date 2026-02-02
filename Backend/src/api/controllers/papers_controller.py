@@ -250,19 +250,30 @@ def upload_camera_ready(paper_id):
     """
     Upload camera-ready version
     ---
-    POST /api/controllers/papers/{paper_id}/camera-ready
+    POST /api/papers/{paper_id}/camera-ready
     Content-Type: multipart/form-data
     
     Form Data:
-        file: PDF file (required)
+        camera_ready_file: PDF file (required)
     """
     try:
-        if 'file' not in request.files:
-            return jsonify({'status': 'error', 'message': 'No file uploaded'}), 400
+        # Debug logging
+        print(f"[DEBUG] Camera-ready upload for paper {paper_id}")
+        print(f"[DEBUG] Current user: {request.current_user}")
+        print(f"[DEBUG] Files in request: {list(request.files.keys())}")
+        print(f"[DEBUG] Form data: {list(request.form.keys())}")
+        print(f"[DEBUG] Content-Type: {request.content_type}")
         
-        file = request.files['file']
+        file = request.files.get('camera_ready_file') or request.files.get('file')
+        if not file:
+            print(f"[ERROR] No file found in request. Available files: {list(request.files.keys())}")
+            return jsonify({
+                'status': 'error', 
+                'message': 'Không tìm thấy file. Vui lòng chọn file PDF để upload.',
+                'debug': f'Available files: {list(request.files.keys())}'
+            }), 400
         if file.filename == '':
-            return jsonify({'status': 'error', 'message': 'No file selected'}), 400
+            return jsonify({'status': 'error', 'message': 'Vui lòng chọn file'}), 400
         
         paper, error = PaperService.upload_camera_ready(
             paper_id,
@@ -280,6 +291,9 @@ def upload_camera_ready(paper_id):
         }), 200
         
     except Exception as e:
+        import traceback
+        print(f"[ERROR] Camera-ready upload failed: {e}")
+        print(traceback.format_exc())
         return jsonify({'status': 'error', 'message': str(e)}), 500
 
 @papers_bp.route('/my-papers', methods=['GET'])
@@ -365,7 +379,7 @@ def make_paper_decision(paper_id):
     from domain.services.decision_service import DecisionService
     
     try:
-        data = request.json
+        data = request.json or {}
         
         # Map frontend decision values to backend
         decision_map = {

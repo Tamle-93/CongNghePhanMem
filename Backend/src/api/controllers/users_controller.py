@@ -304,6 +304,20 @@ def get_user_statistics():
     finally:
         db.close()
 
+@users_bp.route('/public-stats', methods=['GET'])
+@require_auth
+def get_public_user_stats():
+    """Get public user statistics (total users)"""
+    db = SessionLocal()
+    
+    try:
+        total_users = db.query(User).filter(User.is_deleted == False).count()
+        return jsonify({'status': 'success', 'data': {'total_users': total_users}}), 200
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+    finally:
+        db.close()
+
 @users_bp.route('/change-password', methods=['PUT'])
 @require_auth
 def change_password():

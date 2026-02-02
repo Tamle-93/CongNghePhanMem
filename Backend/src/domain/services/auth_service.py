@@ -455,9 +455,7 @@ class AuthService:
     @staticmethod
     def send_password_reset_email(email):
         try:
-            from infrastructure.models.user_model import User
-        
-            user = User.query.filter_by(email=email).first()
+            user = db_session.query(User).filter(User.email == email).first()
         
             if not user:
                 return False, "Email not found"
@@ -469,7 +467,7 @@ class AuthService:
             # Save token to user (cần thêm field reset_token và reset_token_expires)
             user.reset_token = reset_token
             user.reset_token_expires = datetime.utcnow() + timedelta(hours=1)
-            db.session.commit()
+            db_session.commit()
         
             # Gửi email (sử dụng email_service)
             from domain.services.email_service import EmailService
@@ -484,9 +482,7 @@ class AuthService:
     def reset_password(email, reset_token, new_password):
         """Reset password with token"""
         try:
-            from infrastructure.models.user_model import User
-        
-            user = User.query.filter_by(email=email).first()
+            user = db_session.query(User).filter(User.email == email).first()
         
             if not user:
                 return False, "User not found"
@@ -503,7 +499,7 @@ class AuthService:
             user.password = generate_password_hash(new_password)
             user.reset_token = None
             user.reset_token_expires = None
-            db.session.commit()
+            db_session.commit()
         
             return True, "Password reset successfully"
         

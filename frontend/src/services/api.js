@@ -87,11 +87,11 @@ export default {
   
   // Reviews
   listReviews: (params) => api.get('/reviews', { params }),
-  getReviewsByPaper: (paperId) => api.get(`/papers/${paperId}/reviews`),
+  getReviewsByPaper: (paperId) => api.get(`/reviews/paper/${paperId}`),
   submitReview: (paperId, data) => api.post(`/papers/${paperId}/review`, data),
   
   // Decisions
-  getDecision: (paperId) => api.get(`/papers/${paperId}/decision`),
+  getDecision: (paperId) => api.get(`/decisions/paper/${paperId}`),
   makeDecision: (paperId, data) => api.post(`/papers/${paperId}/decision`, data),
   
   // Assignments
@@ -111,6 +111,7 @@ export default {
   
   // Users (for Chair/Admin)
   listUsers: (params) => api.get('/users', { params }),  // Chair+Admin can access /users
+  getUserPublicStats: () => api.get('/users/public-stats'),
   
   // Admin only
   adminListUsers: (params) => api.get('/admin/users', { params }),

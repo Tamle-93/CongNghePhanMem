@@ -71,7 +71,10 @@ export default function ChairPaperDetail() {
       }
       
       setPaper(paperData);
-      setReviews(reviewsRes.data?.data || []);
+      
+      // ✅ FIXED: Handle multiple possible response structures
+      const reviewsData = reviewsRes.data?.data?.reviews || reviewsRes.data?.data || reviewsRes.data?.reviews || [];
+      setReviews(Array.isArray(reviewsData) ? reviewsData : []);
     } catch (error) {
       console.error('Error fetching paper:', error);
     } finally {
@@ -86,14 +89,18 @@ export default function ChairPaperDetail() {
    * @returns {string} CSS classes cho badge
    */
   const getStatusColor = (status) => {
+    const statusLower = status?.toLowerCase();
     const colors = {
       pending: 'bg-yellow-100 text-yellow-700 border-yellow-200',
+      submitted: 'bg-yellow-100 text-yellow-700 border-yellow-200',
       under_review: 'bg-blue-100 text-blue-700 border-blue-200',
+      reviewed: 'bg-purple-100 text-purple-700 border-purple-200',
       revision_required: 'bg-orange-100 text-orange-700 border-orange-200',
       accepted: 'bg-green-100 text-green-700 border-green-200',
       rejected: 'bg-red-100 text-red-700 border-red-200',
+      camera_ready: 'bg-teal-100 text-teal-700 border-teal-200',
     };
-    return colors[status] || 'bg-slate-100 text-slate-700 border-slate-200';
+    return colors[statusLower] || 'bg-slate-100 text-slate-700 border-slate-200';
   };
 
   /**
@@ -102,15 +109,18 @@ export default function ChairPaperDetail() {
    * @returns {string} Label tiếng Việt
    */
   const getStatusLabel = (status) => {
+    const statusLower = status?.toLowerCase();
     const labels = {
       submitted: 'Chờ phân công',
       pending: 'Chờ phân công',
       under_review: 'Đang phản biện',
+      reviewed: 'Đã phản biện',
       revision_required: 'Yêu cầu chỉnh sửa',
       accepted: 'Đã chấp nhận',
       rejected: 'Từ chối',
+      camera_ready: 'Camera-Ready',
     };
-    return labels[status] || status;
+    return labels[statusLower] || status;
   };
 
   /**
@@ -118,7 +128,7 @@ export default function ChairPaperDetail() {
    * @returns {string} Điểm trung bình (1 decimal)
    */
   const calculateAverageScore = () => {
-    if (reviews.length === 0) return 'N/A';
+    if (!Array.isArray(reviews) || reviews.length === 0) return 'N/A';
     const total = reviews.reduce((sum, r) => sum + (r.overall_score || 0), 0);
     return (total / reviews.length).toFixed(1);
   };

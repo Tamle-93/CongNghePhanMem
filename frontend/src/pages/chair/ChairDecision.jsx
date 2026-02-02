@@ -30,7 +30,7 @@ export default function ChairDecision() {
       setPaper(paperData);
       
       // Reviews API returns: { status: 'success', data: [...reviews] }
-      const reviewsData = reviewsRes.data?.data || [];
+      const reviewsData = reviewsRes.data?.data?.reviews || reviewsRes.data?.reviews || reviewsRes.data || [];
       setReviews(Array.isArray(reviewsData) ? reviewsData : []);
       
       // Pre-fill feedback template based on decision
@@ -87,8 +87,10 @@ Ban Chương Trình`
 
   const calculateAverageScore = () => {
     if (reviews.length === 0) return 0;
-    const total = reviews.reduce((sum, review) => sum + (review.overall_score || 0), 0);
-    return (total / reviews.length).toFixed(1);
+    const validReviews = reviews.filter(review => review.score != null);
+    if (validReviews.length === 0) return 0;
+    const total = validReviews.reduce((sum, review) => sum + (review.score || 0), 0);
+    return (total / validReviews.length).toFixed(1);
   };
 
   const handleSubmit = async () => {
@@ -131,6 +133,20 @@ Ban Chương Trình`
   }
 
   const avgScore = calculateAverageScore();
+  
+  // ✅ Check if paper already has a final decision
+  const paperStatus = paper.status?.toLowerCase();
+  const hasDecision = ['accepted', 'rejected', 'camera_ready'].includes(paperStatus);
+  
+  const getStatusInfo = (status) => {
+    const statusMap = {
+      'accepted': { label: 'Đã chấp nhận', color: 'green', icon: 'check_circle' },
+      'rejected': { label: 'Đã từ chối', color: 'red', icon: 'cancel' },
+      'camera_ready': { label: 'Camera-Ready đã nộp', color: 'teal', icon: 'verified' },
+      'revision_required': { label: 'Yêu cầu chỉnh sửa', color: 'yellow', icon: 'edit_note' },
+    };
+    return statusMap[status] || { label: status, color: 'slate', icon: 'help' };
+  };
 
   return (
     <div className="space-y-8">
@@ -180,8 +196,60 @@ Ban Chương Trình`
             </div>
           </section>
 
-          {/* Decision Selection */}
-          <section className="bg-white rounded-2xl border border-slate-200 p-6">
+          {/* ✅ Show existing decision banner if already decided */}
+          {hasDecision && (
+            <section className={`rounded-2xl border-2 p-6 ${
+              paperStatus === 'accepted' || paperStatus === 'camera_ready' 
+                ? 'bg-green-50 border-green-300' 
+                : paperStatus === 'rejected' 
+                  ? 'bg-red-50 border-red-300'
+                  : 'bg-yellow-50 border-yellow-300'
+            }`}>
+              <div className="flex items-center gap-4">
+                <div className={`size-16 rounded-full flex items-center justify-center ${
+                  paperStatus === 'accepted' || paperStatus === 'camera_ready'
+                    ? 'bg-green-100 text-green-600'
+                    : paperStatus === 'rejected'
+                      ? 'bg-red-100 text-red-600'
+                      : 'bg-yellow-100 text-yellow-600'
+                }`}>
+                  <span className="material-symbols-outlined text-3xl">{getStatusInfo(paperStatus).icon}</span>
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-slate-900">Bài báo đã có quyết định</h3>
+                  <p className={`text-sm font-semibold ${
+                    paperStatus === 'accepted' || paperStatus === 'camera_ready' ? 'text-green-600' :
+                    paperStatus === 'rejected' ? 'text-red-600' : 'text-yellow-600'
+                  }`}>
+                    Trạng thái: {getStatusInfo(paperStatus).label}
+                  </p>
+                  {paperStatus === 'camera_ready' && (
+                    <p className="text-xs text-slate-500 mt-1">
+                      Tác giả đã nộp bản Camera-Ready. Không thể thay đổi quyết định.
+                    </p>
+                  )}
+                </div>
+              </div>
+              <div className="mt-4 flex gap-3">
+                <button
+                  onClick={() => navigate('/chair/papers')}
+                  className="px-4 py-2 bg-white border border-slate-200 text-slate-700 font-medium rounded-lg hover:bg-slate-50"
+                >
+                  ← Quay lại danh sách
+                </button>
+                <button
+                  onClick={() => navigate(`/chair/papers/${id}`)}
+                  className="px-4 py-2 bg-primary text-white font-medium rounded-lg hover:bg-blue-600"
+                >
+                  Xem chi tiết bài báo
+                </button>
+              </div>
+            </section>
+          )}
+
+          {/* Decision Selection - Only show if no final decision yet */}
+          {!hasDecision && (
+            <section className="bg-white rounded-2xl border border-slate-200 p-6">
             <h3 className="text-lg font-bold text-slate-900 mb-6 flex items-center gap-2">
               <span className="material-symbols-outlined text-primary">fact_check</span>
               Chọn trạng thái quyết định
@@ -246,8 +314,10 @@ Ban Chương Trình`
               </label>
             </div>
           </section>
+          )}
 
-          {/* Feedback Textarea */}
+          {/* Feedback Textarea - Only show if no final decision */}
+          {!hasDecision && (
           <section className="bg-white rounded-2xl border border-slate-200 p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
@@ -277,8 +347,10 @@ Ban Chương Trình`
               <span className="text-xs text-slate-400">{feedback.length} ký tự</span>
             </div>
           </section>
+          )}
 
-          {/* Submit Buttons */}
+          {/* Submit Buttons - Only show if no final decision */}
+          {!hasDecision && (
           <div className="flex gap-4">
             <button
               onClick={() => navigate('/chair/papers')}
@@ -304,6 +376,7 @@ Ban Chương Trình`
               )}
             </button>
           </div>
+          )}
         </div>
 
         {/* Sidebar - Review Summary */}
@@ -329,18 +402,22 @@ Ban Chương Trình`
             {/* Score Distribution */}
             <div className="space-y-3">
               <div className="text-xs font-bold text-slate-400 uppercase">Phân bố điểm</div>
-              {reviews.map((review, index) => (
-                <div key={review.id} className="flex items-center gap-3">
-                  <span className="text-sm font-medium text-slate-600 w-20">Reviewer {index + 1}</span>
-                  <div className="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden">
-                    <div 
-                      className="h-full bg-gradient-to-r from-blue-500 to-green-500 rounded-full transition-all"
-                      style={{ width: `${(review.overall_score || 0) * 20}%` }}
-                    ></div>
+              {reviews.length === 0 ? (
+                <p className="text-sm text-slate-500 italic">Chưa có đánh giá nào</p>
+              ) : (
+                reviews.map((review, index) => (
+                  <div key={review.id || index} className="flex items-center gap-3">
+                    <span className="text-sm font-medium text-slate-600 w-20">Reviewer {index + 1}</span>
+                    <div className="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden">
+                      <div 
+                        className="h-full bg-gradient-to-r from-blue-500 to-green-500 rounded-full transition-all"
+                        style={{ width: `${((review.score || 0) / 5) * 100}%` }}
+                      ></div>
+                    </div>
+                    <span className="text-sm font-bold text-slate-900 w-10">{review.score?.toFixed(1) || '0.0'}</span>
                   </div>
-                  <span className="text-sm font-bold text-slate-900 w-10">{review.overall_score?.toFixed(1) || '0.0'}</span>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </div>
 

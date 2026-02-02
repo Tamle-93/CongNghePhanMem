@@ -107,13 +107,10 @@ def get_review(review_id):
 def get_paper_reviews(paper_id):
     """Get all reviews for a paper"""
     try:
-        reviews, error = ReviewService.get_reviews_for_paper(
-            paper_id,
-            request.current_user['user_id']
-        )
+        reviews, error = ReviewService.get_reviews_for_paper(paper_id)
         
         if error:
-            return jsonify({'status': 'error', 'message': error}), 403
+            return jsonify({'status': 'error', 'message': error}), 400
         
         return jsonify({
             'status': 'success',

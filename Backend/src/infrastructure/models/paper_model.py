@@ -34,14 +34,17 @@ from infrastructure.databases.base import Base
 class PaperStatus(str, PyEnum):
     """
     Paper Status Enum - Các trạng thái bài báo
+    Note: Must match PostgreSQL enum values exactly (case-sensitive)
     """
-    DRAFT = "draft"           # Bản nháp
-    SUBMITTED = "submitted"   # Đã nộp
-    UNDER_REVIEW = "under_review"  # Đang review
-    REVIEWED = "reviewed"     # Xong review
-    ACCEPTED = "accepted"     # Chấp nhận
-    REJECTED = "rejected"     # Từ chối
-    WITHDRAWN = "withdrawn"   # Rút lại
+    DRAFT = "DRAFT"           # Bản nháp
+    SUBMITTED = "SUBMITTED"   # Đã nộp
+    UNDER_REVIEW = "UNDER_REVIEW"  # Đang review
+    REVIEWED = "REVIEWED"     # Xong review
+    REVISION_REQUIRED = "REVISION_REQUIRED"  # Yêu cầu chỉnh sửa
+    ACCEPTED = "ACCEPTED"     # Chấp nhận
+    REJECTED = "REJECTED"     # Từ chối
+    CAMERA_READY = "CAMERA_READY"  # Đã nộp camera-ready
+    WITHDRAWN = "WITHDRAWN"   # Rút lại
 
 class Paper(Base):
     """Paper Model - Bài báo khoa học"""
@@ -58,7 +61,8 @@ class Paper(Base):
     pdf_path = Column(String(500), nullable=True)
     camera_ready_path = Column(String(500), nullable=True)
     
-    # Status - FIXED: Use Enum correctly
+    # Status - FIXED: Use Enum correctly with values_callable to force refresh
+    # Status - Use native_enum=True (PostgreSQL enum type)
     status = Column(
         Enum(PaperStatus, native_enum=True, name='paperstatus'),
         default=PaperStatus.DRAFT,

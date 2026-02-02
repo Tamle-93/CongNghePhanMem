@@ -53,6 +53,9 @@ const BACKEND_ERROR_MESSAGES = {
   'Conference not found': 'Không tìm thấy hội nghị.',
   'Conference is closed': 'Hội nghị đã đóng.',
   
+  // Decision errors
+  'Permission denied: Only conference chair can make decisions': 'Bạn không có quyền ra quyết định cho bài báo này. Chỉ Chủ tọa hội nghị mới có thể thực hiện.',
+  
   // General errors
   'Unauthorized': 'Vui lòng đăng nhập để tiếp tục.',
   'Forbidden': 'Bạn không có quyền thực hiện thao tác này.',
