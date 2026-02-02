@@ -30,6 +30,7 @@ const AuthorPapersPage = lazy(() => import('./pages/author/AuthorPapersPage'));
 const PaperSubmitPage = lazy(() => import('./pages/author/PaperSubmitPage'));
 const AuthorPaperDetail = lazy(() => import('./pages/author/AuthorPaperDetail'));
 const AuthorRevision = lazy(() => import('./pages/author/AuthorRevision'));
+const AuthorCameraReady = lazy(() => import('./pages/author/AuthorCameraReady'));
 const AuthorReviewResults = lazy(() => import('./pages/author/AuthorReviewResults'));
 
 // Admin Pages
@@ -92,6 +93,7 @@ function App() {
                 <Route path="/author/papers" element={<AuthorPapersPage />} />
                 <Route path="/author/papers/:id" element={<AuthorPaperDetail />} />
                 <Route path="/author/papers/:id/revision" element={<AuthorRevision />} />
+                <Route path="/author/papers/:id/camera-ready" element={<AuthorCameraReady />} />
                 <Route path="/author/papers/:id/reviews" element={<AuthorReviewResults />} />
                 <Route path="/author/submit" element={<PaperSubmitPage />} />
                 

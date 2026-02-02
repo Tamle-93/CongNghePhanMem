@@ -296,6 +296,62 @@ UTH-ConfMS
 """
         
         return EmailService.send_email(to_email, subject, body)
+    
+    @staticmethod
+    def send_password_reset_email(to_email, reset_token):
+        """
+        Send password reset email with token
+        
+        Args:
+            to_email: recipient email
+            reset_token: 6-digit reset token
+        """
+        subject = "Đặt lại mật khẩu - UTH-ConfMS"
+        
+        body = f"""
+Kính gửi,
+
+Bạn đã yêu cầu đặt lại mật khẩu cho tài khoản UTH-ConfMS.
+
+Mã xác nhận của bạn là: {reset_token}
+
+Mã này có hiệu lực trong 1 giờ.
+
+Nếu bạn không yêu cầu đặt lại mật khẩu, vui lòng bỏ qua email này.
+
+Trân trọng,
+UTH-ConfMS
+"""
+        
+        html = f"""
+<html>
+<body style="font-family: Arial, sans-serif; line-height: 1.6;">
+    <div style="max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px;">
+        <h2 style="color: #2563eb;">🔐 Đặt lại mật khẩu</h2>
+        <p>Kính gửi,</p>
+        <p>Bạn đã yêu cầu đặt lại mật khẩu cho tài khoản UTH-ConfMS.</p>
+        <div style="background-color: #f3f4f6; padding: 20px; border-radius: 5px; margin: 20px 0; text-align: center;">
+            <p style="margin: 0; font-size: 14px; color: #6b7280;">Mã xác nhận của bạn:</p>
+            <p style="font-size: 32px; font-weight: bold; color: #2563eb; margin: 10px 0; letter-spacing: 8px;">{reset_token}</p>
+            <p style="margin: 0; font-size: 12px; color: #ef4444;">⏰ Có hiệu lực trong 1 giờ</p>
+        </div>
+        <p>Nếu bạn không yêu cầu đặt lại mật khẩu, vui lòng bỏ qua email này.</p>
+        <hr style="margin: 20px 0; border: none; border-top: 1px solid #ddd;">
+        <p style="color: #6b7280; font-size: 14px;">Trân trọng,<br>UTH-ConfMS</p>
+    </div>
+</body>
+</html>
+"""
+        
+        return EmailService.send_email(
+            to=to_email,
+            subject=subject,
+            body=body,
+            html=html,
+            email_type='PASSWORD_RESET',
+            entity_type='User',
+            entity_id=0
+        )
 
 
 # Email configuration in app.py:

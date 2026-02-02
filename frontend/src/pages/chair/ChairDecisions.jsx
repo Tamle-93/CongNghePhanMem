@@ -8,6 +8,7 @@ const ChairDecisions = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [filter, setFilter] = useState('all'); // all, pending, decided
+  const [reviewStats, setReviewStats] = useState({});
 
   useEffect(() => {
     fetchPapers();
@@ -21,6 +22,25 @@ const ChairDecisions = () => {
       console.log('ChairDecisions - Papers response:', response.data);
       const papersData = response.data?.data?.papers || response.data?.papers || [];
       setPapers(papersData);
+      
+      // Fetch review stats for each paper
+      const stats = {};
+      for (const paper of papersData) {
+        try {
+          const reviewRes = await api.getReviewsByPaper(paper.id).catch(() => ({ data: [] }));
+          const reviews = reviewRes.data?.data?.reviews || reviewRes.data?.reviews || reviewRes.data || [];
+          const reviewsArray = Array.isArray(reviews) ? reviews : [];
+          if (reviewsArray.length > 0) {
+            const avgScore = (reviewsArray.reduce((sum, r) => sum + (r.overall_score || r.score || 0), 0) / reviewsArray.length).toFixed(1);
+            stats[paper.id] = { count: reviewsArray.length, avg: avgScore };
+          } else {
+            stats[paper.id] = { count: 0, avg: 'N/A' };
+          }
+        } catch (e) {
+          stats[paper.id] = { count: 0, avg: 'N/A' };
+        }
+      }
+      setReviewStats(stats);
     } catch (error) {
       console.error('Error fetching papers:', error);
       setError('Không thể tải danh sách bài báo. Vui lòng thử lại.');
@@ -31,28 +51,39 @@ const ChairDecisions = () => {
   };
 
   const getStatusBadge = (status) => {
+    const statusLower = status?.toLowerCase();
     const badges = {
       pending: { bg: 'bg-yellow-100 text-yellow-700', text: 'Chờ quyết định' },
+      submitted: { bg: 'bg-yellow-100 text-yellow-700', text: 'Chờ quyết định' },
       under_review: { bg: 'bg-blue-100 text-blue-700', text: 'Đang phản biện' },
+      reviewed: { bg: 'bg-purple-100 text-purple-700', text: 'Đã phản biện' },
       accepted: { bg: 'bg-green-100 text-green-700', text: 'Đã chấp nhận' },
       rejected: { bg: 'bg-red-100 text-red-700', text: 'Đã từ chối' },
-      revision_required: { bg: 'bg-orange-100 text-orange-700', text: 'Yêu cầu chỉnh sửa' }
+      revision_required: { bg: 'bg-orange-100 text-orange-700', text: 'Yêu cầu chỉnh sửa' },
+      camera_ready: { bg: 'bg-teal-100 text-teal-700', text: 'Camera-Ready' }
     };
-    const badge = badges[status] || badges.pending;
+    const badge = badges[statusLower] || badges.pending;
     return <span className={`${badge.bg} px-2.5 py-1 rounded-full text-xs font-semibold`}>{badge.text}</span>;
   };
 
   const filteredPapers = papers.filter(paper => {
-    if (filter === 'pending') return paper.status === 'pending' || paper.status === 'under_review';
-    if (filter === 'decided') return paper.status === 'accepted' || paper.status === 'rejected' || paper.status === 'revision_required';
+    const statusLower = paper.status?.toLowerCase();
+    if (filter === 'pending') return statusLower === 'pending' || statusLower === 'under_review' || statusLower === 'submitted';
+    if (filter === 'decided') return statusLower === 'accepted' || statusLower === 'rejected' || statusLower === 'revision_required' || statusLower === 'camera_ready';
     return true;
   });
 
   const stats = {
     total: papers.length,
-    pending: papers.filter(p => p.status === 'pending' || p.status === 'under_review').length,
-    accepted: papers.filter(p => p.status === 'accepted').length,
-    rejected: papers.filter(p => p.status === 'rejected').length
+    pending: papers.filter(p => {
+      const s = p.status?.toLowerCase();
+      return s === 'pending' || s === 'under_review' || s === 'submitted';
+    }).length,
+    accepted: papers.filter(p => {
+      const s = p.status?.toLowerCase();
+      return s === 'accepted' || s === 'camera_ready';
+    }).length,
+    rejected: papers.filter(p => p.status?.toLowerCase() === 'rejected').length
   };
 
   if (loading) {
@@ -151,6 +182,8 @@ const ChairDecisions = () => {
                     <th className="px-6 py-4 text-xs font-bold text-slate-600 uppercase">ID</th>
                     <th className="px-6 py-4 text-xs font-bold text-slate-600 uppercase">Tiêu đề</th>
                     <th className="px-6 py-4 text-xs font-bold text-slate-600 uppercase">Tác giả</th>
+                    <th className="px-6 py-4 text-xs font-bold text-slate-600 uppercase text-center">Phản biện</th>
+                    <th className="px-6 py-4 text-xs font-bold text-slate-600 uppercase text-center">Điểm TB</th>
                     <th className="px-6 py-4 text-xs font-bold text-slate-600 uppercase">Trạng thái</th>
                     <th className="px-6 py-4 text-xs font-bold text-slate-600 uppercase text-right">Thao tác</th>
                   </tr>
@@ -166,6 +199,12 @@ const ChairDecisions = () => {
                         {Array.isArray(paper.authors) 
                           ? paper.authors.map(a => a.full_name || a.name).join(', ')
                           : (typeof paper.authors === 'string' ? paper.authors : paper.submitter_name || 'N/A')}
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        <span className="text-sm font-semibold text-slate-900">{reviewStats[paper.id]?.count || 0}</span>
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        <span className="text-sm font-semibold text-blue-600">{reviewStats[paper.id]?.avg || 'N/A'}/5</span>
                       </td>
                       <td className="px-6 py-4">{getStatusBadge(paper.status)}</td>
                       <td className="px-6 py-4 text-right">

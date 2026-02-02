@@ -75,14 +75,21 @@ def decode_token(token: str) -> dict:
 def require_auth(f):
     """
     Middleware: Check if user is authenticated
+    Supports token from:
+    - Authorization header (Bearer token)
+    - Query parameter (?token=xxx) for iframe/PDF viewing
     """
     @wraps(f)
     def decorated_function(*args, **kwargs):
         token = request.headers.get('Authorization')
         
+        # Also check query parameter for iframe support (e.g., PDF viewer)
+        if not token:
+            token = request.args.get('token')
+        
         # Debug logging
         print(f"\n[AUTH] Request headers: {dict(request.headers)}")
-        print(f"[AUTH] Authorization header: {token}")
+        print(f"[AUTH] Authorization header/token: {token[:20] if token else None}...")
         
         if not token:
             print("[AUTH] ❌ NO TOKEN PROVIDED - returning 401")

@@ -68,10 +68,21 @@ def create_app(config_name=None):
     print(f"✅ Caching enabled: {cache_type}")
     
     # ========================================
-    # RATE LIMITING
+    # RATE LIMITING - Disabled in development
     # ========================================
-    limiter = init_rate_limiter(app)
-    print("✅ Rate limiting enabled")
+    if os.getenv('RATE_LIMIT_ENABLED', 'false').lower() == 'true':
+        limiter = init_rate_limiter(app)
+        print("✅ Rate limiting enabled")
+    else:
+        print("⚠️  Rate limiting DISABLED (development mode)")
+    
+    # ========================================
+    # DEBUG: Log all requests
+    # ========================================
+    @app.before_request
+    def log_request():
+        from flask import request
+        print(f"📥 REQUEST: {request.method} {request.path}")
     
     # ========================================
     # CORS CONFIGURATION - Allow all for development
@@ -666,7 +677,8 @@ if __name__ == '__main__':
     print(f"📚 API Docs: http://localhost:{app.config.get('PORT')}/api/docs")
     print(f"🌍 Languages: EN, VN")
     print(f"⚡ Caching: {app.config.get('CACHE_TYPE', 'simple')}")
-    print(f"🛡️  Rate Limiting: Enabled")
+    from settings.rate_limit_config import RATE_LIMIT_ENABLED
+    print(f"🛡️  Rate Limiting: {'Enabled' if RATE_LIMIT_ENABLED else 'Disabled'}")
     print(f"🔧 Debug Mode: {app.config.get('DEBUG')}")
     print(f"📧 Email: {app.config.get('MAIL_USERNAME') or 'Not configured'}")
     print(f"{'='*70}\n")

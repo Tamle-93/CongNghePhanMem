@@ -37,6 +37,7 @@ from datetime import datetime
 from werkzeug.utils import secure_filename
 import os
 import json
+import traceback
 from flask import abort
 
 
@@ -327,13 +328,31 @@ class PaperService:
                          .offset((page - 1) * per_page)\
                          .all()
             
+            print(f"[DEBUG] Found {len(papers)} papers, serializing...")
+            
+            serialized_papers = []
+            for idx, p in enumerate(papers):
+                try:
+                    print(f"[DEBUG] Serializing paper {idx+1}/{len(papers)}: ID={p.id}")
+                    serialized = PaperService._serialize_paper(db, p)
+                    serialized_papers.append(serialized)
+                except Exception as e:
+                    print(f"[ERROR] Failed to serialize paper {p.id}: {str(e)}")
+                    print(f"[ERROR] Traceback: {traceback.format_exc()}")
+                    # Continue với các papers khác
+                    continue
+            
             return {
-                'papers': [PaperService._serialize_paper(db, p) for p in papers],
+                'papers': serialized_papers,
                 'total': total,
                 'page': page,
                 'per_page': per_page
             }, None
             
+        except Exception as e:
+            print(f"[ERROR] list_papers exception: {str(e)}")
+            print(f"[ERROR] Traceback: {traceback.format_exc()}")
+            return None, str(e)
         finally:
             db.close()
     
@@ -479,15 +498,20 @@ class PaperService:
             paper = db.query(Paper).filter(Paper.id == paper_id).first()
             
             if not paper:
+                print(f"[ERROR] Paper {paper_id} not found")
                 return None, "Paper not found"
             
+            print(f"[DEBUG] Paper {paper_id}: status={paper.status}, submitter_id={paper.submitter_id}")
+            print(f"[DEBUG] User trying to upload: {user_id}")
+            print(f"[DEBUG] Status check: {paper.status} != {PaperStatus.ACCEPTED} = {paper.status != PaperStatus.ACCEPTED}")
+            
             if paper.status != PaperStatus.ACCEPTED:
-                return None, "Only accepted papers can upload camera-ready"
+                return None, f"Only accepted papers can upload camera-ready. Current status: {paper.status}"
             
             if paper.submitter_id != user_id:
-                return None, "Only submitter can upload"
+                return None, f"Only submitter can upload. Paper submitter: {paper.submitter_id}, Current user: {user_id}"
             
-            filepath = PaperService._save_file(file, paper_id, is_camera_ready=True)
+            filepath, _ = PaperService._save_file(file, paper_id, is_camera_ready=True)
             if not filepath:
                 return None, "Invalid file format"
             
@@ -509,33 +533,75 @@ class PaperService:
     def _serialize_paper(db, paper):
         """Serialize paper with relations"""
         
-        authors = []
-        for pa in paper.authors:
-            authors.append({
-                'user_id': pa.user_id,
-                'full_name': pa.author.full_name,
-                'email': pa.author.email,
-                'order': pa.author_order,
-                'is_corresponding': pa.is_corresponding,
-                'affiliation': pa.affiliation
-            })
-        
-        return {
-            'id': paper.id,
-            'title': paper.title,
-            'abstract': paper.abstract,
-            'keywords': paper.keywords,
-            'status': paper.status.value if paper.status else None,
-            'is_withdrawn': paper.is_withdrawn,
-            'submitter_id': paper.submitter_id,
-            'submitter_name': paper.submitter.full_name,
-            'conference_id': paper.conference_id,
-            'conference_name': paper.conference.name,
-            'track_id': paper.track_id,
-            'track_name': paper.track.name if paper.track else None,
-            'pdf_path': paper.pdf_path,
-            'camera_ready_path': paper.camera_ready_path,
-            'authors': sorted(authors, key=lambda x: x['order']),
-            'created_at': paper.created_at.isoformat(),
-            'updated_at': paper.updated_at.isoformat()
-        }
+        try:
+            print(f"[DEBUG] Serializing paper ID={paper.id}, title='{paper.title[:30] if paper.title else 'None'}'")
+            
+            authors = []
+            for pa in paper.authors:
+                try:
+                    authors.append({
+                        'user_id': pa.user_id,
+                        'full_name': pa.author.full_name if pa.author else 'Unknown',
+                        'email': pa.author.email if pa.author else '',
+                        'order': pa.author_order,
+                        'is_corresponding': pa.is_corresponding,
+                        'affiliation': pa.affiliation
+                    })
+                except Exception as e:
+                    print(f"[ERROR] Error serializing author: {e}")
+                    continue
+            
+            # Try to get status value - lowercase for frontend compatibility
+            try:
+                raw_status = paper.status.value if hasattr(paper.status, 'value') else str(paper.status) if paper.status else None
+                status_value = raw_status.lower() if raw_status else None
+                print(f"[DEBUG] Paper status: {raw_status} -> {status_value}")
+            except Exception as e:
+                print(f"[ERROR] Error getting paper status: {e}")
+                status_value = 'unknown'
+            
+            result = {
+                'id': paper.id,
+                'title': paper.title,
+                'abstract': paper.abstract,
+                'keywords': paper.keywords,
+                'status': status_value,
+                'is_withdrawn': paper.is_withdrawn,
+                'submitter_id': paper.submitter_id,
+                'submitter_name': paper.submitter.full_name if paper.submitter else 'Unknown',
+                'conference_id': paper.conference_id,
+                'conference_name': paper.conference.name if paper.conference else 'Unknown',
+                'track_id': paper.track_id,
+                'track_name': paper.track.name if paper.track else None,
+                'pdf_path': paper.pdf_path,
+                'camera_ready_path': paper.camera_ready_path,
+                'authors': sorted(authors, key=lambda x: x.get('order', 0)),
+                'created_at': paper.created_at.isoformat() if paper.created_at else None,
+                'updated_at': paper.updated_at.isoformat() if paper.updated_at else None
+            }
+            
+            print(f"[DEBUG] Successfully serialized paper {paper.id}")
+            return result
+            
+        except Exception as e:
+            print(f"[ERROR] Critical error serializing paper {paper.id}: {e}")
+            print(f"[ERROR] Traceback: {traceback.format_exc()}")
+            return {
+                'id': paper.id if hasattr(paper, 'id') else 0,
+                'title': paper.title if hasattr(paper, 'title') else 'Unknown',
+                'abstract': paper.abstract if hasattr(paper, 'abstract') else '',
+                'keywords': '',
+                'status': 'unknown',
+                'is_withdrawn': False,
+                'submitter_id': paper.submitter_id if hasattr(paper, 'submitter_id') else 0,
+                'submitter_name': 'Unknown',
+                'conference_id': paper.conference_id if hasattr(paper, 'conference_id') else 0,
+                'conference_name': 'Unknown',
+                'track_id': None,
+                'track_name': None,
+                'pdf_path': '',
+                'camera_ready_path': '',
+                'authors': [],
+                'created_at': None,
+                'updated_at': None
+            }

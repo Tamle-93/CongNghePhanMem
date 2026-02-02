@@ -9,6 +9,7 @@ const ReviewerReviewForm = () => {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [paper, setPaper] = useState(null);
+  const [hasReviewed, setHasReviewed] = useState(false);
   
   const [formData, setFormData] = useState({
     originality_score: 0,
@@ -37,6 +38,19 @@ const ReviewerReviewForm = () => {
         const paperData = response.data.data.paper;
         setPaper(paperData);
         generateAiSuggestions(paperData);
+      }
+
+      // Check if reviewer already submitted a review
+      try {
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        const reviewsRes = await api.getReviewsByPaper(id).catch(() => ({ data: [] }));
+        const reviews = reviewsRes.data?.data?.reviews || reviewsRes.data?.reviews || reviewsRes.data || [];
+        const alreadyReviewed = Array.isArray(reviews)
+          ? reviews.some(r => r.reviewer_id === user.id)
+          : false;
+        setHasReviewed(alreadyReviewed);
+      } catch (e) {
+        setHasReviewed(false);
       }
     } catch (error) {
       console.error('Error fetching paper:', error);
@@ -96,6 +110,11 @@ const ReviewerReviewForm = () => {
       return;
     }
 
+    if (hasReviewed) {
+      alert('Bạn đã phản biện bài này rồi. Không thể nộp lại.');
+      return;
+    }
+
     try {
       setSubmitting(true);
       const response = await api.post('/reviews', {
@@ -144,6 +163,21 @@ Overall: ${formData.overall_score}/10
     );
   }
 
+  if (hasReviewed) {
+    return (
+      <div className="max-w-4xl mx-auto px-4 py-12 text-center">
+        <span className="material-symbols-outlined text-6xl text-slate-300 mb-4 block">check_circle</span>
+        <p className="text-slate-600 mb-4">Bạn đã phản biện bài báo này.</p>
+        <button
+          onClick={() => navigate('/reviewer')}
+          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+        >
+          Quay lại danh sách
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-[1600px] mx-auto p-4 flex flex-col gap-4">
       {/* Header */}
@@ -170,30 +204,50 @@ Overall: ${formData.overall_score}/10
       <div className="flex flex-col lg:flex-row gap-4 flex-1">
         {/* Main Form - Left Side */}
         <div className="lg:flex-1 flex flex-col gap-4">
-          {/* PDF Viewer Placeholder */}
+          {/* PDF Viewer */}
           <div className="bg-white rounded-xl border border-slate-200 overflow-hidden" style={{height: 'calc(100vh - 280px)'}}>
             <div className="h-10 bg-gray-100 border-b border-slate-200 flex items-center justify-between px-4">
               <div className="flex items-center gap-4">
-                <span className="material-symbols-outlined cursor-pointer text-slate-600">menu</span>
-                <span className="text-xs font-medium text-slate-600">Page 1 / 12</span>
+                <span className="material-symbols-outlined cursor-pointer text-slate-600">description</span>
+                <span className="text-xs font-medium text-slate-600">{paper?.title || 'Paper PDF'}</span>
               </div>
               <div className="flex items-center gap-2">
-                <button className="p-1 hover:bg-slate-200 rounded">
-                  <span className="material-symbols-outlined text-lg text-slate-600">zoom_out</span>
-                </button>
-                <span className="text-xs text-slate-600">100%</span>
-                <button className="p-1 hover:bg-slate-200 rounded">
-                  <span className="material-symbols-outlined text-lg text-slate-600">zoom_in</span>
+                <button 
+                  onClick={() => {
+                    const token = localStorage.getItem('token');
+                    const paperId = paper?.id || paper?.paper_id || id;
+                    fetch(`http://localhost:5000/api/papers/${paperId}/pdf`, {
+                      headers: { 'Authorization': `Bearer ${token}` }
+                    })
+                    .then(res => res.blob())
+                    .then(blob => {
+                      const url = window.URL.createObjectURL(blob);
+                      window.open(url, '_blank');
+                    })
+                    .catch(err => alert('Không thể tải PDF'));
+                  }}
+                  className="p-1 hover:bg-slate-200 rounded flex items-center gap-1"
+                >
+                  <span className="material-symbols-outlined text-lg text-slate-600">open_in_new</span>
+                  <span className="text-xs text-slate-600">Mở tab mới</span>
                 </button>
               </div>
             </div>
-            <div className="flex items-center justify-center h-[calc(100%-40px)] bg-slate-100">
-              <div className="text-center">
-                <span className="material-symbols-outlined text-6xl text-slate-300 mb-2">description</span>
-                <p className="text-slate-500">PDF Viewer sẽ hiển thị tại đây</p>
-                <p className="text-xs text-slate-400 mt-1">Tích hợp PDF.js hoặc React-PDF</p>
+            {paper ? (
+              <iframe
+                src={`http://localhost:5000/api/papers/${paper.id || paper.paper_id || id}/pdf?token=${localStorage.getItem('token')}`}
+                className="w-full h-[calc(100%-40px)]"
+                title="Paper PDF"
+                style={{ border: 'none' }}
+              />
+            ) : (
+              <div className="flex items-center justify-center h-[calc(100%-40px)] bg-slate-100">
+                <div className="text-center">
+                  <span className="material-symbols-outlined text-6xl text-slate-300 mb-2">description</span>
+                  <p className="text-slate-500">Đang tải PDF...</p>
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
 

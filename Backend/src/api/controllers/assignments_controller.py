@@ -10,7 +10,8 @@ from domain.schemas.assignment_schema import (
 )
 from domain.utils.auth_utils import require_auth, require_role
 from marshmallow import ValidationError
-from settings.rate_limit_config import limiter
+# Rate limiting disabled in development
+# from settings.rate_limit_config import limiter
 
 assignments_bp = Blueprint('assignments', __name__)
 
@@ -68,7 +69,7 @@ def get_my_assignments():
 @assignments_bp.route('', methods=['POST'])
 @require_auth
 @require_role('Chair', 'Admin')
-@limiter.limit("30 per minute")
+# @limiter.limit("30 per minute")  # Disabled in development
 def create_assignment():
     """
     Create reviewer assignment(s) - supports single or multiple reviewers
@@ -149,7 +150,7 @@ def create_assignment():
 @assignments_bp.route('/auto-assign', methods=['POST'])
 @require_auth
 @require_role('Chair', 'Admin')
-@limiter.limit("10 per hour")
+# @limiter.limit("10 per hour")  # Disabled in development
 def auto_assign_reviewers():
     """
     Auto-assign reviewers to papers
@@ -337,7 +338,7 @@ def delete_assignment(assignment_id):
 
 @assignments_bp.route('/conflict', methods=['POST'])
 @require_auth
-@limiter.limit("20 per hour")
+# @limiter.limit("20 per hour")  # Disabled in development
 def declare_conflict():
     """
     Reviewer declares conflict of interest

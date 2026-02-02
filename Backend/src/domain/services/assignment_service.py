@@ -45,6 +45,7 @@ from infrastructure.models import (
     Assignment, Paper, User, Conference, ConflictOfInterest, 
     Review, AuditLogAI
 )
+from domain.services.email_service import EmailService
 from datetime import datetime
 import json
 
@@ -129,6 +130,43 @@ class AssignmentService:
             
             db.commit()
             db.refresh(assignment)
+            
+            # ✅ Send email to reviewer
+            try:
+                EmailService.send_email(
+                    to=reviewer.email,
+                    subject=f'Phân công phản biện - {conference.name}',
+                    body=f"""
+                    Xin chào {reviewer.full_name or reviewer.username},
+                    
+                    Bạn đã được phân công phản biện bài báo:
+                    
+                    Tiêu đề: {paper.title}
+                    Hội nghị: {conference.name}
+                    Hạn chót: {paper.deadline.strftime('%d/%m/%Y') if paper.deadline else 'N/A'}
+                    
+                    Vui lòng đăng nhập vào hệ thống để xem chi tiết và bắt đầu phản biện.
+                    
+                    Trân trọng,
+                    Ban tổ chức hội nghị
+                    """,
+                    html=f"""
+                    <p>Xin chào <strong>{reviewer.full_name or reviewer.username}</strong>,</p>
+                    <p>Bạn đã được phân công phản biện bài báo:</p>
+                    <div style="background-color: #f9fafb; padding: 15px; border-left: 4px solid #3b82f6; margin: 20px 0;">
+                        <p><strong>Tiêu đề:</strong> {paper.title}</p>
+                        <p><strong>Hội nghị:</strong> {conference.name}</p>
+                        <p><strong>Hạn chót:</strong> <span style="color: #dc2626;">{paper.deadline.strftime('%d/%m/%Y') if paper.deadline else 'N/A'}</span></p>
+                    </div>
+                    <p>Vui lòng đăng nhập vào hệ thống để xem chi tiết và bắt đầu phản biện.</p>
+                    """,
+                    email_type='ASSIGNMENT',
+                    entity_type='Paper',
+                    entity_id=paper_id,
+                    user_id=reviewer_id
+                )
+            except Exception as e:
+                print(f"⚠️  Failed to send assignment email: {str(e)}")
             
             # Log assignment
             AuditLogAI.log(
