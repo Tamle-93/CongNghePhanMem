@@ -53,8 +53,22 @@ if not db.query(User).filter(User.username == 'admin').first():
         password_hash=generate_password_hash('Admin@123')
     )
     db.add(admin)
+    db.flush()
+    
+    # Assign Admin role
+    from src.infrastructure.models.user_role_model import UserRole
+    admin_role = db.query(Role).filter(Role.name == 'Admin').first()
+    if admin_role:
+        user_role = UserRole(
+            user_id=admin.id,
+            role_id=admin_role.id,
+            conference_id=None,
+            is_active=True
+        )
+        db.add(user_role)
+    
     db.commit()
-    print('✅ Created default admin user')
+    print('✅ Created default admin user with Admin role')
 
 db.close()
 "
