@@ -161,9 +161,10 @@ class AssignmentService:
             
             db.add(assignment)
             
-            # ✅ Update paper status to under_review after first assignment
-            if paper.status in ['submitted', 'pending']:
-                paper.status = 'under_review'
+            # ✅ Update paper status to UNDER_REVIEW after first assignment
+            # Database uses UPPERCASE enum values
+            if paper.status and paper.status.upper() in ['SUBMITTED', 'PENDING', 'DRAFT']:
+                paper.status = 'UNDER_REVIEW'
             
             db.commit()
             db.refresh(assignment)
