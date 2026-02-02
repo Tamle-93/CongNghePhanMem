@@ -29,5 +29,9 @@ EXPOSE 5000
 ENV FLASK_APP=src/app.py
 ENV PYTHONUNBUFFERED=1
 
-# Run the application
-CMD ["python", "-m", "flask", "run", "--host=0.0.0.0", "--port=5000"]
+# Create entrypoint script to initialize database
+COPY entrypoint.sh /app/entrypoint.sh
+RUN chmod +x /app/entrypoint.sh
+
+# Run entrypoint script
+CMD ["/app/entrypoint.sh"]
