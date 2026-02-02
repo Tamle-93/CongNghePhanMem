@@ -1,7 +1,9 @@
 from datetime import datetime
 from sqlalchemy import Column, Integer, String, DateTime, Text, create_engine
-from sqlalchemy.orm import sessionmaker
-from infrastructure.models.base import Base
+from sqlalchemy.orm import sessionmaker, declarative_base
+
+# ===== FIX: Khai báo Base trực tiếp để demo =====
+Base = declarative_base()
 
 
 class AuditLogAI(Base):
@@ -18,9 +20,9 @@ class AuditLogAI(Base):
         return f"<AuditLogAI id={self.id} action={self.action} actor={self.actor}>"
 
 
-# ==== RUN DEMO ====
+# ===== RUN DEMO =====
 if __name__ == "__main__":
-    engine = create_engine("sqlite:///:memory:")
+    engine = create_engine("sqlite:///:memory:", echo=False)
     Base.metadata.create_all(engine)
 
     Session = sessionmaker(bind=engine)
@@ -36,4 +38,5 @@ if __name__ == "__main__":
     session.add(log)
     session.commit()
 
-    print(session.query(AuditLogAI).all())
+    logs = session.query(AuditLogAI).all()
+    print(logs)
