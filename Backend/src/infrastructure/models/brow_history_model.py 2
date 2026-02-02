@@ -1,8 +1,8 @@
 from datetime import datetime
 from sqlalchemy import Column, Integer, String, DateTime, create_engine
-from sqlalchemy.orm import sessionmaker
-from infrastructure.models.base import Base
+from sqlalchemy.orm import sessionmaker, declarative_base
 
+Base = declarative_base()
 
 class BrowseHistory(Base):
     __tablename__ = "browse_history"
@@ -16,15 +16,20 @@ class BrowseHistory(Base):
     def __repr__(self):
         return f"<BrowseHistory user_id={self.user_id} url={self.url}>"
 
-
+# ===== RUN DEMO =====
 if __name__ == "__main__":
-    engine = create_engine("sqlite:///:memory:")
+    engine = create_engine("sqlite:///:memory:", echo=False)
     Base.metadata.create_all(engine)
 
     Session = sessionmaker(bind=engine)
     session = Session()
 
-    h = BrowseHistory(user_id=1, url="https://example.com")
+    h = BrowseHistory(
+        user_id=1,
+        url="https://example.com",
+        ip_address="127.0.0.1"
+    )
+
     session.add(h)
     session.commit()
 
