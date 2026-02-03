@@ -29,6 +29,7 @@ export default function AuthorPaperDetail() {
       under_review: 'bg-blue-100 text-blue-700 border-blue-200',
       revision_required: 'bg-orange-100 text-orange-700 border-orange-200',
       accepted: 'bg-green-100 text-green-700 border-green-200',
+      camera_ready: 'bg-purple-100 text-purple-700 border-purple-200',
       rejected: 'bg-red-100 text-red-700 border-red-200',
     };
     return colors[status] || 'bg-slate-100 text-slate-700 border-slate-200';
@@ -40,6 +41,7 @@ export default function AuthorPaperDetail() {
       under_review: 'Đang phản biện',
       revision_required: 'Yêu cầu chỉnh sửa',
       accepted: 'Đã chấp nhận',
+      camera_ready: 'Camera Ready',
       rejected: 'Từ chối',
     };
     return labels[status] || status;
@@ -50,7 +52,8 @@ export default function AuthorPaperDetail() {
       pending: 25,
       under_review: 50,
       revision_required: 50,
-      accepted: 100,
+      accepted: 85,
+      camera_ready: 100,
       rejected: 100,
     };
     return percentages[status] || 0;

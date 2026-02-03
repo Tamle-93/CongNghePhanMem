@@ -63,6 +63,11 @@ const AuthorPapersPage = () => {
         color: 'bg-green-100 text-green-700 border-green-200',
         icon: 'check_circle'
       },
+      'camera_ready': {
+        label: 'Camera Ready',
+        color: 'bg-purple-100 text-purple-700 border-purple-200',
+        icon: 'photo_camera'
+      },
       'rejected': {
         label: 'Từ chối',
         color: 'bg-red-100 text-red-700 border-red-200',
@@ -170,6 +175,7 @@ const AuthorPapersPage = () => {
                 <option value="under_review">Đang phản biện</option>
                 <option value="revision_required">Yêu cầu chỉnh sửa</option>
                 <option value="accepted">Đã chấp nhận</option>
+                <option value="camera_ready">Camera Ready</option>
                 <option value="rejected">Từ chối</option>
               </select>
               <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">expand_more</span>
