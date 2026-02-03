@@ -68,6 +68,13 @@ const ReviewerReviewForm = lazy(() => import('./pages/reviewer/ReviewerReviewFor
 const ReviewerBidding = lazy(() => import('./pages/reviewer/ReviewerBidding'));
 const ReviewerHistory = lazy(() => import('./pages/reviewer/ReviewerHistory'));
 
+// Static Pages
+const AboutPage = lazy(() => import('./pages/static/AboutPage'));
+const PrivacyPolicyPage = lazy(() => import('./pages/static/PrivacyPolicyPage'));
+const TermsOfServicePage = lazy(() => import('./pages/static/TermsOfServicePage'));
+const CopyrightPage = lazy(() => import('./pages/static/CopyrightPage'));
+const ResearchEthicsPage = lazy(() => import('./pages/static/ResearchEthicsPage'));
+
 function App() {
   return (
     <AuthProvider>
@@ -78,6 +85,13 @@ function App() {
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+            
+            {/* Static Pages (Public) */}
+            <Route path="/about" element={<AboutPage />} />
+            <Route path="/privacy" element={<PrivacyPolicyPage />} />
+            <Route path="/terms" element={<TermsOfServicePage />} />
+            <Route path="/copyright" element={<CopyrightPage />} />
+            <Route path="/ethics" element={<ResearchEthicsPage />} />
 
             {/* Protected Routes */}
             <Route element={<ProtectedRoute />}>

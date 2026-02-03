@@ -97,10 +97,10 @@ const LoginPage = () => {
 
   const getRoleIcon = (role) => {
     const icons = {
-      'Admin': '👑',
-      'Chair': '🎓',
-      'Reviewer': '📝',
-      'Author': '✍️'
+      'Admin': '⚙️',
+      'Chair': '💼',
+      'Reviewer': '🔍',
+      'Author': '✏️'
     };
     return icons[role] || '👤';
   };
@@ -110,8 +110,10 @@ const LoginPage = () => {
       <div className="w-full max-w-md">
         <div className="bg-white rounded-2xl shadow-xl p-8">
           <div className="text-center mb-8">
-            <span className="text-4xl">🎓</span>
-            <h1 className="text-2xl font-bold text-slate-900 mt-4">UTH-ConfMS</h1>
+            <div className="w-16 h-16 bg-gradient-to-br from-green-600 to-green-800 rounded-xl flex items-center justify-center mx-auto">
+              <span className="material-symbols-outlined text-white text-3xl">school</span>
+            </div>
+            <h1 className="text-2xl font-bold text-slate-900 mt-4">UTH ConfMS</h1>
             <p className="text-slate-500 mt-2">Hệ thống Quản lý Hội nghị Khoa học</p>
           </div>
 
@@ -134,7 +136,7 @@ const LoginPage = () => {
                 type="text"
                 value={formData.username}
                 onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-                className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none"
                 placeholder="Nhập tên đăng nhập hoặc email"
                 required
               />
@@ -147,7 +149,7 @@ const LoginPage = () => {
                   type={showPassword ? 'text' : 'password'}
                   value={formData.password}
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                  className="w-full px-4 py-3 pr-12 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                  className="w-full px-4 py-3 pr-12 rounded-lg border border-slate-300 focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none"
                   placeholder="Nhập mật khẩu"
                   required
                 />
@@ -172,10 +174,10 @@ const LoginPage = () => {
 
             <div className="flex items-center justify-between text-sm">
               <div className="flex items-center">
-                <input type="checkbox" id="remember" className="w-4 h-4 text-blue-600 rounded" />
+                <input type="checkbox" id="remember" className="w-4 h-4 text-green-700 rounded" />
                 <label htmlFor="remember" className="ml-2 text-slate-600">Ghi nhớ đăng nhập</label>
               </div>
-              <Link to="/forgot-password" className="text-blue-600 hover:underline">
+              <Link to="/forgot-password" className="text-green-700 hover:underline">
                 Quên mật khẩu?
               </Link>
             </div>
@@ -183,7 +185,7 @@ const LoginPage = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition-colors disabled:opacity-50"
+              className="w-full py-3 bg-green-700 hover:bg-green-800 text-white font-bold rounded-lg transition-colors disabled:opacity-50"
             >
               {loading ? 'Đang xử lý...' : 'Đăng nhập'}
             </button>
@@ -191,7 +193,7 @@ const LoginPage = () => {
 
           <div className="mt-6 text-center text-sm">
             <span className="text-slate-600">Chưa có tài khoản? </span>
-            <Link to="/register" className="text-blue-600 hover:underline font-medium">
+            <Link to="/register" className="text-green-700 hover:underline font-medium">
               Đăng ký
             </Link>
           </div>
@@ -203,8 +205,8 @@ const LoginPage = () => {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
             <div className="text-center mb-6">
-              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-3xl">🎭</span>
+              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span className="material-symbols-outlined text-green-700 text-3xl">supervisor_account</span>
               </div>
               <h2 className="text-xl font-bold text-slate-900">Chọn vai trò đăng nhập</h2>
               <p className="text-slate-500 text-sm mt-2">
@@ -218,8 +220,8 @@ const LoginPage = () => {
                   key={role}
                   className={`flex items-center p-4 rounded-xl border-2 cursor-pointer transition-all ${
                     selectedRole === role
-                      ? 'border-blue-500 bg-blue-50'
-                      : 'border-slate-200 hover:border-blue-300 hover:bg-slate-50'
+                      ? 'border-green-600 bg-green-50'
+                      : 'border-slate-200 hover:border-green-400 hover:bg-slate-50'
                   }`}
                 >
                   <input
@@ -241,7 +243,7 @@ const LoginPage = () => {
                     </p>
                   </div>
                   {selectedRole === role && (
-                    <span className="text-blue-500">
+                    <span className="text-green-600">
                       <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                       </svg>
@@ -260,7 +262,7 @@ const LoginPage = () => {
               </button>
               <button
                 onClick={handleRoleSelection}
-                className="flex-1 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition-colors"
+                className="flex-1 py-3 bg-green-700 hover:bg-green-800 text-white font-bold rounded-lg transition-colors"
               >
                 Tiếp tục
               </button>

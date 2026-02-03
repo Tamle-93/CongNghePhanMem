@@ -67,7 +67,7 @@ const LoginScreen = () => {
   };
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-blue-600 via-indigo-700 to-purple-800 p-4">
+    <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-green-700 via-green-800 to-green-900 p-4">
       {/* Background Pattern */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-white/10 rounded-full blur-3xl"></div>
@@ -81,10 +81,10 @@ const LoginScreen = () => {
             
           {/* Header */}
           <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl shadow-lg shadow-blue-500/30 mb-4">
-              <span className="text-3xl">🎓</span>
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-green-600 to-green-800 rounded-2xl shadow-lg shadow-green-600/30 mb-4">
+              <span className="material-symbols-outlined text-white text-3xl">school</span>
             </div>
-            <h1 className="text-2xl font-bold text-gray-900">UTH-ConfMS</h1>
+            <h1 className="text-2xl font-bold text-gray-900">UTH ConfMS</h1>
             <p className="mt-2 text-gray-500">Đăng nhập vào hệ thống quản lý hội nghị</p>
           </div>
 
@@ -107,7 +107,7 @@ const LoginScreen = () => {
                   value={formData.username}
                   onChange={handleChange}
                   placeholder="Nhập tên đăng nhập hoặc email"
-                  className="w-full pl-12 pr-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                  className="w-full pl-12 pr-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
                   required
                 />
               </div>
@@ -130,7 +130,7 @@ const LoginScreen = () => {
                   value={formData.password}
                   onChange={handleChange}
                   placeholder="••••••••"
-                  className="w-full pl-12 pr-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                  className="w-full pl-12 pr-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
                   required
                 />
               </div>
@@ -144,11 +144,11 @@ const LoginScreen = () => {
                   name="remember"
                   checked={formData.remember}
                   onChange={handleChange}
-                  className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
+                  className="w-4 h-4 text-green-700 bg-gray-100 border-gray-300 rounded focus:ring-green-500"
                 />
                 <span className="ml-2 text-sm text-gray-600">Ghi nhớ đăng nhập</span>
               </label>
-              <Link to="/auth/forgot-password" className="text-sm font-medium text-blue-600 hover:text-blue-700">
+              <Link to="/auth/forgot-password" className="text-sm font-medium text-green-700 hover:text-green-800">
                 Quên mật khẩu?
               </Link>
             </div>
@@ -171,7 +171,7 @@ const LoginScreen = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-xl shadow-lg shadow-blue-500/30 hover:shadow-blue-500/40 hover:from-blue-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 transition-all"
+              className="w-full py-4 bg-gradient-to-r from-green-700 to-green-800 text-white font-semibold rounded-xl shadow-lg shadow-green-600/30 hover:shadow-green-600/40 hover:from-green-800 hover:to-green-900 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 transition-all"
             >
               {loading ? 'Đang đăng nhập...' : 'Đăng nhập'}
             </button>
@@ -187,7 +187,7 @@ const LoginScreen = () => {
           {/* Register */}
           <p className="text-center text-gray-600">
             Chưa có tài khoản?{' '}
-            <Link to="/auth/register" className="font-semibold text-blue-600 hover:text-blue-700">
+            <Link to="/auth/register" className="font-semibold text-green-700 hover:text-green-800">
               Đăng ký ngay
             </Link>
           </p>

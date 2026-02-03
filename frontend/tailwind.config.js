@@ -8,8 +8,10 @@ export default {
   theme: {
     extend: {
       colors: {
-        'primary': '#137fec',
-        'primary-dark': '#0f65bd',
+        // UTH Green Theme Colors
+        'primary': '#166534',       // green-800 - Màu xanh lá đậm UTH
+        'primary-dark': '#14532d',  // green-900 - Xanh đậm hơn
+        'primary-light': '#22c55e', // green-500 - Nhạt hơn
         'background-light': '#f6f7f8',
         'background-dark': '#101922',
         'surface-light': '#ffffff',
@@ -22,7 +24,8 @@ export default {
         'text-sub-dark': '#94a3b8',
       },
       fontFamily: {
-        'display': ['Inter', 'sans-serif'],
+        'sans': ['Be Vietnam Pro', 'Inter', 'system-ui', 'sans-serif'],
+        'display': ['Be Vietnam Pro', 'Inter', 'sans-serif'],
       },
       borderRadius: {
         'DEFAULT': '0.25rem',

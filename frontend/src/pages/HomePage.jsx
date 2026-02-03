@@ -78,7 +78,7 @@ const HomePage = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-96">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-700"></div>
       </div>
     );
   }
@@ -89,7 +89,7 @@ const HomePage = () => {
         {/* Hero Welcome Section */}
         <section className="rounded-2xl overflow-hidden relative min-h-[320px] flex items-center shadow-lg group">
           {/* Background with gradient overlay */}
-          <div className="absolute inset-0 bg-gradient-to-br from-blue-600 via-blue-700 to-blue-900"></div>
+          <div className="absolute inset-0 bg-gradient-to-br from-green-700 via-green-800 to-green-900"></div>
           <div className="absolute inset-0 opacity-10" style={{
             backgroundImage: 'url("data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'1\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")'
           }}></div>
@@ -103,13 +103,13 @@ const HomePage = () => {
             <h1 className="text-white text-3xl md:text-4xl lg:text-5xl font-black leading-tight tracking-tight mb-4">
               Chào mừng {user?.full_name || user?.username}
             </h1>
-            <p className="text-blue-100 text-base md:text-lg font-normal leading-relaxed mb-8 max-w-2xl">
+            <p className="text-green-100 text-base md:text-lg font-normal leading-relaxed mb-8 max-w-2xl">
               Nền tảng hỗ trợ nộp bài, phản biện và quản lý hội nghị chuyên nghiệp. Theo dõi tiến độ bài báo và cập nhật thông tin mới nhất từ các hội nghị uy tín.
             </p>
             <div className="flex flex-wrap gap-4">
               <button 
                 onClick={() => navigate('/author/papers')}
-                className="h-12 px-6 bg-white hover:bg-blue-50 text-blue-600 rounded-lg font-bold text-base transition-all flex items-center gap-2 shadow-lg"
+                className="h-12 px-6 bg-white hover:bg-green-50 text-green-700 rounded-lg font-bold text-base transition-all flex items-center gap-2 shadow-lg"
               >
                 <span className="material-symbols-outlined">description</span>
                 Bài báo của tôi
@@ -127,9 +127,9 @@ const HomePage = () => {
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Stat Card 1 */}
-          <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between group hover:border-blue-500 transition-all hover:shadow-md">
+          <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between group hover:border-green-600 transition-all hover:shadow-md">
             <div className="flex justify-between items-start mb-4">
-              <div className="p-3 bg-blue-50 rounded-lg text-blue-600">
+              <div className="p-3 bg-green-50 rounded-lg text-green-700">
                 <span className="material-symbols-outlined text-3xl">podium</span>
               </div>
               {stats.conferences > 10 && (
@@ -214,7 +214,7 @@ const HomePage = () => {
           <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                <span className="material-symbols-outlined text-blue-600">campaign</span>
+                <span className="material-symbols-outlined text-green-700">campaign</span>
                 Hoạt động gần đây
               </h2>
             </div>
@@ -225,14 +225,14 @@ const HomePage = () => {
                     paper.status === 'accepted' ? 'bg-green-50 border-green-200' :
                     paper.status === 'rejected' ? 'bg-red-50 border-red-200' :
                     paper.status === 'under_review' ? 'bg-orange-50 border-orange-200' :
-                    'bg-blue-50 border-blue-200'
+                    'bg-green-50 border-green-200'
                   }`}>
                     <div className="flex items-start gap-2 mb-2">
                       <span className={`material-symbols-outlined text-lg ${
                         paper.status === 'accepted' ? 'text-green-600' :
                         paper.status === 'rejected' ? 'text-red-600' :
                         paper.status === 'under_review' ? 'text-orange-600' :
-                        'text-blue-600'
+                        'text-green-700'
                       }`}>
                         {paper.status === 'accepted' ? 'check_circle' :
                          paper.status === 'rejected' ? 'cancel' :
@@ -261,7 +261,7 @@ const HomePage = () => {
                 <p className="text-sm">Chưa có hoạt động nào</p>
                 <button 
                   onClick={() => navigate('/author/submit')}
-                  className="mt-3 text-blue-600 text-sm font-medium hover:underline"
+                  className="mt-3 text-green-700 text-sm font-medium hover:underline"
                 >
                   Nộp bài đầu tiên →
                 </button>
@@ -278,7 +278,7 @@ const HomePage = () => {
               </h2>
               <button 
                 onClick={() => navigate('/conferences')}
-                className="text-blue-600 hover:text-blue-700 font-semibold text-xs flex items-center gap-1"
+                className="text-green-700 hover:text-green-800 font-semibold text-xs flex items-center gap-1"
               >
                 Xem tất cả
                 <span className="material-symbols-outlined text-sm">arrow_forward</span>
@@ -319,7 +319,7 @@ const HomePage = () => {
           <section className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-bold text-slate-900">Hội nghị gần đây</h2>
-              <button className="text-blue-600 hover:text-blue-700 font-semibold text-sm flex items-center gap-1">
+              <button className="text-green-700 hover:text-green-800 font-semibold text-sm flex items-center gap-1">
                 Xem tất cả
                 <span className="material-symbols-outlined text-lg">arrow_forward</span>
               </button>
@@ -328,14 +328,14 @@ const HomePage = () => {
               {conferences.map((conf) => (
                 <div key={conf.conference_id} className="border border-slate-200 rounded-lg p-5 hover:shadow-md transition-all group">
                   <div className="flex items-start justify-between mb-3">
-                    <div className="p-2 bg-blue-50 rounded-lg text-blue-600">
+                    <div className="p-2 bg-green-50 rounded-lg text-green-700">
                       <span className="material-symbols-outlined">event</span>
                     </div>
                     <span className="text-xs font-medium text-green-600 bg-green-50 px-2 py-1 rounded-full">
                       Đang mở
                     </span>
                   </div>
-                  <h3 className="font-bold text-slate-900 text-base mb-2 group-hover:text-blue-600 transition-colors line-clamp-2">
+                  <h3 className="font-bold text-slate-900 text-base mb-2 group-hover:text-green-700 transition-colors line-clamp-2">
                     {conf.name}
                   </h3>
                   <p className="text-sm text-slate-500 line-clamp-2 mb-3">

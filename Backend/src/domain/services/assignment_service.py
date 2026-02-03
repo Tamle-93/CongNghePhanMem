@@ -575,8 +575,9 @@ class AssignmentService:
                 Assignment.is_deleted == False
             ).join(Paper).join(Conference)
             
-            if status:
-                query = query.filter(Assignment.status == status)
+            # Don't filter by status in query - we calculate it dynamically
+            # if status:
+            #     query = query.filter(Assignment.status == status)
             
             if conference_id:
                 query = query.filter(Assignment.conference_id == conference_id)
@@ -597,6 +598,10 @@ class AssignmentService:
                     assign_status = 'in_progress'
                 else:
                     assign_status = 'pending'
+                
+                # Filter by status AFTER calculating it
+                if status and assign_status != status:
+                    continue
                 
                 result.append({
                     'assignment_id': assignment.id,
