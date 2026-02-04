@@ -23,12 +23,14 @@
  * - PUT /conferences/:id - Cập nhật thông tin hội nghị
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
+import { AuthContext } from '../../context/AuthContext';
 
 const ChairTracksPage = () => {
   const navigate = useNavigate();
+  const { user } = useContext(AuthContext);
   const [activeTab, setActiveTab] = useState('info'); // info, tracks, deadlines, email
   const [tracks, setTracks] = useState([]);
   const [deadlines, setDeadlines] = useState([]);
@@ -61,14 +63,30 @@ const ChairTracksPage = () => {
 
   const fetchData = async () => {
     try {
-      // Load conferences
-      const res = await api.listConferences().catch(() => ({ data: { data: { conferences: [] } } }));
+      // Load conferences - chỉ lấy conferences mà user hiện tại là Chair
+      const userId = user?.id;
+      const res = await api.listConferences({ chair_id: userId }).catch(() => ({ data: { data: { conferences: [] } } }));
       const conferences = res.data?.data?.conferences || [];
+      
+      console.log('User ID:', userId, 'Conferences:', conferences); // Debug
       
       // Get the first conference as default
       if (conferences.length > 0) {
-        const conferenceId = conferences[0].id;
+        const conference = conferences[0];
+        const conferenceId = conference.id;
         setSelectedConferenceId(conferenceId);
+        
+        // Load conference info into form
+        setConferenceInfo({
+          name: conference.name || '',
+          shortName: conference.acronym || conference.short_name || '',
+          location: conference.location || '',
+          startDate: conference.start_date || conference.conference_start_date || '',
+          endDate: conference.end_date || conference.conference_end_date || '',
+          website: conference.website || conference.website_url || '',
+          description: conference.description || ''
+        });
+        
         // Load tracks and deadlines for this conference
         await loadTracks(conferenceId);
         await loadDeadlines(conferenceId);
@@ -269,10 +287,20 @@ const ChairTracksPage = () => {
 
     setSaving(true);
     try {
-      // TODO: Call API to save conference info
-      // await api.updateConference(conferenceId, conferenceInfo);
+      // Call API to save conference info
+      if (selectedConferenceId) {
+        await api.put(`/conferences/${selectedConferenceId}`, {
+          name: conferenceInfo.name,
+          location: conferenceInfo.location,
+          website_url: conferenceInfo.website,
+          conference_start_date: conferenceInfo.startDate || null,
+          conference_end_date: conferenceInfo.endDate || null,
+          description: conferenceInfo.description
+        });
+      }
       showNotification('Đã lưu thông tin hội nghị thành công!', 'success');
     } catch (err) {
+      console.error('Error saving info:', err);
       showNotification('Có lỗi xảy ra khi lưu thông tin', 'error');
     } finally {
       setSaving(false);
@@ -300,11 +328,10 @@ const ChairTracksPage = () => {
       if (selectedConferenceId) {
         await api.put(`/conferences/${selectedConferenceId}`, {
           name: conferenceInfo.name,
-          acronym: conferenceInfo.shortName,
           location: conferenceInfo.location,
-          website: conferenceInfo.website,
-          start_date: conferenceInfo.startDate,
-          end_date: conferenceInfo.endDate,
+          website_url: conferenceInfo.website,
+          conference_start_date: conferenceInfo.startDate || null,
+          conference_end_date: conferenceInfo.endDate || null,
           description: conferenceInfo.description
         }).catch(err => console.error('Error saving conference info:', err));
       }

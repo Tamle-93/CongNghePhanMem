@@ -98,6 +98,7 @@ export default {
   listAssignments: (params) => api.get('/assignments', { params }),
   getAssignedPapers: (reviewerId) => api.get(`/reviewers/${reviewerId}/papers`),
   assignReviewers: (data) => api.post('/assignments', data), // { paper_id, reviewer_ids[] }
+  getReviewers: () => api.get('/users', { params: { role: 'Reviewer' } }), // Get list of reviewers
   
   // Bidding
   getAvailablePapers: () => api.get('/papers/available-for-bidding'),

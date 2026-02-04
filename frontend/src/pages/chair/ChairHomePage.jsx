@@ -92,18 +92,24 @@ const ChairHomePage = () => {
 
   const fetchData = async () => {
     try {
-      const [papersRes] = await Promise.all([
-        api.listPapers().catch(() => ({ data: { data: { papers: [] } } }))
+      const [papersRes, reviewersRes] = await Promise.all([
+        api.listPapers().catch(() => ({ data: { data: { papers: [] } } })),
+        api.getReviewers().catch(() => ({ data: { data: { users: [] } } }))
       ]);
 
       const papersData = papersRes.data?.data?.papers || papersRes.data?.papers || [];
+      // API returns 'users' not 'reviewers'
+      const reviewersData = reviewersRes.data?.data?.users || reviewersRes.data?.users || [];
 
       // Calculate real stats from data
+      // Completed = papers that have decision (accepted, rejected, camera_ready, revision_required)
+      const completedStatuses = ['accepted', 'rejected', 'camera_ready'];
+      
       setStats({
         totalPapers: papersData.length,
         underReview: papersData.filter(p => p.status === 'under_review').length,
-        completed: papersData.filter(p => p.status === 'accepted' || p.status === 'rejected').length,
-        reviewers: 0 // Will be loaded from API later
+        completed: papersData.filter(p => completedStatuses.includes(p.status)).length,
+        reviewers: reviewersData.length || 0
       });
 
       setPapers(papersData);

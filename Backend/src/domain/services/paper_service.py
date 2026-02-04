@@ -99,10 +99,10 @@ class PaperService:
             filepath = os.path.join(folder, filename)
             file.save(filepath)
             
-            # ✅ STRIP PDF METADATA FOR PRIVACY (double-blind review)
+            #  STRIP PDF METADATA FOR PRIVACY (double-blind review)
             success, result = PDFUtils.strip_metadata(filepath)
             if not success:
-                print(f"⚠️  Warning: Could not strip PDF metadata: {result}")
+                print(f"  Warning: Could not strip PDF metadata: {result}")
                 # Continue anyway, don't fail the upload
             
             # Get file size
@@ -152,7 +152,7 @@ class PaperService:
             if not conference:
                 return None, "Conference not found"
             
-            # ✅ ENFORCE DEADLINE CHECK IN BACKEND (not just frontend)
+            #  ENFORCE DEADLINE CHECK IN BACKEND (not just frontend)
             current_time = datetime.utcnow()
             if current_time > conference.submission_deadline:
                 # Log this security-relevant action
@@ -229,7 +229,7 @@ class PaperService:
             db.commit()
             db.refresh(paper)
             
-            # ✅ CREATE SUBMISSION VERSION ENTRY
+            #  CREATE SUBMISSION VERSION ENTRY
             submission_version = SubmissionVersion(
                 paper_id=paper.id,
                 version=1,
@@ -536,6 +536,53 @@ class PaperService:
             
         except Exception as e:
             db.rollback()
+            return None, str(e)
+        finally:
+            db.close()
+    
+    @staticmethod
+    def submit_revision(paper_id, user_id, file, response_to_reviewers=None):
+        """Submit revised version of paper"""
+        db = SessionLocal()
+        
+        try:
+            paper = db.query(Paper).filter(Paper.id == paper_id).first()
+            
+            if not paper:
+                return None, "Paper not found"
+            
+            print(f"[DEBUG] Revision for paper {paper_id}: status={paper.status}, submitter_id={paper.submitter_id}")
+            
+            # Check if paper needs revision
+            if paper.status != PaperStatus.REVISION_REQUIRED:
+                return None, f"Paper is not in revision status. Current status: {paper.status}"
+            
+            # Check ownership
+            if paper.submitter_id != user_id:
+                return None, "Only the submitter can upload revision"
+            
+            # Save new file
+            filepath, _ = PaperService._save_file(file, paper_id, is_camera_ready=False)
+            if not filepath:
+                return None, "Invalid file format. Please upload a PDF file."
+            
+            # Update paper
+            paper.pdf_path = filepath
+            paper.status = PaperStatus.UNDER_REVIEW  # Back to review
+            paper.updated_at = datetime.utcnow()
+            
+            # Log response to reviewers (for future use)
+            if response_to_reviewers:
+                print(f"[INFO] Revision response from author: {response_to_reviewers[:100]}...")
+            
+            db.commit()
+            db.refresh(paper)
+            
+            return PaperService._serialize_paper(db, paper), None
+            
+        except Exception as e:
+            db.rollback()
+            print(f"[ERROR] Submit revision failed: {e}")
             return None, str(e)
         finally:
             db.close()

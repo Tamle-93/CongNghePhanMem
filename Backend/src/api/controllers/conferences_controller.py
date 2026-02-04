@@ -26,22 +26,6 @@ track_create_schema = TrackCreateSchema()
 @require_auth
 @require_role('Chair', 'Admin')
 def create_conference():
-    """
-    Create a new conference
-    ---
-    POST /api/controllers/conferences
-    Headers: Authorization: Bearer <token>
-    Body:
-    {
-        "name": "UTH Conference 2025",
-        "description": "Annual scientific conference",
-        "submission_deadline": "2025-03-01T00:00:00",
-        "review_deadline": "2025-04-01T00:00:00",
-        "start_date": "2025-05-01T00:00:00",
-        "end_date": "2025-05-03T00:00:00",
-        "is_blind_review": true
-    }
-    """
     try:
         data = conference_create_schema.load(request.json)
         
@@ -66,37 +50,24 @@ def create_conference():
 
 @conferences_bp.route('', methods=['GET'])
 def list_conferences():
-    """
-    List all conferences
-    ---
-    GET /api/conferences?page=1&per_page=10&only_active=true
-    
-    LOGIC:
-    - Nếu user là Author: chỉ show ACTIVE/đang mở conferences
-    - Nếu user là Chair/Admin: show tất cả (active + inactive)
-    """
     try:
         page = int(request.args.get('page', 1))
         per_page = int(request.args.get('per_page', 10))
         only_active = request.args.get('only_active', 'true').lower() == 'true'
+        chair_id = request.args.get('chair_id', None)
         
-        # Get user role từ JWT token nếu có
-        user_role = None
-        try:
-            from domain.utils.auth_utils import require_auth
-            # Try to get current user
-            auth_header = request.headers.get('Authorization', '')
-            if auth_header.startswith('Bearer '):
-                # Có token = user đã login
-                # Không có role param = là Author (default)
-                user_role = 'Author'
-        except:
-            user_role = 'Author'  # Default: Anonymous = Author
+        # Convert chair_id to int if provided
+        if chair_id:
+            try:
+                chair_id = int(chair_id)
+            except ValueError:
+                chair_id = None
         
         result, error = ConferenceService.list_conferences(
             page=page, 
             per_page=per_page,
-            only_active=only_active  # Pass filter param
+            only_active=only_active,
+            chair_id=chair_id  # Filter by chair if provided
         )
         
         if error:
@@ -222,7 +193,7 @@ def get_conference_tracks(conference_id):
 
 @conferences_bp.route('/<int:conference_id>/deadlines', methods=['GET'])
 def get_conference_deadlines(conference_id):
-    """✅ Get all deadlines for a conference"""
+    """ Get all deadlines for a conference"""
     try:
         from infrastructure.models import Conference
         
