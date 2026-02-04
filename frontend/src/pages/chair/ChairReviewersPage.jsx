@@ -52,11 +52,26 @@ const ChairReviewersPage = () => {
       setLoading(true);
       console.log('Fetching reviewers...');
       
-      const response = await api.listUsers({ role: 'Reviewer' });
-      console.log('API Response:', response.data);
+      // Fetch both users with Reviewer role and assignments
+      const [usersRes, assignmentsRes] = await Promise.all([
+        api.listUsers({ role: 'Reviewer' }),
+        api.listAssignments().catch(() => ({ data: { data: { assignments: [] } } }))
+      ]);
       
-      const users = response.data?.data?.users || response.data?.users || [];
+      console.log('API Response:', usersRes.data);
+      
+      const users = usersRes.data?.data?.users || usersRes.data?.users || [];
+      const assignments = assignmentsRes.data?.data?.assignments || assignmentsRes.data?.assignments || [];
+      
       console.log('Extracted users:', users);
+      console.log('Extracted assignments:', assignments);
+      
+      // Count assignments per reviewer
+      const workloadMap = {};
+      assignments.forEach(a => {
+        const reviewerId = a.reviewer_id;
+        workloadMap[reviewerId] = (workloadMap[reviewerId] || 0) + 1;
+      });
       
       // Transform users to reviewer format
       const reviewerList = users.map(user => ({
@@ -65,7 +80,7 @@ const ChairReviewersPage = () => {
         role: 'Phản biện viên',
         organization: user.organization || user.affiliation || 'Chưa cập nhật',
         track: user.expertise || 'Chưa phân bổ',
-        workload: user.paper_count || 0,
+        workload: workloadMap[user.id] || 0, // Get actual workload from assignments
         email: user.email,
         avatar: null,
         isNew: false // Flag để phân biệt với người mới mời

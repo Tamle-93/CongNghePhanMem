@@ -258,7 +258,7 @@ class AuthService:
             # Generate JWT token
             token = generate_token(new_user.id, new_user.roles)
             
-            # ✅ Generate refresh token
+            #  Generate refresh token
             refresh_token_obj = RefreshToken(
                 user_id=new_user.id,
                 token=RefreshToken.generate_token(),
@@ -336,7 +336,7 @@ class AuthService:
             # Generate token - INCLUDE ROLES!
             token = generate_token(user.id, user.roles)
             
-            # ✅ Generate refresh token
+            #  Generate refresh token
             refresh_token_obj = RefreshToken(
                 user_id=user.id,
                 token=RefreshToken.generate_token(),
@@ -374,7 +374,7 @@ class AuthService:
     @staticmethod
     def refresh_access_token(refresh_token):
         """
-        ✅ Refresh access token using refresh token
+         Refresh access token using refresh token
         
         Args:
             refresh_token: str - The refresh token from client
@@ -464,9 +464,9 @@ class AuthService:
             import random
             reset_token = ''.join([str(random.randint(0, 9)) for _ in range(6)])
         
-            # Save token to user (cần thêm field reset_token và reset_token_expires)
+            # Save token to user
             user.reset_token = reset_token
-            user.reset_token_expires = datetime.utcnow() + timedelta(hours=1)
+            user.reset_token_expiry = datetime.utcnow() + timedelta(hours=1)
             db_session.commit()
         
             # Gửi email (sử dụng email_service)
@@ -492,13 +492,13 @@ class AuthService:
                 return False, "Invalid reset token"
         
             # Check expiration
-            if user.reset_token_expires < datetime.utcnow():
+            if user.reset_token_expiry < datetime.utcnow():
                 return False, "Reset token expired"
         
             # Update password
-            user.password = generate_password_hash(new_password)
+            user.password_hash = generate_password_hash(new_password)
             user.reset_token = None
-            user.reset_token_expires = None
+            user.reset_token_expiry = None
             db_session.commit()
         
             return True, "Password reset successfully"

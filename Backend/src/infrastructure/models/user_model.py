@@ -20,6 +20,10 @@ class User(Base):
     full_name = Column(String(100), nullable=False)
     email = Column(String(255), unique=True, nullable=False, index=True)
     
+    # Password Reset
+    reset_token = Column(String(6), nullable=True)  # 6 digit OTP
+    reset_token_expiry = Column(DateTime, nullable=True)  # Token expiry time
+    
     # Timestamps
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

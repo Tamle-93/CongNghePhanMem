@@ -22,23 +22,6 @@ update_schema = PaperUpdateSchema()
 @papers_bp.route('', methods=['POST'])
 @require_auth
 def submit_paper():
-    """
-    Submit a new paper
-    ---
-    POST /api/controllers/papers
-    Headers: Authorization: Bearer <token>
-    Content-Type: multipart/form-data
-    
-    Form Data:
-        title: string (required)
-        abstract: string (required)
-        keywords: string
-        conference_id: int (required)
-        track_id: int (optional)
-        authors: JSON string (required)
-            [{"user_id": 1, "order": 1, "is_corresponding": true, "affiliation": "UTH"}]
-        file: PDF file (required)
-    """
     try:
         import json
         
@@ -152,16 +135,6 @@ def submit_paper():
 @papers_bp.route('', methods=['GET'])
 @require_auth
 def list_papers():
-    """
-    List papers with filters
-    ---
-    GET /api/controllers/papers?conference_id=1&submitter_id=2&status=submitted&page=1&per_page=10
-    
-    LOGIC:
-    - Nếu URL có X-Active-Role header = 'Author': chỉ show papers của user đó
-    - Nếu X-Active-Role = 'Chair'/'Admin'/'Reviewer': show tất cả
-    - Fallback: nếu không có active role, check roles và quyết định
-    """
     try:
         conference_id = request.args.get('conference_id', type=int)
         submitter_id = request.args.get('submitter_id', type=int)
@@ -247,15 +220,6 @@ def update_paper(paper_id):
 @papers_bp.route('/<int:paper_id>/camera-ready', methods=['POST'])
 @require_auth
 def upload_camera_ready(paper_id):
-    """
-    Upload camera-ready version
-    ---
-    POST /api/papers/{paper_id}/camera-ready
-    Content-Type: multipart/form-data
-    
-    Form Data:
-        camera_ready_file: PDF file (required)
-    """
     try:
         # Debug logging
         print(f"[DEBUG] Camera-ready upload for paper {paper_id}")
@@ -296,6 +260,54 @@ def upload_camera_ready(paper_id):
         print(traceback.format_exc())
         return jsonify({'status': 'error', 'message': str(e)}), 500
 
+
+@papers_bp.route('/<int:paper_id>/revision', methods=['POST'])
+@require_auth
+def submit_revision(paper_id):
+    """Submit revised version of paper"""
+    try:
+        print(f"[DEBUG] Revision upload for paper {paper_id}")
+        print(f"[DEBUG] Current user: {request.current_user}")
+        print(f"[DEBUG] Files in request: {list(request.files.keys())}")
+        
+        # Get file
+        file = request.files.get('file') or request.files.get('revision_file')
+        if not file:
+            return jsonify({
+                'status': 'error',
+                'message': 'Vui lòng tải lên file PDF bản chỉnh sửa'
+            }), 400
+        
+        if file.filename == '':
+            return jsonify({'status': 'error', 'message': 'Vui lòng chọn file'}), 400
+        
+        # Get response to reviewers
+        response_to_reviewers = request.form.get('response_to_reviewers', '').strip()
+        
+        # Submit revision via service
+        paper, error = PaperService.submit_revision(
+            paper_id=paper_id,
+            user_id=request.current_user['user_id'],
+            file=file,
+            response_to_reviewers=response_to_reviewers
+        )
+        
+        if error:
+            return jsonify({'status': 'error', 'message': error}), 400
+        
+        return jsonify({
+            'status': 'success',
+            'message': 'Bản chỉnh sửa đã được nộp thành công',
+            'data': paper
+        }), 200
+        
+    except Exception as e:
+        import traceback
+        print(f"[ERROR] Revision upload failed: {e}")
+        print(traceback.format_exc())
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
+
 @papers_bp.route('/my-papers', methods=['GET'])
 @require_auth
 def get_my_papers():
@@ -323,19 +335,6 @@ def get_my_papers():
 @papers_bp.route('/<int:paper_id>/withdraw', methods=['POST'])
 @require_auth
 def withdraw_paper(paper_id):
-    """
-    ✅ Withdraw a paper (before deadline)
-    Authors can only withdraw their own papers before submission deadline
-    ---
-    POST /api/controllers/papers/{id}/withdraw
-    Headers: Authorization: Bearer <token>
-    
-    Responses:
-        200: Paper withdrawn successfully
-        400: Cannot withdraw (after deadline, after decision, etc.)
-        403: Permission denied
-        404: Paper not found
-    """
     try:
         success, error = PaperService.withdraw_paper(
             paper_id=paper_id,
@@ -364,18 +363,6 @@ def withdraw_paper(paper_id):
 @require_auth
 @require_role('Chair', 'Admin')
 def make_paper_decision(paper_id):
-    """
-    Make decision on a paper (alternative endpoint)
-    ---
-    POST /api/papers/{paper_id}/decision
-    Headers: Authorization: Bearer <token>
-    Body:
-    {
-        "decision": "accepted",  // accepted, revision_required, rejected
-        "feedback": "Congratulations...",
-        "decision_date": "2024-01-15T10:00:00Z"
-    }
-    """
     from domain.services.decision_service import DecisionService
     
     try:
@@ -417,14 +404,6 @@ def make_paper_decision(paper_id):
 @papers_bp.route('/<int:paper_id>/pdf', methods=['GET'])
 @require_auth
 def download_paper_pdf(paper_id):
-    """
-    Download/View PDF của paper
-    ---
-    GET /api/papers/{paper_id}/pdf
-    Headers: Authorization: Bearer <token>
-    
-    Returns: PDF file
-    """
     try:
         # Get paper info
         paper, error = PaperService.get_paper(paper_id, request.current_user['user_id'])

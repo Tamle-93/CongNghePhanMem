@@ -135,7 +135,7 @@ class ConferenceService:
             db.close()
     
     @staticmethod
-    def list_conferences(page=1, per_page=10, only_active=True):
+    def list_conferences(page=1, per_page=10, only_active=True, chair_id=None):
         """
         Lấy danh sách hội nghị (có phân trang)
         
@@ -143,6 +143,7 @@ class ConferenceService:
         - page: Số trang (bắt đầu từ 1)
         - per_page: Số item mỗi trang
         - only_active: Nếu True, chỉ show conferences có is_active=True
+        - chair_id: Nếu có, chỉ lấy conferences do chair_id này quản lý
         
         RETURNS:
         - { conferences: [...], total, page, per_page }
@@ -158,6 +159,10 @@ class ConferenceService:
             # Filter: chỉ show active conferences nếu only_active=True
             if only_active:
                 query = query.filter(Conference.is_active == True)
+            
+            # Filter: chỉ lấy conferences của chair cụ thể (cho Chair dashboard)
+            if chair_id:
+                query = query.filter(Conference.chair_id == chair_id)
             
             # Order + pagination
             conferences = query.order_by(Conference.created_at.desc())\
